@@ -4,6 +4,11 @@ import { DailyEntry } from '@/lib/database/types';
 // Types
 // -----------------------------------------------------------------------
 
+export interface TrendPoint {
+  date: string;   // YYYY-MM-DD of the endpoint of this interval
+  value: number;  // smoothed improvement rate (>= 0, clamped)
+}
+
 export interface MonthBreakdown {
   monthKey: string;
   label: string;
@@ -186,8 +191,83 @@ export const lightenColor = (hex: string, alpha: number): string => {
   return hex + Math.round(alpha * 255).toString(16).padStart(2, '0');
 };
 
+// -----------------------------------------------------------------------
+// Trend / Ritme computation (replaces "Taxa de canvi")
+// -----------------------------------------------------------------------
+
+/**
+ * Computes a smooth "improvement rhythm" curve from an accumulated series.
+ *
+ * WHY this replaces computeIntervalDerivative ("Taxa de canvi"):
+ *   The old approach used non-overlapping fixed intervals (1d, 3d, 7d).
+ *   This produced isolated horizontal stubs — erratic, hard to read, and
+ *   misleading when data was sparse (missing days created giant gaps).
+ *
+ * NEW approach:
+ *   1. Take only the valid (non-null) accumulated-value data points.
+ *   2. For every consecutive pair, compute slope = Δvalue / Δdays.
+ *      This is the per-day improvement rate for that interval.
+ *   3. Clamp negatives to 0 — accumulated values only go up, but we
+ *      still clamp defensively so the chart never shows negative rhythm.
+ *   4. Apply a simple moving average to smooth out noise.
+ *   5. Result: a continuous line of points — no gaps from missing days.
+ *
+ * The x-axis date of each point is the END date of each interval.
+ */
+export const computeTrendRitme = (
+  accumulatedValues: (number | null)[],
+  allDates: string[],
+  smoothingWindow: number = 5,
+): TrendPoint[] => {
+  // Step 1: collect valid (date, value) pairs from the accumulated series
+  const valid: { date: string; value: number }[] = [];
+  for (let i = 0; i < allDates.length; i++) {
+    const v = accumulatedValues[i];
+    if (v !== null && v !== undefined) {
+      valid.push({ date: allDates[i]!, value: v });
+    }
+  }
+
+  if (valid.length < 2) return [];
+
+  // Step 2: per-interval slopes between consecutive valid points
+  const raw: { date: string; slope: number }[] = [];
+  for (let i = 1; i < valid.length; i++) {
+    const prev = valid[i - 1]!;
+    const curr = valid[i]!;
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const dayDiff = Math.max(
+      1,
+      (new Date(curr.date + 'T12:00:00').getTime() -
+        new Date(prev.date + 'T12:00:00').getTime()) / msPerDay,
+    );
+    // Step 3: clamp negatives
+    const slope = Math.max(0, (curr.value - prev.value) / dayDiff);
+    raw.push({ date: curr.date, slope });
+  }
+
+  if (raw.length === 0) return [];
+
+  // Step 4: moving average — smooths out single-day noise
+  const halfW = Math.floor(smoothingWindow / 2);
+  const smoothed: TrendPoint[] = raw.map((_, i) => {
+    const lo = Math.max(0, i - halfW);
+    const hi = Math.min(raw.length - 1, i + halfW);
+    let sum = 0, count = 0;
+    for (let j = lo; j <= hi; j++) { sum += raw[j]!.slope; count++; }
+    return { date: raw[i]!.date, value: sum / count };
+  });
+
+  return smoothed;
+};
+
+// -----------------------------------------------------------------------
+// Kept for backward compatibility — but no longer used in the UI
+// -----------------------------------------------------------------------
+
 /**
  * Computes non-overlapping interval slopes.
+ * @deprecated Use computeTrendRitme instead.
  */
 export const computeIntervalDerivative = (
   values: (number | null)[],

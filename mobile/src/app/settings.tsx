@@ -210,7 +210,6 @@ function BackupSection({
 }) {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const freq = settings?.backupFrequency ?? 'none';
-  const email = settings?.backupEmail ?? '';
   const lastDate = settings?.lastBackupDate
     ? new Date(settings.lastBackupDate).toLocaleDateString()
     : 'Never';
@@ -253,27 +252,6 @@ function BackupSection({
           );
         })}
       </View>
-
-      {/* Email hint */}
-      <Text style={{ fontSize: 14, color: theme.textSecondary, marginBottom: 6 }}>Email (optional — pre-fills share sheet)</Text>
-      <TextInput
-        value={email}
-        onChangeText={(v) => updateSettingsMutation.mutate({ backupEmail: v })}
-        placeholder="you@example.com"
-        placeholderTextColor={theme.textSecondary}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={{
-          backgroundColor: theme.bg,
-          borderRadius: 8,
-          borderWidth: 1,
-          borderColor: theme.border,
-          padding: 10,
-          fontSize: 14,
-          color: theme.text,
-          marginBottom: 16,
-        }}
-      />
 
       {/* Last backup + manual trigger */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -1,65 +1,98 @@
-import Foundation
+import SwiftUI
+import SwiftData
+import Charts
 
-/// Generates RFC 4180 CSV from DailyEntry records.
-/// Format is compatible with the React Native app's export so existing
-/// data can be migrated.
-struct CSVExporter {
+struct GraphsView: View {
+    @Environment(\.appTheme) var theme
+    @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
+    @Query(sort: \AppSettings.createdAt) private var allSettings: [AppSettings]
+    @Query(sort: \CustomVariable.order) private var customVariables: [CustomVariable]
 
-    // MARK: - Headers
+    private var settings: AppSettings? { allSettings.first }
 
-    static func headers(customVariables: [CustomVariable]) -> [String] {
-        var h = [
-            "date", "bedtime", "wakeup_time", "sleep_quality",
-            "worked_at_job", "worked_at_home",
-            "fum", "gat",
-            "meditation", "yoga", "dibuix", "llegir",
-            "counter", "sports", "notes"
-        ]
-        for v in customVariables.sorted(by: { $0.order < $1.order }) {
-            h.append(v.variableId)
-        }
-        return h
+    @State private var selectedField = "meditation"
+    @State private var chartType: ChartType = .accumulated
+
+    enum ChartType: String, CaseIterable {
+        case accumulated = "Accumulated"
+        case monthly     = "Monthly"
     }
 
-    // MARK: - Export
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // 1. Summary
+                    SummaryCard(
+                        entries: filteredEntries,
+                        customVariables: customVariables
+                    )
 
-    static func export(entries: [DailyEntry],
-                       customVariables: [CustomVariable]) -> String {
-        let cols = headers(customVariables: customVariables)
-        var lines: [String] = [cols.map(quote).joined(separator: ",")]
+                    // 2. Trend / Ritme
+                    TrendCard(
+                        entries: filteredEntries,
+                        selectedField: $selectedField,
+                        timeframe: settings?.chartTimeframe ?? "month"
+                    )
 
-        let sorted = entries.sorted { $0.date > $1.date }
-        for e in sorted {
-            var row: [String] = [
-                e.date,
-                e.bedtime    ?? "",
-                e.wakeupTime ?? "",
-                e.sleepQuality.map { String($0) } ?? "",
-                e.workedAtJob  ? "1" : "0",
-                e.workedAtHome ? "1" : "0",
-                e.fum       ? "1" : "0",
-                e.gat       ? "1" : "0",
-                e.meditation ? "1" : "0",
-                e.yoga       ? "1" : "0",
-                e.dibuix     ? "1" : "0",
-                e.llegir     ? "1" : "0",
-                e.counter.map { String($0) } ?? "",
-                e.sports.joined(separator: ";"),   // semicolon-separated for readability
-                e.notes ?? ""
-            ]
-            let cvs = e.customValues
-            for v in customVariables.sorted(by: { $0.order < $1.order }) {
-                row.append(String(cvs[v.variableId] ?? 0))
+                    // 3. Multi-series chart
+                    chartTypePickerView
+                    MultiSeriesChartCard(
+                        entries: filteredEntries,
+                        chartType: chartType,
+                        customVariables: customVariables
+                    )
+                }
+                .padding()
             }
-            lines.append(row.map(quote).joined(separator: ","))
+            .background(theme.bg.ignoresSafeArea())
+            .navigationTitle("Graphs")
+            .toolbar { timeframeToolbar }
         }
-        return lines.joined(separator: "\n")
     }
 
-    // MARK: - RFC 4180 quoting
+    // MARK: - Filtered entries for current timeframe
 
-    private static func quote(_ s: String) -> String {
-        guard s.contains(",") || s.contains("\"") || s.contains("\n") else { return s }
-        return "\"\(s.replacingOccurrences(of: "\"", with: "\"\""))\""
+    private var filteredEntries: [DailyEntry] {
+        let dates = TrendCalculator.dates(for: settings?.chartTimeframe ?? "month")
+        guard let start = dates.first, let end = dates.last else { return [] }
+        let s = start.isoDate; let e = end.isoDate
+        return entries.filter { $0.date >= s && $0.date <= e }
+    }
+
+    private var chartTypePickerView: some View {
+        Picker("Chart Type", selection: $chartType) {
+            ForEach(ChartType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+    }
+
+    @ToolbarContentBuilder
+    private var timeframeToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            if let s = settings {
+                Menu {
+                    ForEach(["week","15days","month","3months","6months","year","all"], id: \.self) { tf in
+                        Button(timeframeLabel(tf)) { s.chartTimeframe = tf }
+                    }
+                } label: {
+                    Label(timeframeLabel(s.chartTimeframe), systemImage: "calendar.badge.clock")
+                        .font(.caption)
+                }
+            }
+        }
+    }
+
+    private func timeframeLabel(_ tf: String) -> String {
+        switch tf {
+        case "week":     return "1 week"
+        case "15days":   return "15 days"
+        case "month":    return "1 month"
+        case "3months":  return "3 months"
+        case "6months":  return "6 months"
+        case "year":     return "1 year"
+        default:         return "All time"
+        }
     }
 }

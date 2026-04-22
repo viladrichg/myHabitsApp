@@ -116,4 +116,3 @@ struct CustomVariablesView: View {
         try? ctx.save()
     }
 }
-

@@ -1,0 +1,254 @@
+import Foundation
+import SwiftData
+import UIKit
+
+@MainActor
+final class BackupManager {
+    static let shared = BackupManager()
+    private init() {}
+
+    enum BackupError: Error {
+        case noEntries
+        case writeFailure(Error)
+        case sharingUnavailable
+    }
+
+    enum ImportMode {
+        case merge
+        case replace
+    }
+
+    // MARK: EXPORT
+
+    func runBackup(
+        entries: [DailyEntry],
+        customVariables: [CustomVariable],
+        settings: AppSettings,
+        presentingViewController: UIViewController?
+    ) async throws {
+
+        guard !entries.isEmpty else {
+            throw BackupError.noEntries
+        }
+
+        let csv = CSVExporter.export(
+            entries: entries,
+            customVariables: customVariables
+        )
+
+        let url = documentsURL(
+            fileName: "backup_\(Date().isoDate).csv"
+        )
+
+        try csv.write(
+            to: url,
+            atomically: true,
+            encoding: .utf8
+        )
+
+        guard let vc = UIApplication.shared.topMostViewController() else {
+            throw BackupError.sharingUnavailable
+        }
+
+        await withCheckedContinuation { continuation in
+
+            let activity = UIActivityViewController(
+                activityItems: [url],
+                applicationActivities: nil
+            )
+
+            activity.completionWithItemsHandler = { _,_,_,_ in
+                continuation.resume()
+            }
+
+            vc.present(activity, animated: true)
+        }
+
+        settings.lastBackupDate = Date()
+        settings.updatedAt = Date()
+    }
+
+    // MARK: TEMPLATE CSV ✅ NEW
+
+    func exportTemplateCSV() async throws {
+
+        let template =
+"""
+date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,meditation,yoga,dibuix,llegir,counter,sports,notes
+2026-06-01,23:00,07:00,8,1,0,0,1,1,0,0,1,10,Running|Gym,Good day
+2026-06-02,22:45,07:15,7,1,0,0,0,1,1,0,0,5,Yoga,Felt relaxed
+2026-06-03,23:30,06:50,6,0,1,1,0,0,0,1,0,15,Cycling,Tired
+2026-06-04,22:50,07:10,9,1,0,0,0,1,1,0,1,20,Gym,Excellent focus
+2026-06-05,23:15,07:05,8,1,0,0,1,1,0,0,0,10,Running,Normal day
+2026-06-06,00:00,08:00,7,0,1,0,0,0,1,1,0,5,Hiking,Weekend
+2026-06-07,22:40,07:20,9,0,1,0,0,1,1,0,1,20,Yoga|Gym,Very productive
+"""
+
+        let url = documentsURL(fileName: "template.csv")
+
+        try template.write(
+            to: url,
+            atomically: true,
+            encoding: .utf8
+        )
+
+        guard let vc = UIApplication.shared.topMostViewController() else {
+            throw BackupError.sharingUnavailable
+        }
+
+        await withCheckedContinuation { continuation in
+
+            let activity = UIActivityViewController(
+                activityItems: [url],
+                applicationActivities: nil
+            )
+
+            activity.completionWithItemsHandler = { _,_,_,_ in
+                continuation.resume()
+            }
+
+            vc.present(activity, animated: true)
+        }
+    }
+
+    // MARK: PREVIEW
+
+    func previewCSV(from url: URL) throws -> [String] {
+
+        let content = try String(contentsOf: url)
+        let lines = content.components(separatedBy: "\n")
+
+        guard lines.count > 1 else { return [] }
+
+        let headers = lines[0].components(separatedBy: ",")
+        guard let dateIndex = headers.firstIndex(of: "date") else {
+            return []
+        }
+
+        var dates: [String] = []
+
+        for line in lines.dropFirst() where !line.isEmpty {
+
+            let values = parse(line)
+
+            if values.count > dateIndex {
+                dates.append(values[dateIndex])
+            }
+        }
+
+        return dates.sorted()
+    }
+
+    // MARK: IMPORT
+
+    func importCSV(
+        from url: URL,
+        context: ModelContext,
+        mode: ImportMode,
+        dateRange: ClosedRange<Date>? = nil
+    ) throws {
+
+        let content = try String(contentsOf: url)
+        let lines = content.components(separatedBy: "\n")
+
+        guard lines.count > 1 else { return }
+
+        let headers = lines[0].components(separatedBy: ",")
+
+        if mode == .replace {
+            let all = try context.fetch(
+                FetchDescriptor<DailyEntry>()
+            )
+            all.forEach { context.delete($0) }
+        }
+
+        for line in lines.dropFirst() where !line.isEmpty {
+
+            let values = parse(line)
+
+            guard values.count == headers.count else {
+                continue
+            }
+
+            let dict = Dictionary(
+                uniqueKeysWithValues: zip(headers, values)
+            )
+
+            guard let date = dict["date"] else {
+                continue
+            }
+
+            let existing = try context.fetch(
+                FetchDescriptor<DailyEntry>(
+                    predicate: #Predicate {
+                        $0.date == date
+                    }
+                )
+            ).first
+
+            let entry = existing ?? DailyEntry(date: date)
+
+            if existing == nil {
+                context.insert(entry)
+            }
+
+            entry.bedtime = dict["bedtime"]
+            entry.wakeupTime = dict["wakeup_time"]
+            entry.sleepQuality = Int(dict["sleep_quality"] ?? "")
+            entry.workedAtJob = dict["worked_at_job"] == "1"
+            entry.workedAtHome = dict["worked_at_home"] == "1"
+            entry.fum = dict["fum"] == "1"
+            entry.gat = dict["gat"] == "1"
+            entry.meditation = dict["meditation"] == "1"
+            entry.yoga = dict["yoga"] == "1"
+            entry.dibuix = dict["dibuix"] == "1"
+            entry.llegir = dict["llegir"] == "1"
+            entry.counter = Int(dict["counter"] ?? "")
+            entry.notes = dict["notes"]
+
+            if let sports = dict["sports"] {
+                entry.sports = sports
+                    .split(separator: "|")
+                    .map(String.init)
+            }
+
+            entry.updatedAt = Date()
+        }
+
+        try context.save()
+    }
+
+    // MARK: HELPERS
+
+    private func parse(_ line: String) -> [String] {
+
+        var result: [String] = []
+        var current = ""
+        var insideQuotes = false
+
+        for char in line {
+
+            if char == "\"" {
+                insideQuotes.toggle()
+
+            } else if char == "," && !insideQuotes {
+                result.append(current)
+                current = ""
+
+            } else {
+                current.append(char)
+            }
+        }
+
+        result.append(current)
+        return result
+    }
+
+    private func documentsURL(fileName: String) -> URL {
+        FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )[0]
+            .appendingPathComponent(fileName)
+    }
+}

@@ -36,7 +36,7 @@ struct StatisticsView: View {
                 .padding()
             }
             .background(theme.bg.ignoresSafeArea())
-            .navigationTitle("Calendar")
+            .navigationTitle("Calendari")
             .sheet(isPresented: $showEditor) {
 
                 if let selectedDayDate {
@@ -71,9 +71,13 @@ struct StatisticsView: View {
     }
 
     private var monthLabel: String {
+
         let f = DateFormatter()
+        f.locale = Locale(identifier: "ca_ES")
         f.dateFormat = "MMMM yyyy"
+
         return f.string(from: displayMonth)
+            .capitalized
     }
 
     // MARK: - Calendar grid
@@ -86,7 +90,7 @@ struct StatisticsView: View {
             spacing: 4
         ) {
             // Weekday headers
-            ForEach(["Mo","Tu","We","Th","Fr","Sa","Su"], id: \.self) { d in
+            ForEach(["Dl","Dt","Dc","Dj","Dv","Ds","Dg"], id: \.self) { d in
                 Text(d).font(.caption2).foregroundStyle(theme.secondary).frame(maxWidth: .infinity)
             }
             // Empty leading cells
@@ -188,10 +192,45 @@ struct StatisticsView: View {
     }
 
     private func dominantColor(_ e: DailyEntry) -> Color? {
-        // Green-ish if very active, neutral otherwise
-        let count = builtInVariables.filter { e.isActive(field: $0.fieldKey) }.count
-        if count >= 3 { return Color(hex: "#009988").opacity(0.7) }
-        if count >= 1 { return Color(hex: "#0077BB").opacity(0.5) }
+
+        if e.fum {
+            return .red
+        }
+
+        if e.gat {
+            return Color(hex: "#FF69B4")
+        }
+
+        let hasWork =
+            e.workedAtJob ||
+            e.workedAtHome
+
+        let hasActivities =
+            e.meditation ||
+            e.yoga ||
+            e.dibuix ||
+            e.llegir ||
+            !e.sports.isEmpty
+
+        // Dia perfecte
+        if hasWork && hasActivities {
+            return .green
+        }
+
+        // Només hàbits
+        if hasActivities {
+            return .yellow
+        }
+
+        // Casa preval sobre feina
+        if e.workedAtHome {
+            return .orange
+        }
+
+        if e.workedAtJob {
+            return .blue
+        }
+
         return nil
     }
 
@@ -218,8 +257,8 @@ struct StatisticsView: View {
 
     private var sleepData: [(Date, Double)] {
 
-        entries.compactMap { entry in
-           
+        monthEntries.values.compactMap { entry in
+
             guard let date = Date.from(isoDate: entry.date),
                   let wake = entry.wakeupTime?.parseHHmm()
             else { return nil }
@@ -245,8 +284,13 @@ struct StatisticsView: View {
                 total += 24 * 60
             }
 
-            return (date, Double(total) / 60.0)
+            return (
+                date,
+                Double(total) / 60.0
+            )
+
         }
+        .sorted { $0.0 < $1.0 }
     }
 
     private var sleepCard: some View {
@@ -255,7 +299,7 @@ struct StatisticsView: View {
 
         return VStack(alignment: .leading, spacing: 12) {
 
-            Text("Sleep Hours")
+            Text("Hores de son")
                 .font(.headline)
 
             Chart {
@@ -263,13 +307,13 @@ struct StatisticsView: View {
                 ForEach(sleepData, id: \.0) { point in
 
                     LineMark(
-                        x: .value("Date", point.0),
-                        y: .value("Hours", point.1)
+                        x: .value("Data", point.0),
+                        y: .value("Hores", point.1)
                     )
 
                     PointMark(
-                        x: .value("Date", point.0),
-                        y: .value("Hours", point.1)
+                        x: .value("Data", point.0),
+                        y: .value("Hores", point.1)
                     )
                 }
             }
@@ -310,7 +354,7 @@ struct StatisticsView: View {
 
     private var pitellsData: [(Date, Double)] {
 
-        entries.compactMap { entry in
+        monthEntries.values.compactMap { entry in
 
             guard let date = Date.from(isoDate: entry.date)
             else { return nil }
@@ -319,7 +363,9 @@ struct StatisticsView: View {
                 date,
                 Double(entry.counter ?? 0)
             )
+
         }
+        .sorted { $0.0 < $1.0 }
     }
 
     private var pitellsCard: some View {
@@ -336,12 +382,12 @@ struct StatisticsView: View {
                 ForEach(pitellsData, id: \.0) { point in
 
                     LineMark(
-                        x: .value("Date", point.0),
+                        x: .value("Data", point.0),
                         y: .value("Pitells", point.1)
                     )
 
                     PointMark(
-                        x: .value("Date", point.0),
+                        x: .value("Data", point.0),
                         y: .value("Pitells", point.1)
                     )
                 }

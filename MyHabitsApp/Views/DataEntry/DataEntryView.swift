@@ -48,7 +48,7 @@ struct DataEntryView: View {
                         activitiesSection(e)
                         sportsSection(e)
                         counterSection(e)
-                        customVariablesSection(e)
+                       // customVariablesSection(e)
                         notesSection(e)
                         saveSection()
                     }
@@ -57,7 +57,7 @@ struct DataEntryView: View {
             }
             .background(theme.bg.ignoresSafeArea())
             .onTapGesture { isEditingNotes = false } // ✅ CHANGE
-            .navigationTitle("Daily Entry")
+            .navigationTitle("Nova entrada")
             .onAppear {
                 if let initialDate {
                     selectedDate = initialDate
@@ -73,7 +73,7 @@ struct DataEntryView: View {
     
     private var datePicker: some View {
         DatePicker(
-            "Date",
+            "Data",
             selection: $selectedDate,
             displayedComponents: .date
         )
@@ -87,13 +87,13 @@ struct DataEntryView: View {
 
     private func sleepSection(_ e: DailyEntry) -> some View {
 
-        section("Sleep") {
+        section("Son") {
 
             HStack(alignment: .top, spacing: 24) {
 
                 VStack(alignment: .leading) {
 
-                    Text("Wake-up")
+                    Text("Llevar-se")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
 
@@ -108,7 +108,7 @@ struct DataEntryView: View {
 
                 VStack(alignment: .leading) {
 
-                    Text("Bedtime")
+                    Text("Anar a dormir")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
 
@@ -125,7 +125,7 @@ struct DataEntryView: View {
 
                 VStack(alignment: .leading) {
 
-                    Text("Sleep")
+                    Text("Dormit")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
 
@@ -156,7 +156,7 @@ struct DataEntryView: View {
     // MARK: OBJECTIVES
 
     private func objectivesSection(_ e: DailyEntry) -> some View {
-        section("Missed") {
+        section("Mals hàbits") {
             HStack {
                 selectable("Fum", active: e.fum, color: .red) {
                     e.fum.toggle()
@@ -171,7 +171,7 @@ struct DataEntryView: View {
     // MARK: ACTIVITIES
 
     private func activitiesSection(_ e: DailyEntry) -> some View {
-        section("Activities") {
+        section("Activitats") {
             VStack {
                 HStack {
                     selectable("Meditació", active: e.meditation, color: .green) {
@@ -196,12 +196,12 @@ struct DataEntryView: View {
     // MARK: SPORTS ✅ GRID + EDIT MODE
 
     private func sportsSection(_ e: DailyEntry) -> some View {
-        section("Sports") {
+        section("Esports") {
 
             VStack(spacing: 10) {
 
                 HStack {
-                    TextField("New sport", text: $newSport)
+                    TextField("Nou esport", text: $newSport)
                         .padding()
                         .background(theme.card)  // ✅ CHANGE
 
@@ -216,7 +216,7 @@ struct DataEntryView: View {
 
                 HStack {
                     Spacer()
-                    Button(isEditingSports ? "Done" : "Edit") {
+                    Button(isEditingSports ? "Fet" : "Editar") {
                         isEditingSports.toggle()
                     }
                 }
@@ -257,7 +257,7 @@ struct DataEntryView: View {
 
     private func counterSection(_ e: DailyEntry) -> some View {
 
-        section("Counter") {
+        section("Pitells") {
 
             VStack(spacing: 16) {
 
@@ -330,7 +330,7 @@ struct DataEntryView: View {
     private func customVariablesSection(_ e: DailyEntry) -> some View {
         Group {
             if !customVariables.isEmpty {
-                section("Custom") {
+                section("Personalitzats") {
                     ForEach(customVariables) { v in
                         selectable(
                             v.label,

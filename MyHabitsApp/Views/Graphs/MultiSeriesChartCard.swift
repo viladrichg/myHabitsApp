@@ -51,7 +51,7 @@ struct MultiSeriesChartCard: View {
             }
 
             if seriesData.isEmpty || dates.isEmpty {
-                Text("Select fields above to display.")
+                Text("Selecciona els camps que vols mostrar.")
                     .font(.subheadline)
                     .foregroundStyle(theme.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -61,12 +61,12 @@ struct MultiSeriesChartCard: View {
                     ForEach(seriesData, id: \.field) { series in
                         ForEach(series.points, id: \.0) { (date, value) in
                             LineMark(
-                                x: .value("Date", date),
+                                x: .value("Data", date),
                                 y: .value(series.label, value)
                             )
                             .foregroundStyle(series.color)
                             .lineStyle(.init(lineWidth: 2))
-                            .foregroundStyle(by: .value("Field", series.label))
+                            .foregroundStyle(by: .value("Variable", series.label))
                         }
                     }
                 }
@@ -97,7 +97,7 @@ struct MultiSeriesChartCard: View {
                     }
                 }
                 .chartLegend(.hidden)  // We use the chips above
-                .frame(height: 220)
+                .frame(height: 260)
             }
         }
         .padding()

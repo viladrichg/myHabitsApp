@@ -30,10 +30,10 @@ struct TrendCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Trend / Ritme")
+                    Text("Tendència")
                         .font(.headline)
                         .foregroundStyle(theme.text)
-                    Text("Improvement rhythm — smoothed slope")
+                    Text("Evolució de l'hàbit")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
                 }
@@ -42,7 +42,7 @@ struct TrendCard: View {
             }
 
             if trendPoints.isEmpty {
-                Text("Not enough data for this period.")
+                Text("No hi ha prou dades en aquest període.")
                     .font(.subheadline)
                     .foregroundStyle(theme.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -50,8 +50,8 @@ struct TrendCard: View {
             } else {
                 Chart(trendPoints) { pt in
                     AreaMark(
-                        x: .value("Date", pt.date),
-                        y: .value("Trend", pt.value)
+                        x: .value("Data", pt.date),
+                        y: .value("Tendència", pt.value)
                     )
                     .foregroundStyle(
                         LinearGradient(
@@ -68,13 +68,27 @@ struct TrendCard: View {
                 }
                 .chartYScale(domain: 0...1)
                 .chartYAxis {
-                    AxisMarks(values: [0, 0.25, 0.5, 0.75, 1.0]) { val in
-                        AxisGridLine().foregroundStyle(theme.border)
+                    AxisMarks(values: [0, 0.5, 1.0]) { value in
+
+                        AxisGridLine()
+                            .foregroundStyle(theme.border)
+
                         AxisValueLabel {
-                            if let v = val.as(Double.self) {
-                                Text(String(format: "%.0f%%", v * 100))
-                                    .font(.caption2)
-                                    .foregroundStyle(theme.secondary)
+
+                            if let v = value.as(Double.self) {
+
+                                if v < 0.25 {
+
+                                    Text("Baix")
+
+                                } else if v < 0.75 {
+
+                                    Text("Mitjà")
+
+                                } else {
+
+                                    Text("Alt")
+                                }
                             }
                         }
                     }

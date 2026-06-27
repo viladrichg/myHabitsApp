@@ -4,7 +4,7 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.appTheme) var theme
     @Query private var allSettings: [AppSettings]
-    @Query(sort: \CustomVariable.order) private var customVariables: [CustomVariable] // ✅ CHANGE
+    //@Query(sort: \CustomVariable.order) private var customVariables: [CustomVariable] // ✅ CHANGE
 
     private var settings: AppSettings? { allSettings.first }
 
@@ -18,22 +18,22 @@ struct SettingsView: View {
                     backupSection(s)
                 }
 
-                variableColorsSection   // ✅ CHANGE (nou bloc)
+                //variableColorsSection
                 customVariablesSection
 
                 aboutSection
             }
             .scrollContentBackground(.hidden)
             .background(theme.bg.ignoresSafeArea())
-            .navigationTitle("Settings")
+            .navigationTitle("Configuració")
         }
     }
 
     // MARK: - Theme
 
     private func themeSection(_ s: AppSettings) -> some View {
-        Section("Appearance") {
-            Picker("Theme", selection: Binding(
+        Section("Aspecte") {
+            Picker("Tema", selection: Binding(
                 get: { s.themeStyle },
                 set: { s.themeStyle = $0; s.updatedAt = Date() }
             )) {
@@ -54,20 +54,20 @@ struct SettingsView: View {
     // MARK: - Display
 
     private func displaySection(_ s: AppSettings) -> some View {
-        Section("Display") {
-            Picker("Chart Timeframe", selection: Binding(get: { s.chartTimeframe }, set: { s.chartTimeframe = $0 })) {
-                Text("1 week").tag("week")
-                Text("15 days").tag("15days")
-                Text("1 month").tag("month")
-                Text("3 months").tag("3months")
-                Text("6 months").tag("6months")
-                Text("1 year").tag("year")
-                Text("All time").tag("all")
+        Section("Visualització") {
+            Picker("Període gràfics", selection: Binding(get: { s.chartTimeframe }, set: { s.chartTimeframe = $0 })) {
+                Text("1 setmana").tag("week")
+                Text("15 dies").tag("15days")
+                Text("1 mes").tag("month")
+                Text("3 mesos").tag("3months")
+                Text("6 mesos").tag("6months")
+                Text("1 any").tag("year")
+                Text("Tot").tag("all")
             }
 
-            Picker("Values", selection: Binding(get: { s.displayMode }, set: { s.displayMode = $0 })) {
-                Text("Absolute").tag("absolute")
-                Text("Percentage").tag("percentage")
+            Picker("Valors", selection: Binding(get: { s.displayMode }, set: { s.displayMode = $0 })) {
+                Text("Absolut").tag("absolute")
+                Text("Percentatge").tag("percentage")
             }
         }
         .listRowBackground(theme.card)
@@ -75,34 +75,11 @@ struct SettingsView: View {
 
     // MARK: - NEW VARIABLE COLORS ✅ CHANGE
 
-    private var variableColorsSection: some View {
-        Section("Colors per variable") {
-
-            ForEach(customVariables) { variable in
-
-                VStack(alignment: .leading, spacing: 8) {
-
-                    Text(variable.label)
-                        .font(.headline)
-
-                    ColorPalette(selectedHex: Binding(
-                        get: { variable.colorHex },
-                        set: {
-                            variable.colorHex = $0
-                        }
-                    ))
-                }
-                .padding(.vertical, 4)
-            }
-        }
-        .listRowBackground(theme.card)
-    }
-
     // MARK: - Notifications
 
     private func notificationsSection(_ s: AppSettings) -> some View {
         Section {
-            NavigationLink("Notifications") {
+            NavigationLink("Notificacions") {
                 NotificationSettingsView(settings: s)
             }
         }
@@ -113,7 +90,7 @@ struct SettingsView: View {
 
     private func backupSection(_ s: AppSettings) -> some View {
         Section {
-            NavigationLink("Backup & Export") {
+            NavigationLink("Còpies de seguretat") {
                 BackupSettingsView(settings: s)
             }
         }
@@ -124,9 +101,7 @@ struct SettingsView: View {
 
     private var customVariablesSection: some View {
         Section {
-            NavigationLink("Custom Variables") {
-                CustomVariablesView()
-            }
+
         }
         .listRowBackground(theme.card)
     }
@@ -134,9 +109,9 @@ struct SettingsView: View {
     // MARK: - About
 
     private var aboutSection: some View {
-        Section("About") {
-            LabeledContent("Version", value: "1.0.0")
-            LabeledContent("Storage", value: "Local SQLite (SwiftData)")
+        Section("Informació") {
+            LabeledContent("Version", value: "1.2.3")
+            LabeledContent("Storage", value: "Local SQLite Vilajou")
         }
         .listRowBackground(theme.card)
     }

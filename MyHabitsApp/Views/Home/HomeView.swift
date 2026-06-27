@@ -31,7 +31,7 @@ struct HomeView: View {
                 .padding()
             }
             .background(theme.bg.ignoresSafeArea())
-            .navigationTitle("Daily Tracker")
+            .navigationTitle("Inici")
             .navigationBarTitleDisplayMode(.large)
         }
     }
@@ -51,16 +51,16 @@ struct HomeView: View {
 
     private var todaySummarySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Today")
+            sectionHeader("Avui")
             if let e = todayEntry {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    statCell(label: "Sleep", value: sleepText(e))
-                    statCell(label: "Work",  value: workText(e))
-                    statCell(label: "Activities", value: activitiesText(e))
-                    statCell(label: "Sports", value: sportsText(e))
+                    statCell(label: "Hores dormides", value: sleepText(e))
+                    statCell(label: "Treballat",  value: workText(e))
+                    statCell(label: "Activitats", value: activitiesText(e))
+                    statCell(label: "Esports", value: sportsText(e))
                 }
             } else {
-                Text("No data for today. Tap 'Today' to add an entry.")
+                Text("Avui no hi ha dades. Fes clic a 'Avui' per afegir-ne.")
                     .font(.subheadline)
                     .foregroundStyle(theme.secondary)
                     .padding()
@@ -72,7 +72,7 @@ struct HomeView: View {
 
     private var overviewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Last 30 days (\(last30.count) entries)")
+            sectionHeader("Últims 30 dies (\(last30.count) entrades)")
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(builtInVariables.prefix(6)) { v in
                     let count = last30.filter { $0.isActive(field: v.fieldKey) }.count
@@ -87,9 +87,9 @@ struct HomeView: View {
     private var greetingText: String {
         let h = Calendar.current.component(.hour, from: Date())
         switch h {
-        case 5..<12: return "Good morning"
-        case 12..<18: return "Good afternoon"
-        default: return "Good evening"
+        case 5..<12: return "Bon dia"
+        case 12..<18: return "Bona tarda"
+        default: return "Bona nit"
         }
     }
 
@@ -99,19 +99,34 @@ struct HomeView: View {
     }
 
     private func workText(_ e: DailyEntry) -> String {
-        if e.workedAtJob { return "Office" }
-        if e.workedAtHome { return "Home" }
-        return "None"
+
+        if e.workedAtJob && e.workedAtHome {
+            return "Feina + Casa"
+        }
+
+        if e.workedAtJob {
+            return "Casa"
+        }
+
+        if e.workedAtHome {
+            return "Feina"
+        }
+
+        return "-"
     }
 
     private func activitiesText(_ e: DailyEntry) -> String {
         let active = [e.meditation, e.yoga, e.dibuix, e.llegir].filter { $0 }.count
         return "\(active)/4"
     }
-
+    
     private func sportsText(_ e: DailyEntry) -> String {
+
         let s = e.sports
-        return s.isEmpty ? "None" : s.prefix(2).joined(separator: ", ")
+
+        return s.isEmpty
+            ? "-"
+            : s.prefix(2).joined(separator: ", ")
     }
 
     private func sectionHeader(_ title: String) -> some View {

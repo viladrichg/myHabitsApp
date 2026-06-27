@@ -74,7 +74,6 @@ struct TrendCalculator {
 
     static func dates(for timeframe: String) -> [Date] {
         let today = Date().startOfDay
-        let cal   = Calendar.current
         switch timeframe {
         case "week":      return stride(today, days: 7)
         case "15days":    return stride(today, days: 15)

@@ -14,8 +14,8 @@ struct GraphsView: View {
     @State private var chartType: ChartType = .accumulated
 
     enum ChartType: String, CaseIterable {
-        case accumulated = "Accumulated"
-        case monthly     = "Monthly"
+        case accumulated = "Acumulat"
+        case monthly     = "Mensual"
     }
 
     var body: some View {
@@ -46,7 +46,7 @@ struct GraphsView: View {
                 .padding()
             }
             .background(theme.bg.ignoresSafeArea())
-            .navigationTitle("Graphs")
+            .navigationTitle("Gràfics")
             .toolbar { timeframeToolbar }
         }
     }
@@ -61,7 +61,7 @@ struct GraphsView: View {
     }
 
     private var chartTypePickerView: some View {
-        Picker("Chart Type", selection: $chartType) {
+        Picker("Tipus de gràfic", selection: $chartType) {
             ForEach(ChartType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
         }
         .pickerStyle(.segmented)
@@ -85,14 +85,29 @@ struct GraphsView: View {
     }
 
     private func timeframeLabel(_ tf: String) -> String {
+
         switch tf {
-        case "week":     return "1 week"
-        case "15days":   return "15 days"
-        case "month":    return "1 month"
-        case "3months":  return "3 months"
-        case "6months":  return "6 months"
-        case "year":     return "1 year"
-        default:         return "All time"
+
+        case "week":
+            return "1 setmana"
+
+        case "15days":
+            return "15 dies"
+
+        case "month":
+            return "1 mes"
+
+        case "3months":
+            return "3 mesos"
+
+        case "6months":
+            return "6 mesos"
+
+        case "year":
+            return "1 any"
+
+        default:
+            return "Tot"
         }
     }
 }

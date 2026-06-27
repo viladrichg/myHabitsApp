@@ -7,11 +7,11 @@ struct SummaryCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Summary")
+            Text("Resum")
                 .font(.headline)
                 .foregroundStyle(theme.text)
 
-            Text("\(entries.count) days tracked")
+            Text("\(entries.count) dies registrats")
                 .font(.subheadline)
                 .foregroundStyle(theme.secondary)
 

@@ -6,8 +6,12 @@ import Charts
 /// The Y axis is normalized 0–1: 1 = fastest improvement pace seen in the period.
 struct TrendCard: View {
     @Environment(\.appTheme) var theme
+
     let entries: [DailyEntry]
+    let customVariables: [CustomVariable]
+
     @Binding var selectedField: String
+
     let timeframe: String
 
     private var dates: [Date] { TrendCalculator.dates(for: timeframe) }
@@ -117,18 +121,43 @@ struct TrendCard: View {
 
     private var fieldPicker: some View {
         Menu {
-            ForEach(builtInVariables) { v in
-                Button(v.label) { selectedField = v.fieldKey }
+
+            Section("Integrades") {
+
+                ForEach(builtInVariables) { v in
+                    Button(v.label) {
+                        selectedField = v.fieldKey
+                    }
+                }
             }
+
+            if !customVariables.isEmpty {
+
+                Section("Personalitzades") {
+
+                    ForEach(
+                        customVariables.filter {
+                            $0.type == "boolean"
+                        }
+                    ) { v in
+
+                        Button(v.label) {
+                            selectedField = v.variableId
+                        }
+                    }
+                }
+            }
+
         } label: {
+
             HStack(spacing: 4) {
+
                 Text(currentFieldLabel)
-                    .font(.caption)
-                    .foregroundStyle(theme.accent)
+
                 Image(systemName: "chevron.down")
-                    .font(.caption2)
-                    .foregroundStyle(theme.accent)
             }
+            .font(.caption)
+            .foregroundStyle(theme.accent)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(theme.accent.opacity(0.1))
@@ -137,6 +166,19 @@ struct TrendCard: View {
     }
 
     private var currentFieldLabel: String {
-        builtInVariables.first(where: { $0.fieldKey == selectedField })?.label ?? selectedField
+
+        if let builtIn = builtInVariables.first(
+            where: { $0.fieldKey == selectedField }
+        ) {
+            return builtIn.label
+        }
+
+        if let custom = customVariables.first(
+            where: { $0.variableId == selectedField }
+        ) {
+            return custom.label
+        }
+
+        return selectedField
     }
 }

@@ -8,8 +8,12 @@ struct MultiSeriesChartCard: View {
     let customVariables: [CustomVariable]
 
     // Which fields are toggled on
-    @State private var visibleFields: Set<String> = Set(builtInVariables.prefix(4).map(\.fieldKey))
-
+    @State private var visibleFields: Set<String> = [
+        "meditation",
+        "workedAtJob",
+        "sports",
+        "counter"
+    ]
     private var dates: [Date] {
         entries.compactMap { Date.from(isoDate: $0.date) }.sorted()
     }
@@ -19,13 +23,35 @@ struct MultiSeriesChartCard: View {
     }
 
     private var seriesData: [(field: String, label: String, color: Color, points: [(Date, Double)])] {
-        builtInVariables
-            .filter { visibleFields.contains($0.fieldKey) }
-            .map { v in
-                let pts = buildSeries(fieldKey: v.fieldKey)
-                return (v.fieldKey, v.label, Color(hex: v.colorHex), pts)
-            }
+
+        let builtIn =
+            builtInVariables
+                .filter { visibleFields.contains($0.fieldKey) }
+                .map { v in
+                    (
+                        v.fieldKey,
+                        v.label,
+                        Color(hex: v.colorHex),
+                        buildSeries(fieldKey: v.fieldKey)
+                    )
+                }
+
+        let custom =
+            customVariables
+                .filter { $0.type == "boolean" }
+                .filter { visibleFields.contains($0.variableId) }
+                .map { v in
+                    (
+                        v.variableId,
+                        v.label,
+                        Color(hex: v.colorHex),
+                        buildSeries(fieldKey: v.variableId)
+                    )
+                }
+
+        return builtIn + custom
     }
+
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -37,14 +63,51 @@ struct MultiSeriesChartCard: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(builtInVariables) { v in
-                        Toggle(v.label, isOn: Binding(
-                            get: { visibleFields.contains(v.fieldKey) },
-                            set: { on in
-                                if on { visibleFields.insert(v.fieldKey) }
-                                else  { visibleFields.remove(v.fieldKey) }
-                            }
-                        ))
-                        .toggleStyle(ChipToggleStyle(color: Color(hex: v.colorHex)))
+
+                        Toggle(
+                            v.label,
+                            isOn: Binding(
+                                get: { visibleFields.contains(v.fieldKey) },
+                                set: { on in
+                                    if on {
+                                        visibleFields.insert(v.fieldKey)
+                                    } else {
+                                        visibleFields.remove(v.fieldKey)
+                                    }
+                                }
+                            )
+                        )
+                        .toggleStyle(
+                            ChipToggleStyle(
+                                color: Color(hex: v.colorHex)
+                            )
+                        )
+                    }
+
+                    ForEach(
+                        customVariables.filter {
+                            $0.type == "boolean"
+                        }
+                    ) { v in
+
+                        Toggle(
+                            v.label,
+                            isOn: Binding(
+                                get: { visibleFields.contains(v.variableId) },
+                                set: { on in
+                                    if on {
+                                        visibleFields.insert(v.variableId)
+                                    } else {
+                                        visibleFields.remove(v.variableId)
+                                    }
+                                }
+                            )
+                        )
+                        .toggleStyle(
+                            ChipToggleStyle(
+                                color: Color(hex: v.colorHex)
+                            )
+                        )
                     }
                 }
                 .padding(.horizontal, 2)

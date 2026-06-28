@@ -24,12 +24,34 @@ struct SummaryCard: View {
                 summaryRow(label: v.label, count: count, pct: pct, color: Color(hex: v.colorHex))
             }
 
-            if !customVariables.isEmpty {
-                Divider().background(theme.border)
-                ForEach(customVariables) { v in
-                    let count = entries.filter { $0.isActive(field: v.variableId) }.count
-                    let pct   = entries.isEmpty ? 0 : Double(count) / Double(entries.count)
-                    summaryRow(label: v.label, count: count, pct: pct, color: Color(hex: v.colorHex))
+            let booleanVariables =
+                customVariables.filter {
+                    $0.type == "boolean"
+                }
+
+            if !booleanVariables.isEmpty {
+
+                Divider()
+                    .background(theme.border)
+
+                ForEach(booleanVariables) { v in
+
+                    let count =
+                        entries.filter {
+                            $0.isActive(field: v.variableId)
+                        }.count
+
+                    let pct =
+                        entries.isEmpty
+                        ? 0
+                        : Double(count) / Double(entries.count)
+
+                    summaryRow(
+                        label: v.label,
+                        count: count,
+                        pct: pct,
+                        color: Color(hex: v.colorHex)
+                    )
                 }
             }
         }

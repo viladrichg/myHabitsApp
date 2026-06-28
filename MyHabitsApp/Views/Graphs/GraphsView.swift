@@ -31,6 +31,7 @@ struct GraphsView: View {
                     // 2. Trend / Ritme
                     TrendCard(
                         entries: filteredEntries,
+                        customVariables: customVariables,
                         selectedField: $selectedField,
                         timeframe: settings?.chartTimeframe ?? "month"
                     )

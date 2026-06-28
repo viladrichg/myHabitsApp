@@ -59,8 +59,8 @@ struct RootView: View {
     }
 
     private func bootstrapSports() {
-        let defaults = ["Running", "Swimming", "Cycling", "Yoga",
-                        "Weightlifting", "Exercise", "Pilates", "Hiking"]
+        let defaults = ["Córrer", "CrossFit", "Exercici", "Senderisme",
+                        "Swing", "Frontó", "BTT"]
         defaults.forEach { ctx.insert(CustomSport(name: $0)) }
         try? ctx.save()
     }

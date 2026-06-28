@@ -48,7 +48,7 @@ struct DataEntryView: View {
                         activitiesSection(e)
                         sportsSection(e)
                         counterSection(e)
-                       // customVariablesSection(e)
+                        customVariablesSection(e)
                         notesSection(e)
                         saveSection()
                     }
@@ -141,7 +141,7 @@ struct DataEntryView: View {
     // MARK: WORK
 
     private func workSection(_ e: DailyEntry) -> some View {
-        section("Work") {
+        section("Treballat") {
             HStack {
                 selectable("Feina", active: e.workedAtJob, color: .blue) {
                     e.workedAtJob.toggle()
@@ -177,7 +177,7 @@ struct DataEntryView: View {
                     selectable("Meditació", active: e.meditation, color: .green) {
                         e.meditation.toggle()
                     }
-                    selectable("Yoga", active: e.yoga, color: .cyan) {
+                    selectable("Ioga", active: e.yoga, color: .cyan) {
                         e.yoga.toggle()
                     }
                 }
@@ -328,26 +328,125 @@ struct DataEntryView: View {
     // MARK: CUSTOM VARIABLES
 
     private func customVariablesSection(_ e: DailyEntry) -> some View {
+
         Group {
+
             if !customVariables.isEmpty {
+
                 section("Personalitzats") {
-                    ForEach(customVariables) { v in
-                        selectable(
-                            v.label,
-                            active: (e.customValues[v.variableId] ?? 0) > 0,
-                            color: Color(hex: v.colorHex)
+
+                    let booleans = customVariables.filter {
+                        $0.type == "boolean"
+                    }
+
+                    if !booleans.isEmpty {
+
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ],
+                            spacing: 10
                         ) {
-                            var cv = e.customValues
-                            cv[v.variableId] =
-                                (cv[v.variableId] ?? 0) > 0 ? 0 : 1
-                            e.customValues = cv
+
+                            ForEach(booleans) { v in
+
+                                selectable(
+                                    v.label,
+                                    active: (e.customValues[v.variableId] ?? 0) > 0,
+                                    color: Color(hex: v.colorHex)
+                                ) {
+
+                                    var cv = e.customValues
+
+                                    cv[v.variableId] =
+                                        (cv[v.variableId] ?? 0) > 0
+                                        ? 0
+                                        : 1
+
+                                    e.customValues = cv
+                                }
+                            }
                         }
+                    }
+
+                    ForEach(
+                        customVariables.filter {
+                            $0.type == "counter"
+                        }
+                    ) { v in
+
+                        VStack(
+                            alignment: .leading,
+                            spacing: 8
+                        ) {
+
+                            Text(v.label)
+                                .font(.headline)
+
+                            HStack {
+
+                                Text(
+                                    "\(e.customValues[v.variableId] ?? 0) \(v.unit)"
+                                )
+                                .font(.title3.bold())
+
+                                Spacer()
+
+                                Button {
+
+                                    var cv = e.customValues
+
+                                    cv[v.variableId] =
+                                        max(
+                                            0,
+                                            (cv[v.variableId] ?? 0) - 1
+                                        )
+
+                                    e.customValues = cv
+
+                                } label: {
+
+                                    Image(systemName: "minus")
+                                        .frame(width: 44, height: 44)
+                                }
+                                .background(
+                                    theme.border.opacity(0.25)
+                                )
+                                .foregroundStyle(theme.text)
+                                .clipShape(
+                                    RoundedRectangle(cornerRadius: 8)
+                                )
+
+                                Button {
+
+                                    var cv = e.customValues
+
+                                    cv[v.variableId] =
+                                        (cv[v.variableId] ?? 0) + 1
+
+                                    e.customValues = cv
+
+                                } label: {
+
+                                    Image(systemName: "plus")
+                                        .frame(width: 44, height: 44)
+                                }
+                                .background(
+                                    theme.border.opacity(0.25)
+                                )
+                                .foregroundStyle(theme.text)
+                                .clipShape(
+                                    RoundedRectangle(cornerRadius: 8)
+                                )
+                            }
+                        }
+                        .padding(.top, 8)
                     }
                 }
             }
         }
     }
-
     // MARK: NOTES ✅ STYLED
 
     private func notesSection(_ e: DailyEntry) -> some View {

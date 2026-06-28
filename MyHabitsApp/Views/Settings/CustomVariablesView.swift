@@ -15,6 +15,7 @@ struct CustomVariablesView: View {
     @State private var newLabel = ""
     @State private var newType = "boolean"
     @State private var newColor = "#06b6d4"
+    @State private var newUnit = ""
 
     private let colorOptions = [
         "#06b6d4",
@@ -33,7 +34,7 @@ struct CustomVariablesView: View {
 
         Form {
 
-            Section("Built-in") {
+            Section("Variables integrades") {
 
                 ForEach(builtInVariables) { v in
 
@@ -58,7 +59,7 @@ struct CustomVariablesView: View {
             }
             .listRowBackground(theme.card)
 
-            Section("Custom Variables") {
+            Section("Variables personalitzades") {
 
                 ForEach(variables) { variable in
 
@@ -99,7 +100,7 @@ struct CustomVariablesView: View {
 
                 } label: {
 
-                    Label("Add Variable", systemImage: "plus")
+                    Label("Afegir variable", systemImage: "plus")
                         .foregroundStyle(theme.accent)
                 }
             }
@@ -108,7 +109,7 @@ struct CustomVariablesView: View {
         .scrollContentBackground(.hidden)
         .background(theme.bg.ignoresSafeArea())
 
-        .navigationTitle("Custom Variables")
+        .navigationTitle("Variables personalitzades")
 
         .toolbar {
             EditButton()
@@ -131,7 +132,7 @@ struct CustomVariablesView: View {
 
             Form {
 
-                Section("New Variable") {
+                Section("Variable nova") {
 
                     TextField(
                         "Label",
@@ -143,26 +144,31 @@ struct CustomVariablesView: View {
                         selection: $newType
                     ) {
 
-                        Text("Boolean")
+                        Text("Booleà")
                             .tag("boolean")
 
-                        Text("Counter")
+                        Text("Comptador")
                             .tag("counter")
                     }
+                    
+                    TextField(
+                        "Unitat (kg, km, %, L...)",
+                        text: $newUnit
+                    )
 
                     colorPicker(
                         selected: $newColor
                     )
                 }
             }
-            .navigationTitle("Add Variable")
+            .navigationTitle("Afegir Variable")
 
             .toolbar {
 
                 ToolbarItem(
                     placement: .cancellationAction
                 ) {
-                    Button("Cancel") {
+                    Button("Cancel·lar") {
                         showingAdd = false
                     }
                 }
@@ -171,7 +177,7 @@ struct CustomVariablesView: View {
                     placement: .confirmationAction
                 ) {
 
-                    Button("Add") {
+                    Button("Afegir") {
 
                         let trimmed =
                         newLabel.trimmingCharacters(
@@ -187,6 +193,7 @@ struct CustomVariablesView: View {
                             label: trimmed,
                             type: newType,
                             colorHex: newColor,
+                            unit: newUnit,
                             order: variables.count
                         )
 
@@ -195,6 +202,7 @@ struct CustomVariablesView: View {
                         try? ctx.save()
 
                         newLabel = ""
+                        newUnit = ""
                         showingAdd = false
                     }
                 }
@@ -278,6 +286,10 @@ private struct EditVariableSheet: View {
                     "Label",
                     text: $variable.label
                 )
+                TextField(
+                    "Unitat",
+                    text: $variable.unit
+                )
 
                 LazyVGrid(
                     columns: Array(
@@ -308,7 +320,7 @@ private struct EditVariableSheet: View {
                     }
                 }
             }
-            .navigationTitle("Edit Variable")
+            .navigationTitle("Editar variable")
 
             .toolbar {
 
@@ -316,7 +328,7 @@ private struct EditVariableSheet: View {
                     placement: .confirmationAction
                 ) {
 
-                    Button("Save") {
+                    Button("Guardar") {
 
                         try? ctx.save()
 

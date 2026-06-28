@@ -100,7 +100,16 @@ struct SettingsView: View {
     // MARK: - Custom Variables
 
     private var customVariablesSection: some View {
-        Section {
+        Section("Variables personalitzades") {
+
+            NavigationLink {
+                CustomVariablesView()
+            } label: {
+                Label(
+                    "Gestionar variables",
+                    systemImage: "slider.horizontal.3"
+                )
+            }
 
         }
         .listRowBackground(theme.card)
@@ -110,7 +119,7 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section("Informació") {
-            LabeledContent("Version", value: "1.2.3")
+            LabeledContent("Versió", value: "1.2.3")
             LabeledContent("Storage", value: "Local SQLite Vilajou")
         }
         .listRowBackground(theme.card)

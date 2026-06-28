@@ -5,13 +5,20 @@ import Charts
 struct StatisticsView: View {
     @Environment(\.appTheme) var theme
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
-
+    @Query(sort: \CustomVariable.order)
+    private var customVariables: [CustomVariable]
+    
     @State private var displayMonth = Date()
     @State private var selectedDayDate: Date?
     @State private var showEditor = false
 
 
-    private var cal: Calendar { Calendar.current }
+    private var cal: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Locale(identifier: "ca_ES")
+        calendar.firstWeekday = 2 // Dilluns
+        return calendar
+    }
     private var year:  Int { cal.component(.year,  from: displayMonth) }
     private var month: Int { cal.component(.month, from: displayMonth) }
 
@@ -31,6 +38,16 @@ struct StatisticsView: View {
                     calendarGrid
                     sleepCard
                     pitellsCard
+
+                    ForEach(
+                        customVariables.filter {
+                            $0.type == "counter"
+                        }
+                    ) { variable in
+
+                        customCounterCard(variable)
+                    }
+
                     legendView
                 }
                 .padding()
@@ -72,32 +89,54 @@ struct StatisticsView: View {
 
     private var monthLabel: String {
 
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ca_ES")
-        f.dateFormat = "MMMM yyyy"
+        let months = [
+            "Gener",
+            "Febrer",
+            "Març",
+            "Abril",
+            "Maig",
+            "Juny",
+            "Juliol",
+            "Agost",
+            "Setembre",
+            "Octubre",
+            "Novembre",
+            "Desembre"
+        ]
 
-        return f.string(from: displayMonth)
-            .capitalized
+        return "\(months[month - 1]) \(year)"
     }
-
+    
     // MARK: - Calendar grid
 
     private var calendarGrid: some View {
+
         let days = daysInMonth()
-        let firstWeekday = firstWeekdayOfMonth() // 0=Mon
+        let offset = firstWeekdayOfMonth()
+
+        let cells = Array(repeating: 0, count: offset) + days
+
         return LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7),
+            columns: Array(repeating: GridItem(.flexible()), count: 7),
             spacing: 4
         ) {
-            // Weekday headers
-            ForEach(["Dl","Dt","Dc","Dj","Dv","Ds","Dg"], id: \.self) { d in
-                Text(d).font(.caption2).foregroundStyle(theme.secondary).frame(maxWidth: .infinity)
+
+            ForEach(["Dl","Dt","Dc","Dj","Dv","Ds","Dg"], id: \.self) {
+                Text($0)
+                    .frame(maxWidth: .infinity)
             }
-            // Empty leading cells
-            ForEach(0..<firstWeekday, id: \.self) { _ in Color.clear.frame(height: 44) }
-            // Day cells
-            ForEach(days, id: \.self) { day in
-                dayCell(day: day)
+
+            ForEach(Array(cells.enumerated()), id: \.offset) { _, value in
+
+                if value == 0 {
+
+                    Color.clear
+                        .frame(height: 44)
+
+                } else {
+
+                    dayCell(day: value)
+                }
             }
         }
     }
@@ -183,14 +222,40 @@ struct StatisticsView: View {
 
 
     private func activityDots(_ e: DailyEntry) -> some View {
-        let active = builtInVariables.filter { e.isActive(field: $0.fieldKey) }
+
+        let builtInActive =
+            builtInVariables
+                .filter {
+                    e.isActive(field: $0.fieldKey)
+                }
+                .map {
+                    Color(hex: $0.colorHex)
+                }
+
+        let customActive =
+            customVariables
+                .filter {
+                    e.isActive(field: $0.variableId)
+                }
+                .map {
+                    Color(hex: $0.colorHex)
+                }
+
+        let colors = builtInActive + customActive
+
         return HStack(spacing: 2) {
-            ForEach(active.prefix(4)) { v in
-                Circle().fill(Color(hex: v.colorHex)).frame(width: 4, height: 4)
+
+            ForEach(
+                Array(colors.prefix(4).enumerated()),
+                id: \.offset
+            ) { _, color in
+
+                Circle()
+                    .fill(color)
+                    .frame(width: 4, height: 4)
             }
         }
     }
-
     private func dominantColor(_ e: DailyEntry) -> Color? {
 
         if e.fum {
@@ -237,14 +302,65 @@ struct StatisticsView: View {
     // MARK: - Legend
 
     private var legendView: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-            ForEach(builtInVariables) { v in
+
+        let builtInRows =
+            builtInVariables.map { v in
+
+                (
+                    label: v.label,
+                    color: Color(hex: v.colorHex),
+                    count:
+                        monthEntries.values.filter {
+                            $0.isActive(field: v.fieldKey)
+                        }.count
+                )
+            }
+
+        let customRows =
+            customVariables
+                .filter { $0.type == "boolean" }
+                .map { v in
+
+                (
+                    label: v.label,
+                    color: Color(hex: v.colorHex),
+                    count:
+                        monthEntries.values.filter {
+                            $0.isActive(field: v.variableId)
+                        }.count
+                )
+            }
+
+        let rows = builtInRows + customRows
+
+        return LazyVGrid(
+            columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ],
+            spacing: 8
+        ) {
+
+            ForEach(
+                Array(rows.enumerated()),
+                id: \.offset
+            ) { _, row in
+
                 HStack(spacing: 6) {
-                    Circle().fill(Color(hex: v.colorHex)).frame(width: 10, height: 10)
-                    Text(v.label).font(.caption).foregroundStyle(theme.secondary)
+
+                    Circle()
+                        .fill(row.color)
+                        .frame(width: 10, height: 10)
+
+                    Text(row.label)
+                        .font(.caption)
+                        .foregroundStyle(theme.secondary)
+
                     Spacer()
-                    let count = monthEntries.values.filter { $0.isActive(field: v.fieldKey) }.count
-                    Text("\(count)").font(.caption.weight(.semibold)).foregroundStyle(theme.text)
+
+                    Text("\(row.count)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(theme.text)
                 }
             }
         }
@@ -425,6 +541,125 @@ struct StatisticsView: View {
         .cardStyle()
     }
 
+    private func customCounterData(
+        _ variable: CustomVariable
+    ) -> [(Date, Double)] {
+
+        monthEntries.values.compactMap { entry in
+
+            guard let date =
+                Date.from(isoDate: entry.date)
+            else {
+                return nil
+            }
+
+            let value =
+                entry.customValues[
+                    variable.variableId
+                ] ?? 0
+
+            return (
+                date,
+                Double(value)
+            )
+
+        }
+        .sorted { $0.0 < $1.0 }
+    }
+    
+    private func customCounterCard(
+        _ variable: CustomVariable
+    ) -> some View {
+
+        let data =
+            customCounterData(variable)
+
+        let values =
+            data.map(\.1)
+
+        return VStack(
+            alignment: .leading,
+            spacing: 12
+        ) {
+
+            Text(variable.label)
+                .font(.headline)
+
+            Chart {
+
+                ForEach(
+                    data,
+                    id: \.0
+                ) { point in
+
+                    LineMark(
+                        x: .value(
+                            "Data",
+                            point.0
+                        ),
+                        y: .value(
+                            variable.label,
+                            point.1
+                        )
+                    )
+                    .foregroundStyle(
+                        Color(
+                            hex: variable.colorHex
+                        )
+                    )
+
+                    PointMark(
+                        x: .value(
+                            "Data",
+                            point.0
+                        ),
+                        y: .value(
+                            variable.label,
+                            point.1
+                        )
+                    )
+                    .foregroundStyle(
+                        Color(
+                            hex: variable.colorHex
+                        )
+                    )
+                }
+            }
+            .frame(height: 180)
+
+            if !values.isEmpty {
+
+                HStack(spacing: 12) {
+
+                    statBox(
+                        title: "Mínim",
+                        value: "\(Int(values.min() ?? 0)) \(variable.unit)",
+                        color: .green
+                    )
+
+                    statBox(
+                        title: "Mitjana",
+                        value: String(
+                            format: "%.1f %@",
+                            values.reduce(0,+)
+                            / Double(values.count),
+                            variable.unit
+                        ),
+                        color: .orange
+                    )
+
+                    statBox(
+                        title: "Màxim",
+                        value: "\(Int(values.max() ?? 0)) \(variable.unit)",
+                        color: .red
+                    )
+                }
+            }
+        }
+        .padding()
+        .cardStyle()
+    }
+    
     // MARK: - Stat Box
 
     private func statBox(
@@ -458,15 +693,20 @@ struct StatisticsView: View {
 
     private func daysInMonth() -> [Int] {
         let range = cal.range(of: .day, in: .month, for: displayMonth)!
+        print(Array(range))
         return Array(range)
     }
 
     private func firstWeekdayOfMonth() -> Int {
-        var c = DateComponents(); c.year = year; c.month = month; c.day = 1
+        var c = DateComponents()
+        c.year = year
+        c.month = month
+        c.day = 1
+
         let first = cal.date(from: c)!
-        // Weekday: 1=Sun … 7=Sat → convert to 0=Mon … 6=Sun
-        let raw = cal.component(.weekday, from: first)
-        return (raw + 5) % 7   // 0=Monday
+        let weekday = cal.component(.weekday, from: first)
+
+        return (weekday - cal.firstWeekday + 7) % 7
     }
 
     private func shiftMonth(_ delta: Int) {

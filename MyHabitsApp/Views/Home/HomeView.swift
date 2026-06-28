@@ -43,7 +43,7 @@ struct HomeView: View {
             Text(greetingText)
                 .font(.title2.weight(.semibold))
                 .foregroundStyle(theme.text)
-            Text(Date().formatted(date: .complete, time: .omitted))
+            Text(catalanDate)
                 .font(.subheadline)
                 .foregroundStyle(theme.secondary)
         }
@@ -80,6 +80,14 @@ struct HomeView: View {
                 }
             }
         }
+    }
+    
+    private var catalanDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ca_ES")
+        formatter.dateStyle = .long
+
+        return formatter.string(from: Date())
     }
 
     // MARK: - Helpers

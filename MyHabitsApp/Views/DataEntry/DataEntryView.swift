@@ -46,7 +46,26 @@ struct DataEntryView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     datePicker
+                    
+                    Button {
 
+                        copyPreviousEntry()
+
+                    } label: {
+
+                        Label(
+                            "Copiar entrada anterior",
+                            systemImage: "doc.on.doc"
+                        )
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(theme.card)
+                        .foregroundStyle(theme.accent)
+                        .clipShape(
+                            RoundedRectangle(cornerRadius: 12)
+                        )
+                    }
+                    
                     if let e = entry {
                         sleepSection(e)
                         workSection(e)
@@ -68,6 +87,7 @@ struct DataEntryView: View {
                 if let initialDate {
                     selectedDate = initialDate
                 }
+                
                 loadOrCreate()
             }
             .onChange(of: selectedDate) { loadOrCreate() }
@@ -738,6 +758,46 @@ struct DataEntryView: View {
         return "\(hours)h \(String(format: "%02d", minutes))m"
     }
 
+    private func copyPreviousEntry() {
+
+        guard let currentDate = Date.from(isoDate: dateString),
+              let previousDate = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: currentDate
+              )
+        else {
+            return
+        }
+
+        guard let previous = entries.first(
+            where: { $0.date == previousDate.isoDate }
+        ),
+        let current = entry
+        else {
+            return
+        }
+
+        current.workedAtJob = previous.workedAtJob
+        current.workedAtHome = previous.workedAtHome
+
+        current.fum = previous.fum
+        current.gat = previous.gat
+
+        current.meditation = previous.meditation
+        current.yoga = previous.yoga
+        current.dibuix = previous.dibuix
+        current.llegir = previous.llegir
+
+        current.sports = previous.sports
+
+        current.counter = previous.counter
+
+        current.customValues = previous.customValues
+
+        try? ctx.save()
+    }
+    
     private func loadOrCreate() {
         if let existing = entries.first(where: { $0.date == dateString }) {
             entry = existing

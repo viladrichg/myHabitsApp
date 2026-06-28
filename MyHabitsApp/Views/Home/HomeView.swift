@@ -17,21 +17,91 @@ struct HomeView: View {
     }
 
     private var last30: [DailyEntry] {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date())!.isoDate
-        return entries.filter { $0.date >= cutoff }
+        let cutoff = Calendar.current.date(
+            byAdding: .day,
+            value: -30,
+            to: Date()
+        )!.isoDate
+
+        return entries.filter {
+            $0.date >= cutoff
+        }
     }
+
+    private var currentStreak: Int {
+
+        let dates = Set(entries.map(\.date))
+
+        var streak = 0
+        var current = Date()
+
+        while dates.contains(current.isoDate) {
+
+            streak += 1
+
+            guard let previous = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: current
+            ) else {
+                break
+            }
+
+            current = previous
+        }
+
+        return streak
+    }
+
+    private var bestStreak: Int {
+
+        let sorted =
+            entries.compactMap {
+                Date.from(isoDate: $0.date)
+            }
+            .sorted()
+
+        guard !sorted.isEmpty else {
+            return 0
+        }
+
+        var best = 1
+        var current = 1
+
+        for i in 1..<sorted.count {
+
+            let diff =
+                Calendar.current.dateComponents(
+                    [.day],
+                    from: sorted[i - 1],
+                    to: sorted[i]
+                ).day ?? 0
+
+            if diff == 1 {
+
+                current += 1
+                best = max(best, current)
+
+            } else {
+
+                current = 1
+            }
+        }
+
+        return best
+    }
+
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Greeting
                     greetingSection
 
-                    // Today's summary
+                    streakSection
+
                     todaySummarySection
 
-                    // 30-day overview
                     overviewSection
                 }
                 .padding()
@@ -55,6 +125,22 @@ struct HomeView: View {
         }
     }
 
+    private var streakSection: some View {
+
+        HStack(spacing: 12) {
+
+            statCell(
+                label: "Ratxa actual",
+                value: "🔥 \(currentStreak)"
+            )
+
+            statCell(
+                label: "Millor ratxa",
+                value: "🏆 \(bestStreak)"
+            )
+        }
+    }
+    
     private var todaySummarySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader("Avui")

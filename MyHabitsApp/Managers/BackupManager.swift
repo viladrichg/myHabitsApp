@@ -40,7 +40,8 @@ final class BackupManager {
         
         let csv = CSVExporter.export(
             entries: entries,
-            customVariables: customVariables
+            customVariables: customVariables,
+            settings: settings
         )
         
         let url = documentsURL(
@@ -91,7 +92,9 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
 2026-06-07,22:40,07:20,9,0,1,0,0,1,1,0,1,20,Yoga|Gym,Very productive
 """
         
-        let url = documentsURL(fileName: "template.csv")
+        let url = documentsURL(
+            fileName: "template_\(UUID().uuidString).csv"
+        )
         
         try template.write(
             to: url,

@@ -39,8 +39,24 @@ struct RootView: View {
 
     var body: some View {
         ContentView()
-            .environment(\.appTheme, AppTheme.colors(for: settings.themeStyle))
-            .onAppear { bootstrap() }
+            .environment(
+                \.appTheme,
+                AppTheme.colors(for: settings.themeStyle)
+            )
+            .preferredColorScheme(
+                settings.themeStyle == "dark"
+                || settings.themeStyle == "forest"
+                || settings.themeStyle == "ocean"
+                || settings.themeStyle == "rose"
+                || settings.themeStyle == "nord"
+                || settings.themeStyle == "coffee"
+                ? .dark
+                : .light
+            )
+            .onAppear {
+                bootstrap()
+            }
+
     }
 
     // MARK: - Bootstrap

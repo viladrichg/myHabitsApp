@@ -769,9 +769,10 @@ private struct TimePicker: View {
             DatePicker(
                 "",
                 selection: $time,
-                displayedComponents: .hourAndMinute
+                displayedComponents: .hourAndMinute,
             )
             .labelsHidden()
+            
 
             .onAppear {
 

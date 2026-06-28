@@ -120,7 +120,9 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
         ) { result in
             handleImport(result)
         }
-
+        .onAppear {
+            print("THEME =", settings.themeStyle)
+        }
         .sheet(isPresented: $showPreview) {
 
             NavigationStack {

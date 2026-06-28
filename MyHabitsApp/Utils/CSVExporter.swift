@@ -2,58 +2,254 @@ import Foundation
 
 struct CSVExporter {
 
-    static func headers(customVariables: [CustomVariable]) -> [String] {
+    struct CSVColumn {
 
-        var h = [
-            "date", "bedtime", "wakeup_time", "sleep_quality",
-            "worked_at_job", "worked_at_home",
-            "fum", "gat",
-            "meditation", "yoga", "dibuix", "llegir",
-            "counter", "sports", "notes"
+        let title: String
+        let value: (DailyEntry) -> String
+    }
+
+    static func columns(
+        customVariables: [CustomVariable],
+        settings: AppSettings?
+    ) -> [CSVColumn] {
+
+        var columns: [CSVColumn] = [
+
+            .init(
+                title: "Data",
+                value: { $0.date }
+            ),
+
+            .init(
+                title: "Hora dormir",
+                value: { $0.bedtime ?? "" }
+            ),
+
+            .init(
+                title: "Hora llevar-se",
+                value: { $0.wakeupTime ?? "" }
+            ),
+
+            .init(
+                title: "Qualitat son",
+                value: { String($0.sleepQuality ?? 0) }
+            )
         ]
 
-        for v in customVariables {
-            h.append(v.variableId)
+        for variable in builtInVariables {
+
+            if variable.isHidden(using: settings) {
+                continue
+            }
+
+            switch variable.fieldKey {
+
+            case "workedAtJob":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.workedAtJob ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "workedAtHome":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.workedAtHome ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "fum":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.fum ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "gat":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.gat ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "meditation":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.meditation ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "yoga":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.yoga ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "dibuix":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.dibuix ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "llegir":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            $0.llegir ? "1" : "0"
+                        }
+                    )
+                )
+
+            case "counter":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        value: {
+                            String($0.counter ?? 0)
+                        }
+                    )
+                )
+
+            default:
+                break
+            }
         }
 
-        return h
+        columns.append(
+            .init(
+                title: "Esports",
+                value: {
+                    $0.sports.joined(separator: "|")
+                }
+            )
+        )
+
+        columns.append(
+            .init(
+                title: "Notes",
+                value: {
+                    $0.notes ?? ""
+                }
+            )
+        )
+
+        for variable in customVariables {
+
+            let title: String
+
+            if variable.unit.isEmpty {
+
+                title = variable.label
+
+            } else {
+
+                title = "\(variable.label) (\(variable.unit))"
+            }
+
+            columns.append(
+                .init(
+                    title: title,
+                    value: { entry in
+
+                        String(
+                            entry.customValues[
+                                variable.variableId
+                            ] ?? 0
+                        )
+                    }
+                )
+            )
+        }
+
+        return columns
     }
 
     static func export(
         entries: [DailyEntry],
-        customVariables: [CustomVariable]
+        customVariables: [CustomVariable],
+        settings: AppSettings?
     ) -> String {
 
-        let cols = headers(customVariables: customVariables)
-        var lines: [String] = [cols.joined(separator: ",")]
+        let columns =
+            columns(
+                customVariables: customVariables,
+                settings: settings
+            )
 
-        for e in entries {
+        var lines: [String] = [
 
-            var row: [String] = [
-                e.date,
-                e.bedtime ?? "",
-                e.wakeupTime ?? "",
-                String(e.sleepQuality ?? 0),
-                e.workedAtJob ? "1" : "0",
-                e.workedAtHome ? "1" : "0",
-                e.fum ? "1" : "0",
-                e.gat ? "1" : "0",
-                e.meditation ? "1" : "0",
-                e.yoga ? "1" : "0",
-                e.dibuix ? "1" : "0",
-                e.llegir ? "1" : "0",
-                String(e.counter ?? 0),
-                e.sports.joined(separator: "|"), // ✅ SAME AS IMPORT
-                e.notes ?? ""
-            ]
+            columns
+                .map(\.title)
+                .joined(separator: ",")
+        ]
 
-            for v in customVariables {
-                row.append(String(e.customValues[v.variableId] ?? 0))
-            }
+        for entry in entries {
 
-            lines.append(row.joined(separator: ","))
+            let row =
+                columns.map {
+                    escapeCSV(
+                        $0.value(entry)
+                    )
+                }
+
+            lines.append(
+                row.joined(separator: ",")
+            )
         }
 
         return lines.joined(separator: "\n")
+    }
+
+    private static func escapeCSV(
+        _ value: String
+    ) -> String {
+
+        if value.contains(",")
+            || value.contains("\"")
+            || value.contains("\n") {
+
+            let escaped =
+                value.replacingOccurrences(
+                    of: "\"",
+                    with: "\"\""
+                )
+
+            return "\"\(escaped)\""
+        }
+
+        return value
     }
 }

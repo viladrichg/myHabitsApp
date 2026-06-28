@@ -1,3 +1,4 @@
+
 import SwiftData
 import SwiftUI
 import Foundation
@@ -36,6 +37,8 @@ final class CustomVariable {
     }
 }
 
+// MARK: - Built-in Variables
+
 struct BuiltInVariable: Identifiable {
 
     var id: String { fieldKey }
@@ -44,6 +47,37 @@ struct BuiltInVariable: Identifiable {
     let label: String
     let colorHex: String
     let type: String
+
+    func displayLabel(using settings: AppSettings?) -> String {
+
+        settings?
+            .variableLabels[fieldKey]
+        ?? label
+    }
+
+    func displayColorHex(using settings: AppSettings?) -> String {
+
+        settings?
+            .variableColors[fieldKey]
+        ?? colorHex
+    }
+
+    func displayColor(using settings: AppSettings?) -> Color {
+
+        Color(
+            hex: displayColorHex(
+                using: settings
+            )
+        )
+    }
+
+    func isHidden(using settings: AppSettings?) -> Bool {
+
+        settings?
+            .hiddenVariables
+            .contains(fieldKey)
+        ?? false
+    }
 }
 
 let builtInVariables: [BuiltInVariable] = [

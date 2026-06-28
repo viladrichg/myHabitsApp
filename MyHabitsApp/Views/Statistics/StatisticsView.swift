@@ -7,6 +7,12 @@ struct StatisticsView: View {
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
     @Query(sort: \CustomVariable.order)
     private var customVariables: [CustomVariable]
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
+
+    private var settings: AppSettings? {
+        allSettings.first
+    }
     
     @State private var displayMonth = Date()
     @State private var selectedDayDate: Date?
@@ -37,7 +43,13 @@ struct StatisticsView: View {
                     monthNavigator
                     calendarGrid
                     sleepCard
-                    pitellsCard
+
+                    if !(builtInVariables.first {
+                        $0.fieldKey == "counter"
+                    }?.isHidden(using: settings) ?? false) {
+
+                        pitellsCard
+                    }
 
                     ForEach(
                         customVariables.filter {
@@ -226,10 +238,13 @@ struct StatisticsView: View {
         let builtInActive =
             builtInVariables
                 .filter {
+                    !$0.isHidden(using: settings)
+                }
+                .filter {
                     e.isActive(field: $0.fieldKey)
                 }
                 .map {
-                    Color(hex: $0.colorHex)
+                    $0.displayColor(using: settings)
                 }
 
         let customActive =
@@ -256,6 +271,7 @@ struct StatisticsView: View {
             }
         }
     }
+    
     private func dominantColor(_ e: DailyEntry) -> Color? {
 
         if e.fum {
@@ -304,17 +320,21 @@ struct StatisticsView: View {
     private var legendView: some View {
 
         let builtInRows =
-            builtInVariables.map { v in
+            builtInVariables
+                .filter {
+                    !($0.isHidden(using: settings))
+                }
+                .map { v in
 
-                (
-                    label: v.label,
-                    color: Color(hex: v.colorHex),
-                    count:
-                        monthEntries.values.filter {
-                            $0.isActive(field: v.fieldKey)
-                        }.count
-                )
-            }
+                    (
+                        label: v.displayLabel(using: settings),
+                        color: v.displayColor(using: settings),
+                        count:
+                            monthEntries.values.filter {
+                                $0.isActive(field: v.fieldKey)
+                            }.count
+                    )
+                }
 
         let customRows =
             customVariables
@@ -418,22 +438,35 @@ struct StatisticsView: View {
             Text("Hores de son")
                 .font(.headline)
 
-            Chart {
+            if sleepData.count >= 2 {
 
-                ForEach(sleepData, id: \.0) { point in
+                Chart {
 
-                    LineMark(
-                        x: .value("Data", point.0),
-                        y: .value("Hores", point.1)
-                    )
+                    ForEach(sleepData, id: \.0) { point in
 
-                    PointMark(
-                        x: .value("Data", point.0),
-                        y: .value("Hores", point.1)
-                    )
+                        LineMark(
+                            x: .value("Data", point.0),
+                            y: .value("Hores", point.1)
+                        )
+
+                        PointMark(
+                            x: .value("Data", point.0),
+                            y: .value("Hores", point.1)
+                        )
+                    }
                 }
+                .frame(height: 180)
+
+            } else {
+
+                ContentUnavailableView(
+                    "No hi ha prou dades",
+                    systemImage: "bed.double",
+                    description: Text(
+                        "Calen almenys dues nits amb hora d'anar a dormir i hora de llevar-se."
+                    )
+                )
             }
-            .frame(height: 180)
 
             if !values.isEmpty {
 
@@ -486,29 +519,54 @@ struct StatisticsView: View {
 
     private var pitellsCard: some View {
 
+        let counterColor =
+            builtInVariables.first {
+                $0.fieldKey == "counter"
+            }?.displayColor(using: settings)
+            ?? theme.accent
         let values = pitellsData.map(\.1)
 
         return VStack(alignment: .leading, spacing: 12) {
 
-            Text("Pitells")
+            Text(
+                builtInVariables.first {
+                    $0.fieldKey == "counter"
+                }?.displayLabel(using: settings)
+                ?? "Pitells"
+            )
                 .font(.headline)
 
-            Chart {
+            if pitellsData.count >= 2 {
 
-                ForEach(pitellsData, id: \.0) { point in
+                Chart {
 
-                    LineMark(
-                        x: .value("Data", point.0),
-                        y: .value("Pitells", point.1)
-                    )
+                    ForEach(pitellsData, id: \.0) { point in
 
-                    PointMark(
-                        x: .value("Data", point.0),
-                        y: .value("Pitells", point.1)
-                    )
+                        LineMark(
+                            x: .value("Data", point.0),
+                            y: .value("Pitells", point.1)
+                        )
+                        .foregroundStyle(counterColor)
+
+                        PointMark(
+                            x: .value("Data", point.0),
+                            y: .value("Pitells", point.1)
+                        )
+                        .foregroundStyle(counterColor)
+                    }
                 }
+                .frame(height: 180)
+
+            } else {
+
+                ContentUnavailableView(
+                    "No hi ha prou dades",
+                    systemImage: "chart.line.uptrend.xyaxis",
+                    description: Text(
+                        "Calen almenys dues entrades amb dades."
+                    )
+                )
             }
-            .frame(height: 180)
 
             if !values.isEmpty {
 
@@ -585,47 +643,60 @@ struct StatisticsView: View {
             Text(variable.label)
                 .font(.headline)
 
-            Chart {
+            if data.count >= 2 {
 
-                ForEach(
-                    data,
-                    id: \.0
-                ) { point in
+                Chart {
 
-                    LineMark(
-                        x: .value(
-                            "Data",
-                            point.0
-                        ),
-                        y: .value(
-                            variable.label,
-                            point.1
-                        )
-                    )
-                    .foregroundStyle(
-                        Color(
-                            hex: variable.colorHex
-                        )
-                    )
+                    ForEach(
+                        data,
+                        id: \.0
+                    ) { point in
 
-                    PointMark(
-                        x: .value(
-                            "Data",
-                            point.0
-                        ),
-                        y: .value(
-                            variable.label,
-                            point.1
+                        LineMark(
+                            x: .value(
+                                "Data",
+                                point.0
+                            ),
+                            y: .value(
+                                variable.label,
+                                point.1
+                            )
                         )
-                    )
-                    .foregroundStyle(
-                        Color(
-                            hex: variable.colorHex
+                        .foregroundStyle(
+                            Color(
+                                hex: variable.colorHex
+                            )
                         )
-                    )
+
+                        PointMark(
+                            x: .value(
+                                "Data",
+                                point.0
+                            ),
+                            y: .value(
+                                variable.label,
+                                point.1
+                            )
+                        )
+                        .foregroundStyle(
+                            Color(
+                                hex: variable.colorHex
+                            )
+                        )
+                    }
                 }
+                .frame(height: 180)
+
+            } else {
+
+                ContentUnavailableView(
+                    "No hi ha prou dades",
+                    systemImage: "chart.line.uptrend.xyaxis",
+                    description: Text(
+                        "Calen almenys dues entrades amb dades."
+                    )
+                )
             }
-            .frame(height: 180)
 
             if !values.isEmpty {
 

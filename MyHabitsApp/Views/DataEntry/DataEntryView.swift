@@ -12,6 +12,12 @@ struct DataEntryView: View {
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
     @Query(sort: \CustomSport.name) private var customSports: [CustomSport]
     @Query(sort: \CustomVariable.order) private var customVariables: [CustomVariable]
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
+
+    private var settings: AppSettings? {
+        allSettings.first
+    }
 
     @State private var selectedDate: Date
     @State private var entry: DailyEntry? = nil
@@ -141,13 +147,47 @@ struct DataEntryView: View {
     // MARK: WORK
 
     private func workSection(_ e: DailyEntry) -> some View {
-        section("Treballat") {
-            HStack {
-                selectable("Feina", active: e.workedAtJob, color: .blue) {
-                    e.workedAtJob.toggle()
-                }
-                selectable("Casa", active: e.workedAtHome, color: .orange) {
-                    e.workedAtHome.toggle()
+
+        let job = builtIn("workedAtJob")
+        let home = builtIn("workedAtHome")
+
+        let hasVisibleVariables =
+            (job != nil && !(job!.isHidden(using: settings)))
+            ||
+            (home != nil && !(home!.isHidden(using: settings)))
+
+        return Group {
+
+            if hasVisibleVariables {
+
+                section("Treballat") {
+
+                    HStack {
+
+                        if let job,
+                           !job.isHidden(using: settings) {
+
+                            selectable(
+                                job.displayLabel(using: settings),
+                                active: e.workedAtJob,
+                                color: job.displayColor(using: settings)
+                            ) {
+                                e.workedAtJob.toggle()
+                            }
+                        }
+
+                        if let home,
+                           !home.isHidden(using: settings) {
+
+                            selectable(
+                                home.displayLabel(using: settings),
+                                active: e.workedAtHome,
+                                color: home.displayColor(using: settings)
+                            ) {
+                                e.workedAtHome.toggle()
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -156,13 +196,47 @@ struct DataEntryView: View {
     // MARK: OBJECTIVES
 
     private func objectivesSection(_ e: DailyEntry) -> some View {
-        section("Mals hàbits") {
-            HStack {
-                selectable("Fum", active: e.fum, color: .red) {
-                    e.fum.toggle()
-                }
-                selectable("Gat", active: e.gat, color: .pink) {
-                    e.gat.toggle()
+
+        let fum = builtIn("fum")
+        let gat = builtIn("gat")
+
+        let hasVisibleVariables =
+            (fum != nil && !(fum!.isHidden(using: settings)))
+            ||
+            (gat != nil && !(gat!.isHidden(using: settings)))
+
+        return Group {
+
+            if hasVisibleVariables {
+
+                section("Mals hàbits") {
+
+                    HStack {
+
+                        if let fum,
+                           !fum.isHidden(using: settings) {
+
+                            selectable(
+                                fum.displayLabel(using: settings),
+                                active: e.fum,
+                                color: fum.displayColor(using: settings)
+                            ) {
+                                e.fum.toggle()
+                            }
+                        }
+
+                        if let gat,
+                           !gat.isHidden(using: settings) {
+
+                            selectable(
+                                gat.displayLabel(using: settings),
+                                active: e.gat,
+                                color: gat.displayColor(using: settings)
+                            ) {
+                                e.gat.toggle()
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -171,22 +245,82 @@ struct DataEntryView: View {
     // MARK: ACTIVITIES
 
     private func activitiesSection(_ e: DailyEntry) -> some View {
-        section("Activitats") {
-            VStack {
-                HStack {
-                    selectable("Meditació", active: e.meditation, color: .green) {
-                        e.meditation.toggle()
-                    }
-                    selectable("Ioga", active: e.yoga, color: .cyan) {
-                        e.yoga.toggle()
-                    }
-                }
-                HStack {
-                    selectable("Dibuix", active: e.dibuix, color: .purple) {
-                        e.dibuix.toggle()
-                    }
-                    selectable("Llegir", active: e.llegir, color: .blue) {
-                        e.llegir.toggle()
+
+        let meditation = builtIn("meditation")
+        let yoga = builtIn("yoga")
+        let dibuix = builtIn("dibuix")
+        let llegir = builtIn("llegir")
+
+        let hasVisibleVariables = [
+
+            meditation?.isHidden(using: settings) == false,
+            yoga?.isHidden(using: settings) == false,
+            dibuix?.isHidden(using: settings) == false,
+            llegir?.isHidden(using: settings) == false
+
+        ].contains(true)
+
+        return Group {
+
+            if hasVisibleVariables {
+
+                section("Activitats") {
+
+                    VStack {
+
+                        HStack {
+
+                            if let meditation,
+                               !meditation.isHidden(using: settings) {
+
+                                selectable(
+                                    meditation.displayLabel(using: settings),
+                                    active: e.meditation,
+                                    color: meditation.displayColor(using: settings)
+                                ) {
+                                    e.meditation.toggle()
+                                }
+                            }
+
+                            if let yoga,
+                               !yoga.isHidden(using: settings) {
+
+                                selectable(
+                                    yoga.displayLabel(using: settings),
+                                    active: e.yoga,
+                                    color: yoga.displayColor(using: settings)
+                                ) {
+                                    e.yoga.toggle()
+                                }
+                            }
+                        }
+
+                        HStack {
+
+                            if let dibuix,
+                               !dibuix.isHidden(using: settings) {
+
+                                selectable(
+                                    dibuix.displayLabel(using: settings),
+                                    active: e.dibuix,
+                                    color: dibuix.displayColor(using: settings)
+                                ) {
+                                    e.dibuix.toggle()
+                                }
+                            }
+
+                            if let llegir,
+                               !llegir.isHidden(using: settings) {
+
+                                selectable(
+                                    llegir.displayLabel(using: settings),
+                                    active: e.llegir,
+                                    color: llegir.displayColor(using: settings)
+                                ) {
+                                    e.llegir.toggle()
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -257,67 +391,75 @@ struct DataEntryView: View {
 
     private func counterSection(_ e: DailyEntry) -> some View {
 
-        section("Pitells") {
+        let counter = builtIn("counter")
 
-            VStack(spacing: 16) {
+        return Group {
 
-                HStack {
+            if counter?.isHidden(using: settings) != true {
 
-                    Text("\(e.counter ?? 0)")
-                        .font(.system(size: 34, weight: .bold))
-                        .frame(width: 90, height: 60)
-                        .background(theme.border.opacity(0.25))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                section(
+                    counter?.displayLabel(using: settings)
+                    ?? "Pitells"
+                ) {
 
-                    Spacer()
+                    VStack(spacing: 16) {
 
-                    Button {
-                        e.counter = max(0, (e.counter ?? 0) - 1)
-                    } label: {
-                        Image(systemName: "minus")
-                            .font(.title2.bold())
-                            .frame(width: 60, height: 60)
-                    }
-                    .background(theme.border.opacity(0.25))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                        HStack {
 
-                    Button {
-                        e.counter = (e.counter ?? 0) + 1
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.title2.bold())
-                            .frame(width: 60, height: 60)
-                    }
-                    .background(theme.border.opacity(0.25))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
+                            Text("\(e.counter ?? 0)")
+                                .font(.system(size: 34, weight: .bold))
+                                .frame(width: 90, height: 60)
+                                .background(theme.border.opacity(0.25))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                HStack(spacing: 10) {
+                            Spacer()
 
-                    ForEach([5, 10, 15, 20], id: \.self) { value in
+                            Button {
+                                e.counter = max(0, (e.counter ?? 0) - 1)
+                            } label: {
+                                Image(systemName: "minus")
+                                    .font(.title2.bold())
+                                    .frame(width: 60, height: 60)
+                            }
+                            .background(theme.border.opacity(0.25))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                        Button("\(value)") {
-                            e.counter = value
+                            Button {
+                                e.counter = (e.counter ?? 0) + 1
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.title2.bold())
+                                    .frame(width: 60, height: 60)
+                            }
+                            .background(theme.border.opacity(0.25))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
 
-                        .background(
-                            (e.counter ?? 0) == value
-                            ? theme.accent
-                            : theme.border.opacity(0.25)
-                        )
+                        HStack(spacing: 10) {
 
-                        .foregroundStyle(
-                            (e.counter ?? 0) == value
-                            ? .white
-                            : theme.text
-                        )
+                            ForEach([5, 10, 15, 20], id: \.self) { value in
 
-                        .clipShape(
-                            RoundedRectangle(cornerRadius: 12)
-                        )
+                                Button("\(value)") {
+                                    e.counter = value
+                                }
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(
+                                    (e.counter ?? 0) == value
+                                    ? theme.accent
+                                    : theme.border.opacity(0.25)
+                                )
+                                .foregroundStyle(
+                                    (e.counter ?? 0) == value
+                                    ? .white
+                                    : theme.text
+                                )
+                                .clipShape(
+                                    RoundedRectangle(cornerRadius: 12)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -486,6 +628,15 @@ struct DataEntryView: View {
 
     // MARK: HELPERS
 
+    private func builtIn(
+        _ fieldKey: String
+    ) -> BuiltInVariable? {
+
+        builtInVariables.first {
+            $0.fieldKey == fieldKey
+        }
+    }
+    
     private func selectable(
         _ title: String,
         active: Bool,

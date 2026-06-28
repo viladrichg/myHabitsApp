@@ -5,6 +5,12 @@ struct HomeView: View {
     @Environment(\.appTheme) var theme
     @Environment(\.modelContext) private var ctx
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
+
+    private var settings: AppSettings? {
+        allSettings.first
+    }
 
     private var todayEntry: DailyEntry? {
         entries.first(where: { $0.date == Date().isoDate })
@@ -71,12 +77,52 @@ struct HomeView: View {
     }
 
     private var overviewSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Últims 30 dies (\(last30.count) entrades)")
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(builtInVariables.prefix(6)) { v in
-                    let count = last30.filter { $0.isActive(field: v.fieldKey) }.count
-                    miniStatCell(label: v.label, count: count, total: last30.count, color: Color(hex: v.colorHex))
+
+        let visibleBuiltIns =
+            builtInVariables
+                .filter {
+                    !($0.isHidden(using: settings))
+                }
+
+        return VStack(
+            alignment: .leading,
+            spacing: 12
+        ) {
+
+            sectionHeader(
+                "Últims 30 dies (\(last30.count) entrades)"
+            )
+
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ],
+                spacing: 10
+            ) {
+
+                ForEach(
+                    visibleBuiltIns.prefix(6)
+                ) { v in
+
+                    let count =
+                        last30.filter {
+                            $0.isActive(
+                                field: v.fieldKey
+                            )
+                        }.count
+
+                    miniStatCell(
+                        label: v.displayLabel(
+                            using: settings
+                        ),
+                        count: count,
+                        total: last30.count,
+                        color: v.displayColor(
+                            using: settings
+                        )
+                    )
                 }
             }
         }
@@ -106,18 +152,34 @@ struct HomeView: View {
         return e.bedtime != nil ? e.bedtime! : "–"
     }
 
-    private func workText(_ e: DailyEntry) -> String {
+    private func workText(
+        _ e: DailyEntry
+    ) -> String {
+
+        let workLabel =
+            builtInVariables.first {
+                $0.fieldKey == "workedAtJob"
+            }?.displayLabel(
+                using: settings
+            ) ?? "Feina"
+
+        let homeLabel =
+            builtInVariables.first {
+                $0.fieldKey == "workedAtHome"
+            }?.displayLabel(
+                using: settings
+            ) ?? "Casa"
 
         if e.workedAtJob && e.workedAtHome {
-            return "Feina + Casa"
+            return "\(workLabel) + \(homeLabel)"
         }
 
         if e.workedAtJob {
-            return "Casa"
+            return workLabel
         }
 
         if e.workedAtHome {
-            return "Feina"
+            return homeLabel
         }
 
         return "-"

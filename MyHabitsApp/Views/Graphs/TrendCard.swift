@@ -1,12 +1,18 @@
 import SwiftUI
 import Charts
+import SwiftData
 
 /// Step 6 — Trend / Ritme
 /// Shows the smoothed improvement rhythm for a selected field.
 /// The Y axis is normalized 0–1: 1 = fastest improvement pace seen in the period.
 struct TrendCard: View {
     @Environment(\.appTheme) var theme
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
 
+    private var settings: AppSettings? {
+        allSettings.first
+    }
     let entries: [DailyEntry]
     let customVariables: [CustomVariable]
 
@@ -124,8 +130,15 @@ struct TrendCard: View {
 
             Section("Integrades") {
 
-                ForEach(builtInVariables) { v in
-                    Button(v.label) {
+                ForEach(
+                    builtInVariables.filter {
+                        !(settings?.hiddenVariables.contains($0.fieldKey) ?? false)
+                    }
+                ) { v in
+
+                    Button(
+                        v.displayLabel(using: settings)
+                    ) {
                         selectedField = v.fieldKey
                     }
                 }
@@ -167,15 +180,25 @@ struct TrendCard: View {
 
     private var currentFieldLabel: String {
 
-        if let builtIn = builtInVariables.first(
-            where: { $0.fieldKey == selectedField }
-        ) {
-            return builtIn.label
+        if let builtIn =
+            builtInVariables.first(
+                where: {
+                    $0.fieldKey == selectedField
+                }
+            ) {
+
+            return builtIn.displayLabel(
+                using: settings
+            )
         }
 
-        if let custom = customVariables.first(
-            where: { $0.variableId == selectedField }
-        ) {
+        if let custom =
+            customVariables.first(
+                where: {
+                    $0.variableId == selectedField
+                }
+            ) {
+
             return custom.label
         }
 

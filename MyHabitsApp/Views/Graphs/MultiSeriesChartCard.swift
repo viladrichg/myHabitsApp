@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import Charts
 
 struct MultiSeriesChartCard: View {
@@ -6,6 +7,13 @@ struct MultiSeriesChartCard: View {
     let entries: [DailyEntry]
     let chartType: GraphsView.ChartType
     let customVariables: [CustomVariable]
+    
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
+
+    private var settings: AppSettings? {
+        allSettings.first
+    }
 
     // Which fields are toggled on
     @State private var visibleFields: Set<String> = [
@@ -25,13 +33,18 @@ struct MultiSeriesChartCard: View {
     private var seriesData: [(field: String, label: String, color: Color, points: [(Date, Double)])] {
 
         let builtIn =
-            builtInVariables
-                .filter { visibleFields.contains($0.fieldKey) }
+        builtInVariables
+            .filter {
+                !($0.isHidden(using: settings))
+            }
+            .filter {
+                visibleFields.contains($0.fieldKey)
+            }
                 .map { v in
                     (
                         v.fieldKey,
-                        v.label,
-                        Color(hex: v.colorHex),
+                        v.displayLabel(using: settings),
+                        v.displayColor(using: settings),
                         buildSeries(fieldKey: v.fieldKey)
                     )
                 }
@@ -62,10 +75,14 @@ struct MultiSeriesChartCard: View {
             // Toggle chips
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(builtInVariables) { v in
+                    ForEach(
+                        builtInVariables.filter {
+                            !$0.isHidden(using: settings)
+                        }
+                    ) { v in
 
                         Toggle(
-                            v.label,
+                            v.displayLabel(using: settings),
                             isOn: Binding(
                                 get: { visibleFields.contains(v.fieldKey) },
                                 set: { on in

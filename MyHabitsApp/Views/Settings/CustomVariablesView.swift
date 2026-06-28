@@ -8,9 +8,15 @@ struct CustomVariablesView: View {
 
     @Query(sort: \CustomVariable.order)
     private var variables: [CustomVariable]
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
 
+    private var settings: AppSettings? {
+        allSettings.first
+    }
     @State private var showingAdd = false
     @State private var editingVariable: CustomVariable?
+    @State private var editingBuiltIn: BuiltInVariable?
 
     @State private var newLabel = ""
     @State private var newType = "boolean"
@@ -38,23 +44,48 @@ struct CustomVariablesView: View {
 
                 ForEach(builtInVariables) { v in
 
-                    HStack {
+                    Button {
 
-                        Circle()
-                            .fill(Color(hex: v.colorHex))
-                            .frame(width: 14, height: 14)
+                        editingBuiltIn = v
 
-                        VStack(alignment: .leading) {
+                    } label: {
 
-                            Text(v.label)
+                        HStack {
 
-                            Text(v.type)
-                                .font(.caption)
+                            Circle()
+                                .fill(
+                                    settings != nil
+                                    ? v.displayColor(using: settings)
+                                    : Color(hex: v.colorHex)
+                                )
+                                .frame(width: 14, height: 14)
+
+                            VStack(alignment: .leading) {
+
+                                Text(
+                                    settings != nil
+                                    ? v.displayLabel(using: settings)
+                                    : v.label
+                                )
+
+                                Text(v.type)
+                                    .font(.caption)
+                                    .foregroundStyle(theme.secondary)
+                            }
+
+                            Spacer()
+
+                            if settings?.hiddenVariables.contains(v.fieldKey) == true {
+
+                                Image(systemName: "eye.slash")
+                                    .foregroundStyle(theme.secondary)
+                            }
+
+                            Image(systemName: "pencil")
                                 .foregroundStyle(theme.secondary)
                         }
-
-                        Spacer()
                     }
+                    .foregroundStyle(theme.text)
                 }
             }
             .listRowBackground(theme.card)
@@ -121,6 +152,16 @@ struct CustomVariablesView: View {
 
         .sheet(item: $editingVariable) { variable in
             EditVariableSheet(variable: variable)
+        }
+        .sheet(item: $editingBuiltIn) { variable in
+
+            if let settings {
+
+                BuiltInVariableEditorSheet(
+                    variable: variable,
+                    settings: settings
+                )
+            }
         }
     }
 

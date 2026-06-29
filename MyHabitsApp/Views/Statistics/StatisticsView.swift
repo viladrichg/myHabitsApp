@@ -190,8 +190,13 @@ struct StatisticsView: View {
                 comps.day = day
 
                 if let d = Calendar.current.date(from: comps) {
+
                     selectedDayDate = d
-                    showEditor = true
+
+                    DispatchQueue.main.async {
+
+                        showEditor = true
+                    }
                 }
 
             } label: {

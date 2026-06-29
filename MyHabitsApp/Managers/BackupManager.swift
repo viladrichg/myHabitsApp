@@ -146,12 +146,16 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             return []
         }
 
-        let headers = lines[0].components(separatedBy: ",")
+        guard lines.count > 2 else {
+            return []
+        }
+
+        let labels = lines[0].components(separatedBy: ",")
+        let headers = lines[1].components(separatedBy: ",")
+
 
         let requiredColumns = [
-            "date",
-            "bedtime",
-            "wakeup_time"
+            "date"
         ]
 
         for column in requiredColumns {
@@ -170,12 +174,15 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
         }
 
         guard let dateIndex = headers.firstIndex(of: "date") else {
+
+            print("HEADERS:", headers)
+
             return []
         }
 
         var dates: [String] = []
 
-        for line in lines.dropFirst() where !line.isEmpty {
+        for line in lines.dropFirst(2) where !line.isEmpty {
 
             let values = parse(line)
 
@@ -183,7 +190,8 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 dates.append(values[dateIndex])
             }
         }
-
+        print("DATES:", dates)
+        
         return dates.sorted()
     }
 
@@ -222,7 +230,19 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             )
         }
 
-        let headers = lines[0].components(separatedBy: ",")
+        guard lines.count > 2 else {
+
+            return ImportResult(
+                inserted: 0,
+                updated: 0,
+                skipped: 0
+            )
+        }
+
+        let labels = lines[0].components(separatedBy: ",")
+        let headers = lines[1].components(separatedBy: ",")
+
+        _ = labels
 
         var inserted = 0
         var updated = 0
@@ -239,7 +259,7 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             }
         }
 
-        for line in lines.dropFirst() where !line.isEmpty {
+        for line in lines.dropFirst(2) where !line.isEmpty {
 
             let values = parse(line)
 
@@ -251,7 +271,7 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             let dict = Dictionary(
                 uniqueKeysWithValues: zip(headers, values)
             )
-
+    
             guard let date = dict["date"],
                   !date.isEmpty
             else {
@@ -279,27 +299,78 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 updated += 1
             }
 
-            entry.bedtime = dict["bedtime"]
-            entry.wakeupTime = dict["wakeup_time"]
-            entry.sleepQuality = Int(dict["sleep_quality"] ?? "")
-            entry.workedAtJob = dict["worked_at_job"] == "1"
-            entry.workedAtHome = dict["worked_at_home"] == "1"
-            entry.fum = dict["fum"] == "1"
-            entry.gat = dict["gat"] == "1"
-            entry.meditation = dict["meditation"] == "1"
-            entry.yoga = dict["yoga"] == "1"
-            entry.dibuix = dict["dibuix"] == "1"
-            entry.llegir = dict["llegir"] == "1"
-            entry.counter = Int(dict["counter"] ?? "")
-            entry.notes = dict["notes"]
+            if let value = dict["bedtime"] {
+                entry.bedtime = value
+            }
+
+            if let value = dict["wakeupTime"] {
+                entry.wakeupTime = value
+            }
+
+            if let value = dict["sleepQuality"] {
+                entry.sleepQuality = Int(value)
+            }
+
+            if let value = dict["workedAtJob"] {
+                entry.workedAtJob = value == "1"
+            }
+
+            if let value = dict["workedAtHome"] {
+                entry.workedAtHome = value == "1"
+            }
+
+            if let value = dict["fum"] {
+                entry.fum = value == "1"
+            }
+
+            if let value = dict["gat"] {
+                entry.gat = value == "1"
+            }
+
+            if let value = dict["meditation"] {
+                entry.meditation = value == "1"
+            }
+
+            if let value = dict["yoga"] {
+                entry.yoga = value == "1"
+            }
+
+            if let value = dict["dibuix"] {
+                entry.dibuix = value == "1"
+            }
+
+            if let value = dict["llegir"] {
+                entry.llegir = value == "1"
+            }
+
+            if let value = dict["counter"] {
+                entry.counter = Int(value)
+            }
+
+            if let value = dict["notes"] {
+                entry.notes = value
+            }
 
             if let sports = dict["sports"] {
 
-                entry.sports = sports
-                    .split(separator: "|")
-                    .map(String.init)
+                entry.sports =
+                    sports
+                        .split(separator: "|")
+                        .map(String.init)
             }
 
+            var customValues = entry.customValues
+
+            for (key, value) in dict {
+
+                guard key.hasPrefix("cv_") else {
+                    continue
+                }
+
+                customValues[key] = Int(value) ?? 0
+            }
+
+            entry.customValues = customValues
             entry.updatedAt = Date()
         }
 

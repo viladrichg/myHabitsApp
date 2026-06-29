@@ -84,11 +84,13 @@ struct DataEntryView: View {
             .onTapGesture { isEditingNotes = false } // ✅ CHANGE
             .navigationTitle("Nova entrada")
             .onAppear {
+
+                loadOrCreate()
+
                 if let initialDate {
+
                     selectedDate = initialDate
                 }
-                
-                loadOrCreate()
             }
             .onChange(of: selectedDate) { loadOrCreate() }
         }
@@ -779,7 +781,9 @@ struct DataEntryView: View {
         else {
             return
         }
-
+        current.bedtime = previous.bedtime
+        current.wakeupTime = previous.wakeupTime
+        current.sleepQuality = previous.sleepQuality
         current.workedAtJob = previous.workedAtJob
         current.workedAtHome = previous.workedAtHome
 
@@ -801,12 +805,25 @@ struct DataEntryView: View {
     }
     
     private func loadOrCreate() {
+
+        print("LOAD:", dateString)
+        print("ENTRIES:", entries.count)
+
         if let existing = entries.first(where: { $0.date == dateString }) {
+
+            print("FOUND:", existing.date)
+
             entry = existing
+
         } else {
+
+            print("CREATE:", dateString)
+
             let e = DailyEntry(date: dateString)
+
             ctx.insert(e)
             try? ctx.save()
+
             entry = e
         }
     }

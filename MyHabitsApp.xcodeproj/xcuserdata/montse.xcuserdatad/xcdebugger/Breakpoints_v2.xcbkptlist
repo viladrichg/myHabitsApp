@@ -14,10 +14,10 @@
             filePath = "MyHabitsApp/Views/Statistics/StatisticsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "394"
-            endingLineNumber = "394"
-            landmarkName = "sleepData"
-            landmarkType = "24">
+            startingLineNumber = "399"
+            endingLineNumber = "399"
+            landmarkName = "dayCell(day:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

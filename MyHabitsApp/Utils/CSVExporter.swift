@@ -5,6 +5,7 @@ struct CSVExporter {
     struct CSVColumn {
 
         let title: String
+        let key: String
         let value: (DailyEntry) -> String
     }
 
@@ -17,21 +18,25 @@ struct CSVExporter {
 
             .init(
                 title: "Data",
+                key: "date",
                 value: { $0.date }
             ),
 
             .init(
                 title: "Hora dormir",
+                key: "bedtime",
                 value: { $0.bedtime ?? "" }
             ),
 
             .init(
                 title: "Hora llevar-se",
+                key: "wake-up",
                 value: { $0.wakeupTime ?? "" }
             ),
 
             .init(
                 title: "Qualitat son",
+                key: "sleep",
                 value: { String($0.sleepQuality ?? 0) }
             )
         ]
@@ -49,6 +54,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "workedAtJob",
                         value: {
                             $0.workedAtJob ? "1" : "0"
                         }
@@ -60,6 +66,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "workedAtHome",
                         value: {
                             $0.workedAtHome ? "1" : "0"
                         }
@@ -71,6 +78,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "fum",
                         value: {
                             $0.fum ? "1" : "0"
                         }
@@ -82,6 +90,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "gat",
                         value: {
                             $0.gat ? "1" : "0"
                         }
@@ -93,6 +102,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "meditation",
                         value: {
                             $0.meditation ? "1" : "0"
                         }
@@ -104,6 +114,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "yoga",
                         value: {
                             $0.yoga ? "1" : "0"
                         }
@@ -115,6 +126,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "dibuix",
                         value: {
                             $0.dibuix ? "1" : "0"
                         }
@@ -126,6 +138,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "llegir",
                         value: {
                             $0.llegir ? "1" : "0"
                         }
@@ -137,6 +150,7 @@ struct CSVExporter {
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
+                        key: "counter",
                         value: {
                             String($0.counter ?? 0)
                         }
@@ -151,6 +165,7 @@ struct CSVExporter {
         columns.append(
             .init(
                 title: "Esports",
+                key: "esports",
                 value: {
                     $0.sports.joined(separator: "|")
                 }
@@ -160,6 +175,7 @@ struct CSVExporter {
         columns.append(
             .init(
                 title: "Notes",
+                key: "notes",
                 value: {
                     $0.notes ?? ""
                 }
@@ -182,6 +198,7 @@ struct CSVExporter {
             columns.append(
                 .init(
                     title: title,
+                    key: variable.variableId,
                     value: { entry in
 
                         String(
@@ -213,6 +230,10 @@ struct CSVExporter {
 
             columns
                 .map(\.title)
+                .joined(separator: ","),
+
+            columns
+                .map(\.key)
                 .joined(separator: ",")
         ]
 

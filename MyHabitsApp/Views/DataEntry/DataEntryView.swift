@@ -619,7 +619,9 @@ struct DataEntryView: View {
             ))
             .focused($isEditingNotes)
             .frame(minHeight: 80)
-            .background(theme.card) // ✅ CHANGE
+            .scrollContentBackground(.hidden)
+            .background(theme.card)
+            .foregroundStyle(theme.text)
         }
     }
 

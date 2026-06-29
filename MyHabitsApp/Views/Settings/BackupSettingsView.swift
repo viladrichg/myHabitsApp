@@ -26,6 +26,9 @@ struct BackupSettingsView: View {
     @State private var exportSuccess = false
 
     @State private var importMessage: String?
+    @State private var showDeleteAlert = false
+    @State private var showFinalDeleteAlert = false
+    @State private var deleteMessage: String?
 
     var body: some View {
 
@@ -54,17 +57,6 @@ struct BackupSettingsView: View {
                     }
                 }
 
-                Button {
-                    exportTemplate()
-                } label: {
-
-                    Label(
-                        "Descarregar plantilla CSV",
-                        systemImage: "doc.badge.plus"
-                    )
-                    .foregroundStyle(theme.accent)
-                }
-
                 if let exportError {
 
                     Text("Error: \(exportError)")
@@ -81,6 +73,17 @@ struct BackupSettingsView: View {
             }
             .listRowBackground(theme.card)
 
+            Button {
+                exportTemplate()
+            } label: {
+
+                Label(
+                    "Descarregar plantilla CSV",
+                    systemImage: "doc.badge.plus"
+                )
+                .foregroundStyle(theme.accent)
+            }
+            
             Section("Importació") {
 
                 Button {
@@ -108,6 +111,31 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 }
             }
             .listRowBackground(theme.card)
+            
+            
+            Section("Zona de perill") {
+
+                Button(
+                    role: .destructive
+                ) {
+                    showDeleteAlert = true
+                } label: {
+
+                    Label(
+                        "Eliminar totes les entrades",
+                        systemImage: "trash"
+                    )
+                }
+
+                if let deleteMessage {
+
+                    Text(deleteMessage)
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                }
+            }
+            .listRowBackground(theme.card)
+            
         }
         .scrollContentBackground(.hidden)
         .background(theme.bg.ignoresSafeArea())
@@ -115,7 +143,10 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
         .fileImporter(
             isPresented: $showingImporter,
-            allowedContentTypes: [.commaSeparatedText],
+            allowedContentTypes: [
+                .commaSeparatedText,
+                .plainText
+            ],
             allowsMultipleSelection: false
         ) { result in
             handleImport(result)
@@ -182,6 +213,54 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+                .alert(
+                    "Eliminar totes les dades?",
+                    isPresented: $showDeleteAlert
+                ) {
+
+                    Button(
+                        "Cancel·lar",
+                        role: .cancel
+                    ) { }
+
+                    Button(
+                        "Continuar",
+                        role: .destructive
+                    ) {
+                        showFinalDeleteAlert = true
+                    }
+
+                } message: {
+
+                    Text(
+                        "S'eliminaran totes les entrades registrades."
+                    )
+                }
+
+                .alert(
+                    "Confirmació final",
+                    isPresented: $showFinalDeleteAlert
+                ) {
+
+                    Button(
+                        "Cancel·lar",
+                        role: .cancel
+                    ) { }
+
+                    Button(
+                        "ESBORRA-HO TOT",
+                        role: .destructive
+                    ) {
+                        deleteAllEntries()
+                    }
+
+                } message: {
+
+                    Text(
+                        "Aquesta acció no es pot desfer. Recomanem fer un còpia de seguretat abans d'esborrar-ho tot."
+                    )
+                }
+        
     }
 
     // MARK: EXPORT
@@ -298,6 +377,32 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
     """
 
             showPreview = false
+
+        } catch {
+
+            exportError = error.localizedDescription
+        }
+    }
+    
+    private func deleteAllEntries() {
+
+        do {
+
+            let all =
+                try ctx.fetch(
+                    FetchDescriptor<DailyEntry>()
+                )
+
+            let count = all.count
+
+            all.forEach {
+                ctx.delete($0)
+            }
+
+            try ctx.save()
+
+            deleteMessage =
+                "✅ S'han eliminat \(count) entrades"
 
         } catch {
 

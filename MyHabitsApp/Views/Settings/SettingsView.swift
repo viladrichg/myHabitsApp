@@ -23,6 +23,7 @@ struct SettingsView: View {
 
                 aboutSection
             }
+            .tint(theme.accent)
             .scrollContentBackground(.hidden)
             .background(theme.bg.ignoresSafeArea())
             .navigationTitle("Configuració")
@@ -49,6 +50,7 @@ struct SettingsView: View {
             }
         }
         .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
     }
 
     // MARK: - Display
@@ -70,7 +72,8 @@ struct SettingsView: View {
                 Text("Percentatge").tag("percentage")
             }
         }
-        .listRowBackground(theme.card)
+        //.listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
     }
 
     // MARK: - NEW VARIABLE COLORS ✅ CHANGE

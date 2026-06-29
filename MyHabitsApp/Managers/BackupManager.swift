@@ -125,6 +125,16 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
 
     func previewCSV(from url: URL) throws -> [String] {
 
+        let accessGranted =
+            url.startAccessingSecurityScopedResource()
+
+        defer {
+
+            if accessGranted {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
         let content = try String(
             contentsOf: url,
             encoding: .utf8
@@ -185,6 +195,16 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
         mode: ImportMode,
         dateRange: ClosedRange<Date>? = nil
     ) throws -> ImportResult {
+
+        let accessGranted =
+            url.startAccessingSecurityScopedResource()
+
+        defer {
+
+            if accessGranted {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
 
         let content = try String(
             contentsOf: url,

@@ -13,7 +13,7 @@ struct BackupSettingsView: View {
     @Query private var customVariables: [CustomVariable]
 
     @State private var showingImporter = false
-    @State private var previewDates: [String] = []
+    @State private var previewData: BackupManager.CSVPreviewData?
     @State private var selectedFile: URL?
     @State private var showPreview = false
 
@@ -70,9 +70,8 @@ struct BackupSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.green)
                 }
-            }
-            .listRowBackground(theme.card)
-
+            }.listRowBackground(theme.card)
+            
             Button {
                 exportTemplate()
             } label: {
@@ -83,6 +82,7 @@ struct BackupSettingsView: View {
                 )
                 .foregroundStyle(theme.accent)
             }
+            .listRowBackground(theme.card)
             
             Section("Importació") {
 
@@ -95,6 +95,7 @@ struct BackupSettingsView: View {
                         systemImage: "square.and.arrow.down"
                     )
                     .foregroundStyle(theme.accent)
+                    .listRowBackground(theme.card)
                 }
 
                 Text("""
@@ -160,14 +161,17 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
                 VStack(spacing: 20) {
 
-                    CSVPreview(dates: previewDates)
+                    if let previewData {
+                        
+                        CSVPreview(preview: previewData)
+                    }
 
                     Group {
 
                         Text("Registres detectats")
                             .font(.headline)
 
-                        Text("\(previewDates.count)")
+                        Text("\(previewData?.total ?? 0) registres")
                             .font(.largeTitle.bold())
                     }
 
@@ -318,7 +322,7 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
     private func handleImport(_ result: Result<[URL], Error>) {
 
-        previewDates = []
+        previewData = nil
         selectedFile = nil
 
         do {
@@ -329,15 +333,18 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 return
             }
 
-            selectedFile = url
+            
 
-            previewDates =
+            previewData =
                 try BackupManager.shared.previewCSV(
                     from: url
                 )
 
-            if let first = previewDates.first,
-               let last = previewDates.last,
+            selectedFile = url
+            showPreview = true
+            
+            if let first = previewData?.firstDate,
+               let last = previewData?.lastDate,
                let d1 = Date.from(isoDate: first),
                let d2 = Date.from(isoDate: last) {
 

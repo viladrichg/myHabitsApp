@@ -72,7 +72,7 @@ struct SettingsView: View {
                 Text("Percentatge").tag("percentage")
             }
         }
-        //.listRowBackground(theme.card)
+        .listRowBackground(theme.card)
         .foregroundStyle(theme.text)
     }
 

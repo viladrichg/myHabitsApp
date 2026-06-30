@@ -25,6 +25,17 @@ final class BackupManager {
         let skipped: Int
     }
     
+    struct CSVPreviewData {
+
+        let total: Int
+        let newEntries: Int
+        let existingEntries: Int
+
+        let firstDate: String?
+        let lastDate: String?
+    }
+    
+    
     // MARK: EXPORT
     
     func runBackup(
@@ -123,45 +134,57 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
     
     // MARK: PREVIEW
 
-    func previewCSV(from url: URL) throws -> [String] {
-
+    func previewCSV(from url: URL) throws -> CSVPreviewData {
+        
         let accessGranted =
-            url.startAccessingSecurityScopedResource()
-
+        url.startAccessingSecurityScopedResource()
+        
         defer {
-
+            
             if accessGranted {
                 url.stopAccessingSecurityScopedResource()
             }
         }
-
+        
         let content = try String(
             contentsOf: url,
             encoding: .utf8
         )
-
+        
         let lines = content.components(separatedBy: "\n")
-
+        
         guard lines.count > 1 else {
-            return []
+            return CSVPreviewData(
+                total: 0,
+                newEntries: 0,
+                existingEntries: 0,
+                firstDate: nil,
+                lastDate: nil
+            )
         }
-
+        
         guard lines.count > 2 else {
-            return []
+            return CSVPreviewData(
+                total: 0,
+                newEntries: 0,
+                existingEntries: 0,
+                firstDate: nil,
+                lastDate: nil
+            )
         }
-
+        
         let labels = lines[0].components(separatedBy: ",")
         let headers = lines[1].components(separatedBy: ",")
-
-
+        
+        
         let requiredColumns = [
             "date"
         ]
-
+        
         for column in requiredColumns {
-
+            
             guard headers.contains(column) else {
-
+                
                 throw NSError(
                     domain: "CSV",
                     code: 2,
@@ -172,29 +195,51 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 )
             }
         }
-
-        guard let dateIndex = headers.firstIndex(of: "date") else {
-
-            print("HEADERS:", headers)
-
-            return []
-        }
-
-        var dates: [String] = []
-
-        for line in lines.dropFirst(2) where !line.isEmpty {
-
-            let values = parse(line)
-
-            if values.count > dateIndex {
-                dates.append(values[dateIndex])
-            }
-        }
-        print("DATES:", dates)
         
-        return dates.sorted()
+        guard let dateIndex = headers.firstIndex(of: "date") else {
+            
+            print("HEADERS:", headers)
+            
+            return CSVPreviewData(
+                total: 0,
+                newEntries: 0,
+                existingEntries: 0,
+                firstDate: nil,
+                lastDate: nil
+            )
+        }
+        
+        var dates: [String] = []
+        var newEntries = 0
+        newEntries += 1
+        
+        for line in lines.dropFirst(2) where !line.isEmpty {
+            
+            let values = parse(line)
+            
+            guard values.count > dateIndex else {
+                continue
+            }
+            
+            let date = values[dateIndex]
+            
+            dates.append(date)
+            
+            newEntries += 1
+            
+        }
+        
+        let sorted = dates.sorted()
+        
+        return CSVPreviewData(
+            total: sorted.count,
+            newEntries: newEntries,
+            existingEntries: 0,
+            firstDate: sorted.first,
+            lastDate: sorted.last
+        )
     }
-
+        
     // MARK: IMPORT
 
     func importCSV(
@@ -299,12 +344,12 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 updated += 1
             }
 
-            if let value = dict["bedtime"] {
-                entry.bedtime = value
+            if let value = dict["bedTime"] {
+                entry.bedTime = value
             }
 
-            if let value = dict["wakeupTime"] {
-                entry.wakeupTime = value
+            if let value = dict["wakeUpTime"] {
+                entry.wakeUpTime = value
             }
 
             if let value = dict["sleepQuality"] {

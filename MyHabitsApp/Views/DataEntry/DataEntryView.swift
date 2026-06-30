@@ -115,8 +115,14 @@ struct DataEntryView: View {
 
     private func sleepSection(_ e: DailyEntry) -> some View {
 
+        
+
         section("Son") {
 
+            Text("Wake: \(e.wakeUpTime ?? "-")")
+            Text("Bed: \(e.bedTime ?? "-")")
+            Text("Sleep: \(sleepText(for: e))")
+            
             HStack(alignment: .top, spacing: 24) {
 
                 VStack(alignment: .leading) {
@@ -128,8 +134,8 @@ struct DataEntryView: View {
                     TimePicker(
                         label: "",
                         value: Binding(
-                            get: { e.wakeupTime ?? "" },
-                            set: { e.wakeupTime = $0 }
+                            get: { e.wakeUpTime ?? "" },
+                            set: { e.wakeUpTime = $0 }
                         )
                     )
                 }
@@ -143,8 +149,8 @@ struct DataEntryView: View {
                     TimePicker(
                         label: "",
                         value: Binding(
-                            get: { e.bedtime ?? "" },
-                            set: { e.bedtime = $0 }
+                            get: { e.bedTime ?? "" },
+                            set: { e.bedTime = $0 }
                         )
                     )
                 }
@@ -719,7 +725,7 @@ struct DataEntryView: View {
 
         guard
             let currentDate = Date.from(isoDate: entry.date),
-            let wake = entry.wakeupTime?.parseHHmm()
+            let wake = entry.wakeUpTime?.parseHHmm()
         else {
             return "-"
         }
@@ -738,7 +744,7 @@ struct DataEntryView: View {
             let previousEntry = entries.first(
                 where: { $0.date == previousDate.isoDate }
             ),
-            let bed = previousEntry.bedtime?.parseHHmm()
+            let bed = previousEntry.bedTime?.parseHHmm()
         else {
             return "-"
         }
@@ -781,8 +787,8 @@ struct DataEntryView: View {
         else {
             return
         }
-        current.bedtime = previous.bedtime
-        current.wakeupTime = previous.wakeupTime
+        current.bedTime = previous.bedTime
+        current.wakeUpTime = previous.wakeUpTime
         current.sleepQuality = previous.sleepQuality
         current.workedAtJob = previous.workedAtJob
         current.workedAtHome = previous.workedAtHome
@@ -800,7 +806,8 @@ struct DataEntryView: View {
         current.counter = previous.counter
 
         current.customValues = previous.customValues
-
+        entry = nil
+        entry = current
         try? ctx.save()
     }
     

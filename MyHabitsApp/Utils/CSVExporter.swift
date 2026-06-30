@@ -24,19 +24,19 @@ struct CSVExporter {
 
             .init(
                 title: "Hora dormir",
-                key: "bedtime",
-                value: { $0.bedtime ?? "" }
+                key: "bedTime",
+                value: { $0.bedTime ?? "" }
             ),
 
             .init(
                 title: "Hora llevar-se",
-                key: "wake-up",
-                value: { $0.wakeupTime ?? "" }
+                key: "wakeUpTime",
+                value: { $0.wakeUpTime ?? "" }
             ),
 
             .init(
                 title: "Qualitat son",
-                key: "sleep",
+                key: "sleepQuality",
                 value: { String($0.sleepQuality ?? 0) }
             )
         ]
@@ -165,7 +165,7 @@ struct CSVExporter {
         columns.append(
             .init(
                 title: "Esports",
-                key: "esports",
+                key: "sports",
                 value: {
                     $0.sports.joined(separator: "|")
                 }

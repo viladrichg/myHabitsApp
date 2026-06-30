@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CSVPreview: View {
 
-    let dates: [String]
+    let preview: BackupManager.CSVPreviewData
 
     var body: some View {
 
@@ -11,24 +11,17 @@ struct CSVPreview: View {
             Text("Preview")
                 .font(.title3.weight(.semibold))
 
-            Text("Total entries: \(dates.count)")
+            Text("📅 Entrades detectades: \(preview.total)")
 
-            if let first = dates.first, let last = dates.last {
-                Text("Range: \(first) → \(last)")
+            //Text("🟢 Noves: \(preview.newEntries)")
+
+            //Text("🟡 S'actualitzaran: \(preview.existingEntries)")
+
+            if let first = preview.firstDate,
+               let last = preview.lastDate {
+
+                Text("📆 Interval: \(first) → \(last)")
             }
-
-            Divider()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(dates.prefix(20), id: \.self) { d in
-                        Text(d)
-                            .font(.caption)
-                    }
-                }
-            }
-            .frame(maxHeight: 150)
         }
-        .padding()
-    }
+        .padding()    }
 }

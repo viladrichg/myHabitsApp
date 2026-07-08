@@ -24,9 +24,11 @@ struct SummaryCard: View {
 
             
             Divider().background(theme.border)
-
+            
             ForEach(
                 builtInVariables.filter {
+                    $0.type == "boolean"
+                    &&
                     !(settings?.hiddenVariables.contains($0.fieldKey) ?? false)
                 }
             ) { v in

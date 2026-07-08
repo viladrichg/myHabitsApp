@@ -243,6 +243,9 @@ struct StatisticsView: View {
         let builtInActive =
             builtInVariables
                 .filter {
+                    $0.type == "boolean"
+                }
+                .filter {
                     !$0.isHidden(using: settings)
                 }
                 .filter {
@@ -326,6 +329,9 @@ struct StatisticsView: View {
 
         let builtInRows =
             builtInVariables
+                .filter {
+                    $0.type == "boolean"
+                }
                 .filter {
                     !($0.isHidden(using: settings))
                 }

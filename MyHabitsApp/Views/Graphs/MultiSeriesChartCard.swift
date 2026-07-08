@@ -19,8 +19,7 @@ struct MultiSeriesChartCard: View {
     @State private var visibleFields: Set<String> = [
         "meditation",
         "workedAtJob",
-        "sports",
-        "counter"
+        "sports"
     ]
     private var dates: [Date] {
         entries.compactMap { Date.from(isoDate: $0.date) }.sorted()
@@ -33,13 +32,17 @@ struct MultiSeriesChartCard: View {
     private var seriesData: [(field: String, label: String, color: Color, points: [(Date, Double)])] {
 
         let builtIn =
-        builtInVariables
-            .filter {
-                !($0.isHidden(using: settings))
-            }
-            .filter {
-                visibleFields.contains($0.fieldKey)
-            }
+            builtInVariables
+                .filter {
+                    $0.type == "boolean"
+                }
+                .filter {
+                    !($0.isHidden(using: settings))
+                }
+                .filter {
+                    visibleFields.contains($0.fieldKey)
+                }
+
                 .map { v in
                     (
                         v.fieldKey,
@@ -77,6 +80,8 @@ struct MultiSeriesChartCard: View {
                 HStack(spacing: 8) {
                     ForEach(
                         builtInVariables.filter {
+                            $0.type == "boolean"
+                            &&
                             !$0.isHidden(using: settings)
                         }
                     ) { v in

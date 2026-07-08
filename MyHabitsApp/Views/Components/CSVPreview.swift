@@ -13,9 +13,9 @@ struct CSVPreview: View {
 
             Text("📅 Entrades detectades: \(preview.total)")
 
-            //Text("🟢 Noves: \(preview.newEntries)")
+            Text("🟢 Noves: \(preview.newEntries)")
 
-            //Text("🟡 S'actualitzaran: \(preview.existingEntries)")
+            Text("🟡 S'actualitzaran: \(preview.existingEntries)")
 
             if let first = preview.firstDate,
                let last = preview.lastDate {

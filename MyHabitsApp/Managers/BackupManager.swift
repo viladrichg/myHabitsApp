@@ -134,7 +134,10 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
     
     // MARK: PREVIEW
 
-    func previewCSV(from url: URL) throws -> CSVPreviewData {
+    func previewCSV(
+        from url: URL,
+        existingEntries: [DailyEntry]
+    ) throws -> CSVPreviewData {
         
         let accessGranted =
         url.startAccessingSecurityScopedResource()
@@ -211,7 +214,7 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
         
         var dates: [String] = []
         var newEntries = 0
-        newEntries += 1
+        var existingEntriesCount = 0
         
         for line in lines.dropFirst(2) where !line.isEmpty {
             
@@ -224,17 +227,27 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             let date = values[dateIndex]
             
             dates.append(date)
-            
-            newEntries += 1
+
+            if existingEntries.contains(where: { $0.date == date }) {
+
+                existingEntriesCount += 1
+
+            } else {
+
+                newEntries += 1
+            }
             
         }
         
         let sorted = dates.sorted()
         
+        print("LINES:", lines.count)
+        print("DATES:", dates)
+
         return CSVPreviewData(
             total: sorted.count,
             newEntries: newEntries,
-            existingEntries: 0,
+            existingEntries: existingEntriesCount,
             firstDate: sorted.first,
             lastDate: sorted.last
         )

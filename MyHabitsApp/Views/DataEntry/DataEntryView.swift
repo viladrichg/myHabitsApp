@@ -22,7 +22,8 @@ struct DataEntryView: View {
     @State private var selectedDate: Date
     @State private var entry: DailyEntry? = nil
     @State private var newSport = ""
-    @State private var isEditingSports = false   // ✅ CHANGE
+    @State private var isEditingSports = false
+    @State private var showDeleteAlert = false
 
     
     init(
@@ -76,6 +77,7 @@ struct DataEntryView: View {
                         customVariablesSection(e)
                         notesSection(e)
                         saveSection()
+                        deleteSection()
                     }
                 }
                 .padding()
@@ -93,6 +95,27 @@ struct DataEntryView: View {
                 }
             }
             .onChange(of: selectedDate) { loadOrCreate() }
+            .alert(
+                "Segur que vols eliminar el dia?",
+                isPresented: $showDeleteAlert
+            ) {
+
+                Button("Cancel·lar", role: .cancel) {}
+
+                Button("Eliminar", role: .destructive) {
+
+                    guard let e = entry else { return }
+
+                    ctx.delete(e)
+
+                    try? ctx.save()
+
+                    selectedTab = 2
+
+                    dismiss()
+                }
+
+            }
         }
     }
 
@@ -115,14 +138,8 @@ struct DataEntryView: View {
 
     private func sleepSection(_ e: DailyEntry) -> some View {
 
-        
-
         section("Son") {
 
-            Text("Wake: \(e.wakeUpTime ?? "-")")
-            Text("Bed: \(e.bedTime ?? "-")")
-            Text("Sleep: \(sleepText(for: e))")
-            
             HStack(alignment: .top, spacing: 24) {
 
                 VStack(alignment: .leading) {
@@ -167,7 +184,37 @@ struct DataEntryView: View {
                         .font(.title3.bold())
                         .foregroundStyle(theme.accent)
                 }
+                
             }
+            
+            VStack(alignment: .leading, spacing: 10) {
+
+                HStack {
+
+                    Text("Qualitat del son")
+
+                    Spacer()
+
+                    Text("\(e.sleepQuality ?? 5)/10")
+                        .font(.headline)
+                        .foregroundStyle(theme.accent)
+                }.padding(.top, 16)
+
+                Slider(
+                    value: Binding(
+                        get: {
+                            Double(e.sleepQuality ?? 5)
+                        },
+                        set: {
+                            e.sleepQuality = Int($0)
+                        }
+                    ),
+                    in: 0...10,
+                    step: 1
+                )
+                .tint(theme.accent)
+            }
+
         }
     }
 
@@ -655,6 +702,25 @@ struct DataEntryView: View {
                 )
         }
     }
+    
+    private func deleteSection() -> some View {
+
+        Button(role: .destructive) {
+
+            showDeleteAlert = true
+
+        } label: {
+
+            Text("Eliminar dia")
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(.red.opacity(0.15))
+                .foregroundStyle(.red)
+                .clipShape(
+                    RoundedRectangle(cornerRadius: 12)
+                )
+        }
+    }
 
     // MARK: HELPERS
 
@@ -883,6 +949,24 @@ private struct TimePicker: View {
 
             .onChange(of: time) {
                 value = formatTime(time)
+            }
+            .onChange(of: value) {
+
+                guard let parsed = value.parseHHmm()
+                else { return }
+
+                var comps =
+                    Calendar.current.dateComponents(
+                        [.year,.month,.day],
+                        from: Date()
+                    )
+
+                comps.hour = parsed.hour
+                comps.minute = parsed.minute
+
+                if let d = Calendar.current.date(from: comps) {
+                    time = d
+                }
             }
         }
     }

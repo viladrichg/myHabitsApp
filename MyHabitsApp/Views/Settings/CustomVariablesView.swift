@@ -110,7 +110,7 @@ struct CustomVariablesView: View {
 
                                 Text(variable.label)
 
-                                Text(variable.type)
+                                Text(displayType(variable.type))
                                     .font(.caption)
                                     .foregroundStyle(theme.secondary)
                             }
@@ -165,8 +165,27 @@ struct CustomVariablesView: View {
         }
     }
 
-    // MARK: ADD
+    // MARK: displayType
+    
+    private func displayType(_ type: String) -> String {
 
+        switch type {
+        case "boolean":
+            return "Booleà"
+
+        case "counter":
+            return "Comptador"
+
+        case "slider":
+            return "Slider (0-10)"
+
+        default:
+            return type
+        }
+    }
+    
+    // MARK: ADD
+    
     private var addSheet: some View {
 
         NavigationStack {
@@ -190,6 +209,9 @@ struct CustomVariablesView: View {
 
                         Text("Comptador")
                             .tag("counter")
+                        
+                        Text("Slider (0-10)")
+                            .tag("slider")
                     }
                     
                     TextField(

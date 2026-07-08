@@ -337,9 +337,10 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
             previewData =
                 try BackupManager.shared.previewCSV(
-                    from: url
+                    from: url,
+                    existingEntries: entries
                 )
-
+            
             selectedFile = url
             showPreview = true
             

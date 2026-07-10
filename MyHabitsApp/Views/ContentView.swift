@@ -3,7 +3,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.appTheme) var theme
-    @State private var selectedTab = 1  // ✅ controla el tab actiu
+    @State private var selectedTab = 0  // ✅ controla el tab actiu
     @Query private var allSettings: [AppSettings]
 
     private var settings: AppSettings? { allSettings.first }

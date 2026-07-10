@@ -15,10 +15,13 @@ struct StatisticsView: View {
     }
     
     @State private var displayMonth = Date()
-    @State private var selectedDayDate: Date?
-    @State private var showEditor = false
 
+    private struct SelectedDay: Identifiable {
+        let id = UUID()
+        let date: Date
+    }
 
+    @State private var selectedDay: SelectedDay?
     private var cal: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "ca_ES")
@@ -66,15 +69,12 @@ struct StatisticsView: View {
             }
             .background(theme.bg.ignoresSafeArea())
             .navigationTitle("Calendari")
-            .sheet(isPresented: $showEditor) {
+            .sheet(item: $selectedDay) { day in
 
-                if let selectedDayDate {
-
-                    DataEntryView(
-                        selectedTab: .constant(1),
-                        initialDate: selectedDayDate
-                    )
-                }
+                DataEntryView(
+                    selectedTab: .constant(1),
+                    initialDate: day.date
+                )
             }
 
         }
@@ -191,12 +191,8 @@ struct StatisticsView: View {
 
                 if let d = Calendar.current.date(from: comps) {
 
-                    selectedDayDate = d
+                    selectedDay = SelectedDay(date: d)
 
-                    DispatchQueue.main.async {
-
-                        showEditor = true
-                    }
                 }
 
             } label: {

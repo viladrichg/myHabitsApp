@@ -43,7 +43,7 @@ struct DataEntryView: View {
     private var dateString: String { selectedDate.isoDate }
 
     var body: some View {
-        NavigationStack {
+        
             ScrollView {
                 VStack(spacing: 20) {
                     datePicker
@@ -68,6 +68,7 @@ struct DataEntryView: View {
                     }
                     
                     if let e = entry {
+                    
                         sleepSection(e)
                         workSection(e)
                         objectivesSection(e)
@@ -86,13 +87,18 @@ struct DataEntryView: View {
             .onTapGesture { isEditingNotes = false } // ✅ CHANGE
             .navigationTitle("Nova entrada")
             .onAppear {
-
-                loadOrCreate()
-
+                
+                print(
+                    "DATAENTRY:",
+                    initialDate?.isoDate ?? "TODAY"
+                )
+                
                 if let initialDate {
 
                     selectedDate = initialDate
                 }
+                
+                loadOrCreate()
             }
             .onChange(of: selectedDate) { loadOrCreate() }
             .alert(
@@ -116,7 +122,7 @@ struct DataEntryView: View {
                 }
 
             }
-        }
+        
     }
 
     // MARK: DATE
@@ -887,6 +893,7 @@ struct DataEntryView: View {
             print("FOUND:", existing.date)
 
             entry = existing
+            print("entry")
 
         } else {
 

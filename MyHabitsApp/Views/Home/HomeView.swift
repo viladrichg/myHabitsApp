@@ -7,6 +7,7 @@ struct HomeView: View {
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
     @Query(sort: \AppSettings.createdAt)
     private var allSettings: [AppSettings]
+    @State private var showSportsList = false
 
     private var settings: AppSettings? {
         allSettings.first
@@ -99,6 +100,8 @@ struct HomeView: View {
                     greetingSection
 
                     streakSection
+                    
+                    sportsSection
 
                     todaySummarySection
 
@@ -109,6 +112,10 @@ struct HomeView: View {
             .background(theme.bg.ignoresSafeArea())
             .navigationTitle("Inici")
             .navigationBarTitleDisplayMode(.large)
+            .sheet(isPresented: $showSportsList) {
+
+                SportsListView()
+            }
         }
     }
 
@@ -138,6 +145,65 @@ struct HomeView: View {
                 label: "Millor ratxa",
                 value: "🏆 \(bestStreak)"
             )
+        }
+    }
+    
+    private var sportsSection: some View {
+
+        VStack(alignment: .leading, spacing: 12) {
+
+            sectionHeader("🔥 Esports")
+
+            VStack(spacing: 10) {
+
+                ForEach(
+                    Array(topSports.prefix(3).enumerated()),
+                    id: \.element.name
+                ) { index, sport in
+
+                    HStack {
+
+                        if index == 0 {
+
+                            Text("🥇")
+
+                        } else if index == 1 {
+
+                            Text("🥈")
+
+                        } else {
+
+                            Text("🥉")
+                        }
+
+                        Text(sport.name)
+
+                        Spacer()
+
+                        Text("\(sport.count)")
+                            .foregroundStyle(theme.secondary)
+                    }
+                }
+
+                Button {
+
+                    showSportsList = true
+
+                } label: {
+
+                    HStack {
+
+                        Text("Veure tots els esports")
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                    }
+                }
+                .padding(.top, 4)
+            }
+            .padding()
+            .cardStyle()
         }
     }
     
@@ -221,7 +287,35 @@ struct HomeView: View {
 
         return formatter.string(from: Date())
     }
+    
+    private var topSports: [(name: String, count: Int)] {
 
+        var counts: [String:Int] = [:]
+
+        for entry in entries {
+
+            for sport in entry.sports {
+
+                let parts = sport
+                    .split(separator: ",")
+                    .map {
+                        $0.trimmingCharacters(
+                            in: .whitespacesAndNewlines
+                        )
+                    }
+
+                for part in parts where !part.isEmpty {
+
+                    counts[part, default: 0] += 1
+                }
+            }
+        }
+
+        return counts
+            .map { (name: $0.key, count: $0.value) }
+            .sorted { $0.count > $1.count }
+    }
+    
     // MARK: - Helpers
 
     private var greetingText: String {

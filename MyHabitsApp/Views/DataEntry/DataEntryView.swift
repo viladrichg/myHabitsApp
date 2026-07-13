@@ -437,6 +437,7 @@ struct DataEntryView: View {
                 }
 
                 // ✅ CHANGE GRID
+                
                 LazyVGrid(columns: [GridItem(), GridItem()]) {
                     ForEach(customSports) { sport in
                         ZStack(alignment: .topTrailing) {

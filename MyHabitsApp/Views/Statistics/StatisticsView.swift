@@ -278,24 +278,95 @@ struct StatisticsView: View {
     
     private func dominantColor(_ e: DailyEntry) -> Color? {
 
-        if e.fum {
+        let useHiddenVariables =
+            settings?.showHiddenVariablesInCalendar ?? false
+
+        let fumVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "fum"
+            }?.isHidden(using: settings) ?? false)
+
+        let gatVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "gat"
+            }?.isHidden(using: settings) ?? false)
+
+        let workJobVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "workedAtJob"
+            }?.isHidden(using: settings) ?? false)
+
+        let workHomeVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "workedAtHome"
+            }?.isHidden(using: settings) ?? false)
+
+        let meditationVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "meditation"
+            }?.isHidden(using: settings) ?? false)
+
+        let yogaVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "yoga"
+            }?.isHidden(using: settings) ?? false)
+
+        let dibuixVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "dibuix"
+            }?.isHidden(using: settings) ?? false)
+
+        let llegirVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "llegir"
+            }?.isHidden(using: settings) ?? false)
+
+        let sportsVisible =
+            useHiddenVariables
+            ||
+            !(builtInVariables.first {
+                $0.fieldKey == "sports"
+            }?.isHidden(using: settings) ?? false)
+
+        if fumVisible && e.fum {
             return .red
         }
 
-        if e.gat {
+        if gatVisible && e.gat {
             return Color(hex: "#FF69B4")
         }
 
         let hasWork =
-            e.workedAtJob ||
-            e.workedAtHome
+            (workJobVisible && e.workedAtJob)
+            ||
+            (workHomeVisible && e.workedAtHome)
 
         let hasActivities =
-            e.meditation ||
-            e.yoga ||
-            e.dibuix ||
-            e.llegir ||
-            !e.sports.isEmpty
+            (meditationVisible && e.meditation)
+            ||
+            (yogaVisible && e.yoga)
+            ||
+            (dibuixVisible && e.dibuix)
+            ||
+            (llegirVisible && e.llegir)
+            ||
+            (sportsVisible && !e.sports.isEmpty)
 
         // Dia perfecte
         if hasWork && hasActivities {
@@ -308,11 +379,11 @@ struct StatisticsView: View {
         }
 
         // Casa preval sobre feina
-        if e.workedAtHome {
+        if workHomeVisible && e.workedAtHome {
             return .orange
         }
 
-        if e.workedAtJob {
+        if workJobVisible && e.workedAtJob {
             return .blue
         }
 

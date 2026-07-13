@@ -39,7 +39,8 @@ final class AppSettings {
     var variableColorsJSON: String = "{}"
 
     var hiddenVariablesJSON: String = "[]"
-
+    
+    var showHiddenVariablesInCalendar: Bool = false
     init() {}
 
     // MARK: - Variable Labels

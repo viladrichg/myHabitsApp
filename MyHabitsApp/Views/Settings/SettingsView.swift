@@ -56,20 +56,52 @@ struct SettingsView: View {
     // MARK: - Display
 
     private func displaySection(_ s: AppSettings) -> some View {
+
         Section("Visualització") {
-            Picker("Període gràfics", selection: Binding(get: { s.chartTimeframe }, set: { s.chartTimeframe = $0 })) {
-                Text("1 setmana").tag("week")
-                Text("15 dies").tag("15days")
-                Text("1 mes").tag("month")
-                Text("3 mesos").tag("3months")
-                Text("6 mesos").tag("6months")
-                Text("1 any").tag("year")
-                Text("Tot").tag("all")
+
+            Picker(
+                "Període gràfics",
+                selection: Binding(
+                    get: { s.chartTimeframe },
+                    set: { s.chartTimeframe = $0 }
+                )
+            ) {
+
+                Text("1 setmana")
+                    .tag("week")
+
+                Text("15 dies")
+                    .tag("15days")
+
+                Text("1 mes")
+                    .tag("month")
+
+                Text("3 mesos")
+                    .tag("3months")
+
+                Text("6 mesos")
+                    .tag("6months")
+
+                Text("1 any")
+                    .tag("year")
+
+                Text("Tot")
+                    .tag("all")
             }
 
-            Picker("Valors", selection: Binding(get: { s.displayMode }, set: { s.displayMode = $0 })) {
-                Text("Absolut").tag("absolute")
-                Text("Percentatge").tag("percentage")
+            Picker(
+                "Valors",
+                selection: Binding(
+                    get: { s.displayMode },
+                    set: { s.displayMode = $0 }
+                )
+            ) {
+
+                Text("Absolut")
+                    .tag("absolute")
+
+                Text("Percentatge")
+                    .tag("percentage")
             }
         }
         .listRowBackground(theme.card)
@@ -103,21 +135,41 @@ struct SettingsView: View {
     // MARK: - Custom Variables
 
     private var customVariablesSection: some View {
+
         Section("Variables personalitzades") {
 
             NavigationLink {
+
                 CustomVariablesView()
+
             } label: {
+
                 Label(
                     "Gestionar variables",
                     systemImage: "slider.horizontal.3"
                 )
             }
 
+            if let s = settings {
+
+                Toggle(
+                    "Tenir en compte variables amagades al calendari",
+                    isOn: Binding(
+                        get: {
+                            s.showHiddenVariablesInCalendar
+                        },
+                        set: {
+                            s.showHiddenVariablesInCalendar = $0
+                            s.updatedAt = Date()
+                        }
+                    )
+                )
+            }
         }
         .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
     }
-
+    
     // MARK: - About
 
     private var aboutSection: some View {

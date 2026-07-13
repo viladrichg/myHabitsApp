@@ -7,6 +7,8 @@ struct HomeView: View {
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
     @Query(sort: \AppSettings.createdAt)
     private var allSettings: [AppSettings]
+    @Query(sort: \CustomVariable.order)
+    private var customVariables: [CustomVariable]
     @State private var showSportsList = false
 
     private var settings: AppSettings? {
@@ -103,6 +105,8 @@ struct HomeView: View {
                     
                     sportsSection
 
+                    habitsStreakSection
+                    
                     todaySummarySection
 
                     overviewSection
@@ -227,7 +231,35 @@ struct HomeView: View {
             }
         }
     }
+    
+    private var habitsStreakSection: some View {
 
+        VStack(alignment: .leading, spacing: 12) {
+
+            sectionHeader("🔥 Ratxes")
+
+            VStack(spacing: 10) {
+
+                ForEach(
+                    Array(habitStreaks.prefix(5).enumerated()),
+                    id: \.offset
+                ) { _, item in
+
+                    HStack {
+
+                        Text(item.label)
+
+                        Spacer()
+
+                        Text("🔥 \(item.streak)")
+                            .foregroundStyle(theme.accent)
+                    }
+                }
+            }
+            .padding()
+            .cardStyle()
+        }
+    }
     private var overviewSection: some View {
 
         let visibleBuiltIns =
@@ -318,6 +350,74 @@ struct HomeView: View {
     
     // MARK: - Helpers
 
+    private var habitStreaks: [(label: String, streak: Int)] {
+
+        var result: [(label: String, streak: Int)] = []
+
+        let builtIns =
+            builtInVariables.filter {
+                $0.type == "boolean"
+                &&
+                !$0.isHidden(using: settings)
+            }
+
+        for variable in builtIns {
+
+            result.append((
+                label: variable.displayLabel(using: settings),
+                streak: streakForField(variable.fieldKey)
+            ))
+        }
+
+        for variable in customVariables
+            .filter({ $0.type == "boolean" }) {
+
+            result.append((
+                label: variable.label,
+                streak: streakForField(variable.variableId)
+            ))
+        }
+
+        return result
+            .filter { $0.streak > 0 }
+            .sorted { $0.streak > $1.streak }
+    }
+    
+    private func streakForField(
+        _ field: String
+    ) -> Int {
+
+        let activeDates =
+            Set(
+                entries
+                    .filter {
+                        $0.isActive(field: field)
+                    }
+                    .map(\.date)
+            )
+
+        var streak = 0
+        var current = Date()
+
+        while activeDates.contains(current.isoDate) {
+
+            streak += 1
+
+            guard let previous =
+                Calendar.current.date(
+                    byAdding: .day,
+                    value: -1,
+                    to: current
+                )
+            else {
+                break
+            }
+
+            current = previous
+        }
+
+        return streak
+    }
     private var greetingText: String {
         let h = Calendar.current.component(.hour, from: Date())
         switch h {

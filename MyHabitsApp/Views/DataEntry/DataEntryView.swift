@@ -24,7 +24,7 @@ struct DataEntryView: View {
     @State private var newSport = ""
     @State private var isEditingSports = false
     @State private var showDeleteAlert = false
-
+    @State private var sleepQualityDraft = 5.0
     
     init(
         selectedTab: Binding<Int>,
@@ -37,7 +37,7 @@ struct DataEntryView: View {
         )
     }
 
-    
+    @State private var notesDraft = ""
     @FocusState private var isEditingNotes: Bool
 
     private var dateString: String { selectedDate.isoDate }
@@ -201,24 +201,20 @@ struct DataEntryView: View {
 
                     Spacer()
 
-                    Text("\(e.sleepQuality ?? 5)/10")
+                    Text("\(Int(sleepQualityDraft))/10")
                         .font(.headline)
                         .foregroundStyle(theme.accent)
                 }.padding(.top, 16)
 
                 Slider(
-                    value: Binding(
-                        get: {
-                            Double(e.sleepQuality ?? 5)
-                        },
-                        set: {
-                            e.sleepQuality = Int($0)
-                        }
-                    ),
+                    value: $sleepQualityDraft,
                     in: 0...10,
                     step: 1
                 )
                 .tint(theme.accent)
+                .onAppear {
+                    sleepQualityDraft = Double(e.sleepQuality ?? 5)
+                }
             }
 
         }
@@ -675,15 +671,20 @@ struct DataEntryView: View {
 
     private func notesSection(_ e: DailyEntry) -> some View {
         section("Notes") {
-            TextEditor(text: Binding(
-                get: { e.notes ?? "" },
-                set: { e.notes = $0 }
-            ))
-            .focused($isEditingNotes)
-            .frame(minHeight: 80)
-            .scrollContentBackground(.hidden)
-            .background(theme.card)
-            .foregroundStyle(theme.text)
+            TextEditor(text: $notesDraft)
+                .focused($isEditingNotes)
+                .frame(minHeight: 80)
+                .scrollContentBackground(.hidden)
+                .background(theme.card)
+                .foregroundStyle(theme.text)
+                .onAppear {
+                    notesDraft = e.notes ?? ""
+                }
+                .onChange(of: isEditingNotes) { _, editing in
+                    if !editing {
+                        e.notes = notesDraft
+                    }
+                }
         }
     }
 
@@ -691,6 +692,11 @@ struct DataEntryView: View {
 
     private func saveSection() -> some View {
         Button {
+
+            if let e = entry {
+                e.sleepQuality = Int(sleepQualityDraft)
+                e.notes = notesDraft
+            }
 
             try? ctx.save()
 
@@ -894,6 +900,7 @@ struct DataEntryView: View {
             print("FOUND:", existing.date)
 
             entry = existing
+            sleepQualityDraft = Double(existing.sleepQuality ?? 5)
             print("entry")
 
         } else {
@@ -906,6 +913,7 @@ struct DataEntryView: View {
             try? ctx.save()
 
             entry = e
+            sleepQualityDraft = Double(e.sleepQuality ?? 5)
         }
     }
 }

@@ -99,15 +99,14 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    greetingSection
 
-                    streakSection
-                    
-                    sportsSection
-
+                    todaySummarySection
+                                        
                     habitsStreakSection
                     
-                    todaySummarySection
+                    sportsSection
+                    
+                    streakSection
 
                     overviewSection
                 }
@@ -123,40 +122,46 @@ struct HomeView: View {
         }
     }
 
+    private func streakColor(_ streak: Int) -> Color {
+        switch streak {
+        case 30...:
+            return .red
+        case 7...:
+            return .orange
+        case 3...:
+            return .yellow
+        default:
+            return theme.secondary
+        }
+    }
     // MARK: - Sections
 
-    private var greetingSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(greetingText)
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(theme.text)
-            Text(catalanDate)
-                .font(.subheadline)
-                .foregroundStyle(theme.secondary)
-        }
-    }
-
     private var streakSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
 
-        HStack(spacing: 12) {
+            sectionHeader("📈 Activitat")
 
-            statCell(
-                label: "Ratxa actual",
-                value: "🔥 \(currentStreak)"
-            )
+            HStack(spacing: 12) {
 
-            statCell(
-                label: "Millor ratxa",
-                value: "🏆 \(bestStreak)"
-            )
+                statCell(
+                    label: "Dies seguits registrant",
+                    value: "🔥 \(currentStreak)"
+                )
+
+                statCell(
+                    label: "Rècord",
+                    value: "🏆 \(bestStreak)"
+                )
+            }
         }
     }
+
     
     private var sportsSection: some View {
 
         VStack(alignment: .leading, spacing: 12) {
 
-            sectionHeader("🔥 Esports")
+            sectionHeader("🏃 Esports")
 
             VStack(spacing: 10) {
 
@@ -213,11 +218,26 @@ struct HomeView: View {
     
     private var todaySummarySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("Avui")
+
+            HStack {
+                sectionHeader("📅 Avui")
+                Spacer()
+
+                Text(catalanDate)
+                    .font(.caption)
+                    .foregroundStyle(theme.secondary)
+            }
+
             if let e = todayEntry {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ],
+                    spacing: 12
+                ) {
                     statCell(label: "Hores dormides", value: sleepText(e))
-                    statCell(label: "Treballat",  value: workText(e))
+                    statCell(label: "Treballat", value: workText(e))
                     statCell(label: "Activitats", value: activitiesText(e))
                     statCell(label: "Esports", value: sportsText(e))
                 }
@@ -241,7 +261,7 @@ struct HomeView: View {
             VStack(spacing: 10) {
 
                 ForEach(
-                    Array(habitStreaks.prefix(5).enumerated()),
+                    Array(habitStreaks.prefix(4).enumerated()),
                     id: \.offset
                 ) { _, item in
 
@@ -252,7 +272,7 @@ struct HomeView: View {
                         Spacer()
 
                         Text("🔥 \(item.streak)")
-                            .foregroundStyle(theme.accent)
+                            .foregroundStyle(streakColor(item.streak))
                     }
                 }
             }
@@ -387,29 +407,36 @@ struct HomeView: View {
         _ field: String
     ) -> Int {
 
-        let activeDates =
-            Set(
-                entries
-                    .filter {
-                        $0.isActive(field: field)
-                    }
-                    .map(\.date)
-            )
+        let activeDates = Set(
+            entries
+                .filter {
+                    $0.isActive(field: field)
+                }
+                .map(\.date)
+        )
 
         var streak = 0
         var current = Date()
+
+        // Si avui encara no està marcat, comença des d'ahir
+        if !activeDates.contains(current.isoDate),
+           let yesterday = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: current
+           ) {
+            current = yesterday
+        }
 
         while activeDates.contains(current.isoDate) {
 
             streak += 1
 
-            guard let previous =
-                Calendar.current.date(
-                    byAdding: .day,
-                    value: -1,
-                    to: current
-                )
-            else {
+            guard let previous = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: current
+            ) else {
                 break
             }
 
@@ -417,14 +444,6 @@ struct HomeView: View {
         }
 
         return streak
-    }
-    private var greetingText: String {
-        let h = Calendar.current.component(.hour, from: Date())
-        switch h {
-        case 5..<12: return "Bon dia"
-        case 12..<18: return "Bona tarda"
-        default: return "Bona nit"
-        }
     }
 
     private func sleepText(_ e: DailyEntry) -> String {
@@ -451,19 +470,18 @@ struct HomeView: View {
             ) ?? "Casa"
 
         if e.workedAtJob && e.workedAtHome {
-            return "\(workLabel) + \(homeLabel)"
+            return "💼🏠 Ambdues"
         }
 
         if e.workedAtJob {
-            return workLabel
+            return "💼 Feina"
         }
 
         if e.workedAtHome {
-            return homeLabel
+            return "🏠 Casa"
         }
 
-        return "-"
-    }
+        return "-"    }
 
     private func activitiesText(_ e: DailyEntry) -> String {
         let active = [e.meditation, e.yoga, e.dibuix, e.llegir].filter { $0 }.count

@@ -14,7 +14,8 @@ final class BackupManager {
     }
     
     enum ImportMode {
-        case merge
+        case addNewOnly
+        case updateExisting
         case replace
     }
     
@@ -28,11 +29,16 @@ final class BackupManager {
     struct CSVPreviewData {
 
         let total: Int
+
         let newEntries: Int
+
         let existingEntries: Int
 
         let firstDate: String?
+
         let lastDate: String?
+
+        let conflictDates: [String]
     }
     
     
@@ -162,7 +168,9 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 newEntries: 0,
                 existingEntries: 0,
                 firstDate: nil,
-                lastDate: nil
+                lastDate: nil,
+                conflictDates: []
+        
             )
         }
         
@@ -172,7 +180,8 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 newEntries: 0,
                 existingEntries: 0,
                 firstDate: nil,
-                lastDate: nil
+                lastDate: nil,
+                conflictDates: []
             )
         }
         
@@ -201,20 +210,20 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
         
         guard let dateIndex = headers.firstIndex(of: "date") else {
             
-            print("HEADERS:", headers)
-            
             return CSVPreviewData(
                 total: 0,
                 newEntries: 0,
                 existingEntries: 0,
                 firstDate: nil,
-                lastDate: nil
+                lastDate: nil,
+                conflictDates: []
             )
         }
         
         var dates: [String] = []
         var newEntries = 0
         var existingEntriesCount = 0
+        var conflictDates: [String] = []
         
         for line in lines.dropFirst(2) where !line.isEmpty {
             
@@ -231,6 +240,7 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             if existingEntries.contains(where: { $0.date == date }) {
 
                 existingEntriesCount += 1
+                conflictDates.append(date)
 
             } else {
 
@@ -240,16 +250,14 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
         }
         
         let sorted = dates.sorted()
-        
-        print("LINES:", lines.count)
-        print("DATES:", dates)
 
         return CSVPreviewData(
             total: sorted.count,
             newEntries: newEntries,
             existingEntries: existingEntriesCount,
             firstDate: sorted.first,
-            lastDate: sorted.last
+            lastDate: sorted.last,
+            conflictDates: conflictDates.sorted()
         )
     }
         
@@ -258,8 +266,7 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
     func importCSV(
         from url: URL,
         context: ModelContext,
-        mode: ImportMode,
-        dateRange: ClosedRange<Date>? = nil
+        mode: ImportMode
     ) throws -> ImportResult {
 
         let accessGranted =
@@ -345,6 +352,12 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 )
             ).first
 
+            if mode == .addNewOnly && existing != nil {
+
+                skipped += 1
+                continue
+            }
+            
             let entry = existing ?? DailyEntry(date: date)
 
             if existing == nil {

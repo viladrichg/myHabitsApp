@@ -408,6 +408,8 @@ struct DataEntryView: View {
 
     private func sportsSection(_ e: DailyEntry) -> some View {
         section("Esports") {
+            
+            let selectedSports = Set(e.sports)
 
             VStack(spacing: 10) {
 
@@ -439,7 +441,7 @@ struct DataEntryView: View {
                         ZStack(alignment: .topTrailing) {
 
                             selectable(sport.name,
-                                       active: e.sports.contains(sport.name),
+                                       active: selectedSports.contains(sport.name),
                                        color: .purple) {
                                 toggleSport(e, sport.name)
                             }
@@ -555,6 +557,8 @@ struct DataEntryView: View {
 
                 section("Personalitzats") {
 
+                    let values = e.customValues
+
                     let booleans = customVariables.filter {
                         $0.type == "boolean"
                     }
@@ -573,7 +577,7 @@ struct DataEntryView: View {
 
                                 selectable(
                                     v.label,
-                                    active: (e.customValues[v.variableId] ?? 0) > 0,
+                                    active: (values[v.variableId] ?? 0) > 0,
                                     color: Color(hex: v.colorHex)
                                 ) {
 
@@ -607,7 +611,7 @@ struct DataEntryView: View {
                             HStack {
 
                                 Text(
-                                    "\(e.customValues[v.variableId] ?? 0) \(v.unit)"
+                                    "\(values[v.variableId] ?? 0) \(v.unit)"
                                 )
                                 .font(.title3.bold())
 
@@ -659,6 +663,55 @@ struct DataEntryView: View {
                                 .clipShape(
                                     RoundedRectangle(cornerRadius: 8)
                                 )
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
+
+                    ForEach(
+                        customVariables.filter {
+                            $0.type == "rating"
+                        }
+                    ) { v in
+
+                        VStack(
+                            alignment: .leading,
+                            spacing: 8
+                        ) {
+
+                            Text(v.label)
+                                .font(.headline)
+
+                            HStack {
+
+                                ForEach(1...5, id: \.self) { star in
+
+                                    Button {
+
+                                        var cv = e.customValues
+                                        cv[v.variableId] = star
+                                        e.customValues = cv
+
+                                    } label: {
+
+                                        Image(
+                                            systemName:
+                                                star <= (values[v.variableId] ?? 0)
+                                                ? "star.fill"
+                                                : "star"
+                                        )
+                                        .font(.title2)
+                                        .foregroundStyle(
+                                            Color(hex: v.colorHex)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
+                                Spacer()
+
+                                Text("\(values[v.variableId] ?? 0)/5")
+                                    .foregroundStyle(theme.secondary)
                             }
                         }
                         .padding(.top, 8)
@@ -892,20 +945,12 @@ struct DataEntryView: View {
     
     private func loadOrCreate() {
 
-        print("LOAD:", dateString)
-        print("ENTRIES:", entries.count)
-
         if let existing = entries.first(where: { $0.date == dateString }) {
-
-            print("FOUND:", existing.date)
 
             entry = existing
             sleepQualityDraft = Double(existing.sleepQuality ?? 5)
-            print("entry")
 
         } else {
-
-            print("CREATE:", dateString)
 
             let e = DailyEntry(date: dateString)
 

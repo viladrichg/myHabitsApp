@@ -176,8 +176,8 @@ struct CustomVariablesView: View {
         case "counter":
             return "Comptador"
 
-        case "slider":
-            return "Slider (0-10)"
+        case "rating":
+            return "Valoració ⭐"
 
         default:
             return type
@@ -210,8 +210,8 @@ struct CustomVariablesView: View {
                         Text("Comptador")
                             .tag("counter")
                         
-                        Text("Slider (0-10)")
-                            .tag("slider")
+                        Text("Valoració ⭐")
+                            .tag("rating")
                     }
                     
                     TextField(

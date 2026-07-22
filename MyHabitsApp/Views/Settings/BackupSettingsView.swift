@@ -17,9 +17,7 @@ struct BackupSettingsView: View {
     @State private var selectedFile: URL?
     @State private var showPreview = false
 
-    @State private var importMode: BackupManager.ImportMode = .merge
-    @State private var fromDate = Date()
-    @State private var toDate = Date()
+    @State private var importMode: BackupManager.ImportMode = .updateExisting
 
     @State private var isExporting = false
     @State private var exportError: String?
@@ -180,28 +178,16 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                         selection: $importMode
                     ) {
 
-                        Text("Fusionar")
-                            .tag(BackupManager.ImportMode.merge)
+                        Text("Afegir noves")
+                            .tag(BackupManager.ImportMode.addNewOnly)
 
-                        Text("Substituir")
+                        Text("Actualitzar")
+                            .tag(BackupManager.ImportMode.updateExisting)
+
+                        Text("Reemplaçar tot")
                             .tag(BackupManager.ImportMode.replace)
-                    }
-                    .pickerStyle(.segmented)
-
-                    VStack {
-
-                        DatePicker(
-                            "Des de",
-                            selection: $fromDate,
-                            displayedComponents: .date
-                        )
-
-                        DatePicker(
-                            "Fins a",
-                            selection: $toDate,
-                            displayedComponents: .date
-                        )
-                    }
+                    }.pickerStyle(.menu)
+                    
 
                     Button("Confirmar importació") {
                         confirmImport()
@@ -332,9 +318,7 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
             guard let url = urls.first else {
                 return
             }
-
             
-
             previewData =
                 try BackupManager.shared.previewCSV(
                     from: url,
@@ -342,17 +326,6 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 )
             
             selectedFile = url
-            showPreview = true
-            
-            if let first = previewData?.firstDate,
-               let last = previewData?.lastDate,
-               let d1 = Date.from(isoDate: first),
-               let d2 = Date.from(isoDate: last) {
-
-                fromDate = d1
-                toDate = d2
-            }
-
             showPreview = true
 
         } catch {
@@ -372,8 +345,7 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 try BackupManager.shared.importCSV(
                     from: file,
                     context: ctx,
-                    mode: importMode,
-                    dateRange: fromDate...toDate
+                    mode: importMode
                 )
 
             importMessage = """

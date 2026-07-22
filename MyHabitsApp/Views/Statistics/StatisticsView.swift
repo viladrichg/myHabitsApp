@@ -56,7 +56,8 @@ struct StatisticsView: View {
 
                     ForEach(
                         customVariables.filter {
-                            $0.type == "counter"
+                            $0.type == "counter" ||
+                            $0.type == "rating"
                         }
                     ) { variable in
 
@@ -694,11 +695,14 @@ struct StatisticsView: View {
                     variable.variableId
                 ] ?? 0
 
+            if variable.type == "rating" && value == 0 {
+                return nil
+            }
+
             return (
                 date,
                 Double(value)
             )
-
         }
         .sorted { $0.0 < $1.0 }
     }
@@ -712,6 +716,11 @@ struct StatisticsView: View {
 
         let values =
             data.map(\.1)
+
+        let statisticValues =
+            variable.type == "rating"
+            ? values.filter { $0 > 0 }
+            : values
 
         return VStack(
             alignment: .leading,
@@ -776,13 +785,13 @@ struct StatisticsView: View {
                 )
             }
 
-            if !values.isEmpty {
+            if !statisticValues.isEmpty {
 
                 HStack(spacing: 12) {
 
                     statBox(
                         title: "Mínim",
-                        value: "\(Int(values.min() ?? 0)) \(variable.unit)",
+                        value: "\(Int(statisticValues.min() ?? 0)) \(variable.unit)",
                         color: .green
                     )
 
@@ -790,8 +799,8 @@ struct StatisticsView: View {
                         title: "Mitjana",
                         value: String(
                             format: "%.1f %@",
-                            values.reduce(0,+)
-                            / Double(values.count),
+                            statisticValues.reduce(0,+)
+                            / Double(statisticValues.count),
                             variable.unit
                         ),
                         color: .orange
@@ -799,7 +808,7 @@ struct StatisticsView: View {
 
                     statBox(
                         title: "Màxim",
-                        value: "\(Int(values.max() ?? 0)) \(variable.unit)",
+                        value: "\(Int(statisticValues.max() ?? 0)) \(variable.unit)",
                         color: .red
                     )
                 }

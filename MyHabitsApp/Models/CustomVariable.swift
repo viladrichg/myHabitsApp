@@ -19,6 +19,8 @@ final class CustomVariable {
 
     var order: Int
 
+    var ignoreZerosInStats: Bool = true
+
     var createdAt: Date = Date()
 
     init(
@@ -26,7 +28,8 @@ final class CustomVariable {
         type: String = "boolean",
         colorHex: String,
         unit: String = "",
-        order: Int
+        order: Int,
+        ignoreZerosInStats: Bool = true
     ) {
         self.variableId = "cv_\(UUID().uuidString.lowercased())"
         self.label = label
@@ -34,9 +37,9 @@ final class CustomVariable {
         self.colorHex = colorHex
         self.unit = unit
         self.order = order
+        self.ignoreZerosInStats = ignoreZerosInStats
     }
 }
-
 // MARK: - Built-in Variables
 
 struct BuiltInVariable: Identifiable {

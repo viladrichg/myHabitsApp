@@ -718,7 +718,7 @@ struct StatisticsView: View {
             data.map(\.1)
 
         let statisticValues =
-            variable.type == "rating"
+            variable.ignoreZerosInStats
             ? values.filter { $0 > 0 }
             : values
 

@@ -257,7 +257,8 @@ struct CustomVariablesView: View {
                             type: newType,
                             colorHex: newColor,
                             unit: newUnit,
-                            order: variables.count
+                            order: variables.count,
+                            ignoreZerosInStats: true
                         )
 
                         ctx.insert(variable)
@@ -349,10 +350,20 @@ private struct EditVariableSheet: View {
                     "Label",
                     text: $variable.label
                 )
+
                 TextField(
                     "Unitat",
                     text: $variable.unit
                 )
+
+                if variable.type == "counter" ||
+                   variable.type == "rating" {
+
+                    Toggle(
+                        "Ignorar zeros a les estadístiques",
+                        isOn: $variable.ignoreZerosInStats
+                    )
+                }
 
                 LazyVGrid(
                     columns: Array(
@@ -401,4 +412,5 @@ private struct EditVariableSheet: View {
             }
         }
     }
+              
 }

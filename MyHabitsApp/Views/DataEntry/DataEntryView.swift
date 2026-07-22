@@ -129,16 +129,65 @@ struct DataEntryView: View {
 
     
     private var datePicker: some View {
-        DatePicker(
-            "Data",
-            selection: $selectedDate,
-            displayedComponents: .date
-        )
+
+        VStack(spacing: 12) {
+
+            HStack {
+
+                Button {
+
+                    selectedDate = Calendar.current.date(
+                        byAdding: .day,
+                        value: -1,
+                        to: selectedDate
+                    ) ?? selectedDate
+
+                } label: {
+
+                    Image(systemName: "chevron.left")
+                        .font(.headline)
+                }
+
+                Spacer()
+
+                DatePicker(
+                    "",
+                    selection: $selectedDate,
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+
+                Spacer()
+
+                Button {
+
+                    selectedDate = Calendar.current.date(
+                        byAdding: .day,
+                        value: 1,
+                        to: selectedDate
+                    ) ?? selectedDate
+
+                } label: {
+
+                    Image(systemName: "chevron.right")
+                        .font(.headline)
+                }
+            }
+
+            Button(
+                Calendar.current.isDateInToday(selectedDate)
+                ? "Avui"
+                : "Tornar a Avui"
+            ) {
+                selectedDate = Date()
+            }
+            .font(.caption)
+            .foregroundStyle(theme.accent)
+        }
         .padding()
         .background(theme.card)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
-
 
     // MARK: SLEEP
 
@@ -410,6 +459,7 @@ struct DataEntryView: View {
         section("Esports") {
             
             let selectedSports = Set(e.sports)
+            
 
             VStack(spacing: 10) {
 
@@ -550,7 +600,8 @@ struct DataEntryView: View {
     // MARK: CUSTOM VARIABLES
 
     private func customVariablesSection(_ e: DailyEntry) -> some View {
-
+        
+        
         Group {
 
             if !customVariables.isEmpty {
@@ -558,7 +609,7 @@ struct DataEntryView: View {
                 section("Personalitzats") {
 
                     let values = e.customValues
-
+                    
                     let booleans = customVariables.filter {
                         $0.type == "boolean"
                     }
@@ -689,14 +740,19 @@ struct DataEntryView: View {
                                     Button {
 
                                         var cv = e.customValues
-                                        cv[v.variableId] = star
+                                        let current = cv[v.variableId] ?? 0
+
+                                        cv[v.variableId] =
+                                            current == star
+                                            ? 0
+                                            : star
                                         e.customValues = cv
 
                                     } label: {
 
                                         Image(
                                             systemName:
-                                                star <= (values[v.variableId] ?? 0)
+                                                star <= (e.customValues[v.variableId] ?? 0)
                                                 ? "star.fill"
                                                 : "star"
                                         )

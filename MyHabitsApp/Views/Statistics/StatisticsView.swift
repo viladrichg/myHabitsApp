@@ -472,7 +472,9 @@ struct StatisticsView: View {
 
     private var sleepData: [(Date, Double)] {
 
-        monthEntries.values.compactMap { entry in
+        monthEntries.values
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
 
             guard let date = Date.from(isoDate: entry.date),
                   let wake = entry.wakeUpTime?.parseHHmm()
@@ -582,15 +584,25 @@ struct StatisticsView: View {
 
     private var pitellsData: [(Date, Double)] {
 
-        monthEntries.values.compactMap { entry in
+
+
+        monthEntries.values
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
 
             guard let date = Date.from(isoDate: entry.date)
+                    
             else { return nil }
 
-            return (
-                date,
-                Double(entry.counter ?? 0)
-            )
+            
+                guard let counter = entry.counter else {
+                    return nil
+                }
+
+                return (
+                    date,
+                    Double(counter)
+                )
 
         }
         .sorted { $0.0 < $1.0 }
@@ -604,7 +616,7 @@ struct StatisticsView: View {
             }?.displayColor(using: settings)
             ?? theme.accent
         let values = pitellsData.map(\.1)
-
+        
         return VStack(alignment: .leading, spacing: 12) {
 
             Text(
@@ -682,7 +694,9 @@ struct StatisticsView: View {
         _ variable: CustomVariable
     ) -> [(Date, Double)] {
 
-        monthEntries.values.compactMap { entry in
+        monthEntries.values
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
 
             guard let date =
                 Date.from(isoDate: entry.date)
@@ -695,7 +709,9 @@ struct StatisticsView: View {
                     variable.variableId
                 ] ?? 0
 
-            if variable.type == "rating" && value == 0 {
+            if variable.ignoreZerosInStats &&
+                value == 0 {
+
                 return nil
             }
 
@@ -851,7 +867,6 @@ struct StatisticsView: View {
 
     private func daysInMonth() -> [Int] {
         let range = cal.range(of: .day, in: .month, for: displayMonth)!
-        print(Array(range))
         return Array(range)
     }
 

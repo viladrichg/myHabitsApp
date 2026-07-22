@@ -36,7 +36,26 @@ final class DailyEntry {
 
     // Notes
     var notes: String?
+    
+    var isEmpty: Bool {
 
+        sleepQuality == nil &&
+        wakeUpTime == nil &&
+        bedTime == nil &&
+        workedAtJob == false &&
+        workedAtHome == false &&
+        fum == false &&
+        gat == false &&
+        meditation == false &&
+        yoga == false &&
+        dibuix == false &&
+        llegir == false &&
+        sports.isEmpty &&
+        counter == nil &&
+        customValues.values.allSatisfy { $0 == 0 } &&
+        (notes?.isEmpty ?? true)
+    }
+    
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
 

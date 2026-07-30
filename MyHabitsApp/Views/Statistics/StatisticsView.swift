@@ -15,6 +15,19 @@ struct StatisticsView: View {
     }
     
     @State private var displayMonth = Date()
+    @State private var selectedExpandedChart: ExpandedChart?
+    private struct ExpandedChart: Identifiable {
+
+        let id = UUID()
+
+        let title: String
+
+        let data: [(Date, Double)]
+
+        let color: Color
+
+        let unit: String
+    }
 
     private struct SelectedDay: Identifiable {
         let id = UUID()
@@ -78,8 +91,56 @@ struct StatisticsView: View {
                 )
             }
 
-        }
-    }
+        }.sheet(item: $selectedExpandedChart) { chart in
+            
+            NavigationStack {
+
+                VStack(spacing: 20) {
+
+                    Text(chart.title)
+                        .font(.title.bold())
+
+                    Chart {
+
+                        ForEach(
+                            chart.data,
+                            id: \.0
+                        ) { point in
+
+                            LineMark(
+                                x: .value(
+                                    "Data",
+                                    point.0
+                                ),
+                                y: .value(
+                                    chart.title,
+                                    point.1
+                                )
+                            )
+                            .foregroundStyle(chart.color)
+
+                            PointMark(
+                                x: .value(
+                                    "Data",
+                                    point.0
+                                ),
+                                y: .value(
+                                    chart.title,
+                                    point.1
+                                )
+                            )
+                            .foregroundStyle(chart.color)
+                        }
+                    }
+                    .frame(height: 450)
+
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle(chart.title)
+                .navigationBarTitleDisplayMode(.inline)
+            }
+        }    }
 
     // MARK: - Month navigator
 
@@ -537,6 +598,15 @@ struct StatisticsView: View {
                     }
                 }
                 .frame(height: 180)
+                .onTapGesture {
+
+                    selectedExpandedChart = ExpandedChart(
+                        title: "Hores de son",
+                        data: sleepData,
+                        color: theme.accent,
+                        unit: "h"
+                    )
+                }
 
             } else {
 
@@ -647,7 +717,19 @@ struct StatisticsView: View {
                     }
                 }
                 .frame(height: 180)
+                .onTapGesture {
 
+                    selectedExpandedChart = ExpandedChart(
+                        title: builtInVariables.first {
+                            $0.fieldKey == "counter"
+                        }?.displayLabel(using: settings)
+                        ?? "Pitells",
+                        data: pitellsData,
+                        color: counterColor,
+                        unit: ""
+                    )
+                }
+                
             } else {
 
                 ContentUnavailableView(
@@ -789,7 +871,16 @@ struct StatisticsView: View {
                     }
                 }
                 .frame(height: 180)
+                .onTapGesture {
 
+                    selectedExpandedChart = ExpandedChart(
+                        title: variable.label,
+                        data: data,
+                        color: Color(hex: variable.colorHex),
+                        unit: variable.unit
+                    )
+                }
+                
             } else {
 
                 ContentUnavailableView(

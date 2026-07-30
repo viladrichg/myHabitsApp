@@ -5,7 +5,7 @@ struct DataEntryView: View {
     @Environment(\.appTheme) var theme
     @Environment(\.modelContext) private var ctx
     @Environment(\.dismiss) private var dismiss
-
+    
     @Binding var selectedTab: Int   // ✅ CHANGE
     let initialDate: Date?
     
@@ -14,11 +14,11 @@ struct DataEntryView: View {
     @Query(sort: \CustomVariable.order) private var customVariables: [CustomVariable]
     @Query(sort: \AppSettings.createdAt)
     private var allSettings: [AppSettings]
-
+    
     private var settings: AppSettings? {
         allSettings.first
     }
-
+    
     @State private var selectedDate: Date
     @State private var entry: DailyEntry? = nil
     @State private var newSport = ""
@@ -36,6 +36,8 @@ struct DataEntryView: View {
     @State private var llegirDraft = false
     @State private var counterDraft = 0
     @State private var sportsDraft: [String] = []
+    @State private var wakeUpDraft = ""
+    @State private var bedTimeDraft = ""
     
     init(
         selectedTab: Binding<Int>,
@@ -50,147 +52,141 @@ struct DataEntryView: View {
     @State private var customValuesDraft: [String:Int] = [:]
     @State private var notesDraft = ""
     @FocusState private var isEditingNotes: Bool
-
+    
     private var dateString: String { selectedDate.isoDate }
-
+    
     var body: some View {
         
-            ScrollView {
-                VStack(spacing: 20) {
-                    datePicker
-                    Button(testToggle ? "TEST ON" : "TEST OFF") {
-                        testToggle.toggle()
-                    }
+        ScrollView {
+            VStack(spacing: 20) {
+                datePicker
+                
+                Button {
+                    
+                    copyPreviousEntry()
+                    
+                } label: {
+                    
+                    Label(
+                        "Copiar entrada anterior",
+                        systemImage: "doc.on.doc"
+                    )
+                    .frame(maxWidth: .infinity)
                     .padding()
-                    .background(.green.opacity(0.2))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    
-                    Button {
-
-                        copyPreviousEntry()
-
-                    } label: {
-
-                        Label(
-                            "Copiar entrada anterior",
-                            systemImage: "doc.on.doc"
-                        )
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(theme.card)
-                        .foregroundStyle(theme.accent)
-                        .clipShape(
-                            RoundedRectangle(cornerRadius: 12)
-                        )
-                    }
-                    
-                    if let e = entry {
-                    
-                        sleepSection(e)
-                        workSection(e)
-                        objectivesSection(e)
-                        activitiesSection(e)
-                        sportsSection(e)
-                        counterSection(e)
-                        customVariablesSection(e)
-                        notesSection(e)
-                        saveSection()
-                        deleteSection()
-                    }
-                }
-                .padding()
-            }
-            .background(theme.bg.ignoresSafeArea())
-            .onTapGesture { isEditingNotes = false } // ✅ CHANGE
-            .navigationTitle("Nova entrada")
-            .onAppear {
-                
-                print(
-                    "DATAENTRY:",
-                    initialDate?.isoDate ?? "TODAY"
-                )
-                
-                if let initialDate {
-
-                    selectedDate = initialDate
+                    .background(theme.card)
+                    .foregroundStyle(theme.accent)
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 12)
+                    )
                 }
                 
-                loadOrCreate()
-            }
-            .onChange(of: selectedDate) { loadOrCreate() }
-            .alert(
-                "Segur que vols eliminar el dia?",
-                isPresented: $showDeleteAlert
-            ) {
-
-                Button("Cancel·lar", role: .cancel) {}
-
-                Button("Eliminar", role: .destructive) {
-
-                    guard let e = entry else { return }
-
-                    ctx.delete(e)
-
-                    try? ctx.save()
-
-                    selectedTab = 2
-
-                    dismiss()
+                if let e = entry {
+                    
+                    sleepSection(e)
+                    workSection(e)
+                    objectivesSection(e)
+                    activitiesSection(e)
+                    sportsSection(e)
+                    counterSection(e)
+                    customVariablesSection(e)
+                    notesSection(e)
+                    saveSection()
+                    deleteSection()
                 }
-
             }
+            .padding()
+        }
+        .background(theme.bg.ignoresSafeArea())
+        .onTapGesture { isEditingNotes = false } // ✅ CHANGE
+        .navigationTitle("Nova entrada")
+        .onAppear {
+            
+            print(
+                "DATAENTRY:",
+                initialDate?.isoDate ?? "TODAY"
+            )
+            
+            if let initialDate {
+                
+                selectedDate = initialDate
+            }
+            
+            loadOrCreate()
+        }
+        .onChange(of: selectedDate) { loadOrCreate() }
+        .alert(
+            "Segur que vols eliminar el dia?",
+            isPresented: $showDeleteAlert
+        ) {
+            
+            Button("Cancel·lar", role: .cancel) {}
+            
+            Button("Eliminar", role: .destructive) {
+                
+                guard let e = entry else { return }
+                
+                ctx.delete(e)
+                
+                try? ctx.save()
+                
+                selectedTab = 2
+                
+                dismiss()
+            }
+            
+        }
         
     }
-
+    
     // MARK: DATE
-
+    
     
     private var datePicker: some View {
-
+        
         VStack(spacing: 12) {
-
+            
             HStack {
-
+                
                 Button {
-
+                    
                     selectedDate = Calendar.current.date(
                         byAdding: .day,
                         value: -1,
                         to: selectedDate
                     ) ?? selectedDate
-
+                    
                 } label: {
-
+                    
                     Image(systemName: "chevron.left")
                         .font(.headline)
                 }
-
+                
                 Spacer()
-
+                
                 DatePicker(
                     "",
                     selection: $selectedDate,
                     displayedComponents: .date
                 )
                 .labelsHidden()
-
+                
                 Spacer()
-
+                
                 Button {
-
+                    
                     selectedDate = Calendar.current.date(
                         byAdding: .day,
                         value: 1,
                         to: selectedDate
                     ) ?? selectedDate
-
+                    
                 } label: {
-
+                    
                     Image(systemName: "chevron.right")
                         .font(.headline)
                 }
             }
-
+            
             Button(
                 Calendar.current.isDateInToday(selectedDate)
                 ? "Avui"
@@ -205,111 +201,101 @@ struct DataEntryView: View {
         .background(theme.card)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
-
+    
     // MARK: SLEEP
-
+    
     private func sleepSection(_ e: DailyEntry) -> some View {
-
+        
         section("Son") {
-
+            
             HStack(alignment: .top, spacing: 24) {
-
+                
                 VStack(alignment: .leading) {
-
+                    
                     Text("Llevar-se")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
-
+                    
                     TimePicker(
                         label: "",
-                        value: Binding(
-                            get: { e.wakeUpTime ?? "" },
-                            set: { e.wakeUpTime = $0 }
-                        )
+                        value: $wakeUpDraft
                     )
                 }
-
+                
                 VStack(alignment: .leading) {
-
+                    
                     Text("Anar a dormir")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
-
+                    
                     TimePicker(
                         label: "",
-                        value: Binding(
-                            get: { e.bedTime ?? "" },
-                            set: { e.bedTime = $0 }
-                        )
+                        value: $bedTimeDraft
                     )
                 }
-
+                
                 Spacer()
-
+                
                 VStack(alignment: .leading) {
-
+                    
                     Text("Dormit")
                         .font(.caption)
                         .foregroundStyle(theme.secondary)
-
+                    
                     Text(sleepText(for: e))
                         .font(.title3.bold())
                         .foregroundStyle(theme.accent)
                 }
-                
             }
             
             VStack(alignment: .leading, spacing: 10) {
-
+                
                 HStack {
-
+                    
                     Text("Qualitat del son")
-
+                    
                     Spacer()
-
+                    
                     Text("\(Int(sleepQualityDraft))/10")
                         .font(.headline)
                         .foregroundStyle(theme.accent)
-                }.padding(.top, 16)
-
+                }
+                .padding(.top, 16)
+                
                 Slider(
                     value: $sleepQualityDraft,
                     in: 0...10,
                     step: 1
                 )
                 .tint(theme.accent)
-                .onAppear {
-                    sleepQualityDraft = Double(e.sleepQuality ?? 5)
-                }
             }
-
         }
     }
-
-
+    
+    
     // MARK: WORK
-
+    
     private func workSection(_ e: DailyEntry) -> some View {
-
+        
         let job = builtIn("workedAtJob")
         let home = builtIn("workedAtHome")
-
+        
         let hasVisibleVariables =
-            (job != nil && !(job!.isHidden(using: settings)))
-            ||
-            (home != nil && !(home!.isHidden(using: settings)))
-
+        (job != nil && !(job!.isHidden(using: settings)))
+        ||
+        (home != nil && !(home!.isHidden(using: settings)))
+        
         return Group {
-
+            
             if hasVisibleVariables {
-
+                
                 section("Treballat") {
-
+                    
                     HStack {
-
+                        
                         if let job,
                            !job.isHidden(using: settings) {
-
+                            
                             selectable(
                                 job.displayLabel(using: settings),
                                 active: workedAtJobDraft,
@@ -318,10 +304,10 @@ struct DataEntryView: View {
                                 workedAtJobDraft.toggle()
                             }
                         }
-
+                        
                         if let home,
                            !home.isHidden(using: settings) {
-
+                            
                             selectable(
                                 home.displayLabel(using: settings),
                                 active: workedAtHomeDraft,
@@ -335,30 +321,30 @@ struct DataEntryView: View {
             }
         }
     }
-
+    
     // MARK: OBJECTIVES
-
+    
     private func objectivesSection(_ e: DailyEntry) -> some View {
-
+        
         let fum = builtIn("fum")
         let gat = builtIn("gat")
-
+        
         let hasVisibleVariables =
-            (fum != nil && !(fum!.isHidden(using: settings)))
-            ||
-            (gat != nil && !(gat!.isHidden(using: settings)))
-
+        (fum != nil && !(fum!.isHidden(using: settings)))
+        ||
+        (gat != nil && !(gat!.isHidden(using: settings)))
+        
         return Group {
-
+            
             if hasVisibleVariables {
-
+                
                 section("Mals hàbits") {
-
+                    
                     HStack {
-
+                        
                         if let fum,
                            !fum.isHidden(using: settings) {
-
+                            
                             selectable(
                                 fum.displayLabel(using: settings),
                                 active: fumDraft,
@@ -367,10 +353,10 @@ struct DataEntryView: View {
                                 fumDraft.toggle()
                             }
                         }
-
+                        
                         if let gat,
                            !gat.isHidden(using: settings) {
-
+                            
                             selectable(
                                 gat.displayLabel(using: settings),
                                 active: gatDraft,
@@ -384,38 +370,38 @@ struct DataEntryView: View {
             }
         }
     }
-
+    
     // MARK: ACTIVITIES
-
+    
     private func activitiesSection(_ e: DailyEntry) -> some View {
-
+        
         let meditation = builtIn("meditation")
         let yoga = builtIn("yoga")
         let dibuix = builtIn("dibuix")
         let llegir = builtIn("llegir")
-
+        
         let hasVisibleVariables = [
-
+            
             meditation?.isHidden(using: settings) == false,
             yoga?.isHidden(using: settings) == false,
             dibuix?.isHidden(using: settings) == false,
             llegir?.isHidden(using: settings) == false
-
+            
         ].contains(true)
-
+        
         return Group {
-
+            
             if hasVisibleVariables {
-
+                
                 section("Activitats") {
-
+                    
                     VStack {
-
+                        
                         HStack {
-
+                            
                             if let meditation,
                                !meditation.isHidden(using: settings) {
-
+                                
                                 selectable(
                                     meditation.displayLabel(using: settings),
                                     active: meditationDraft,
@@ -424,10 +410,10 @@ struct DataEntryView: View {
                                     meditationDraft.toggle()
                                 }
                             }
-
+                            
                             if let yoga,
                                !yoga.isHidden(using: settings) {
-
+                                
                                 selectable(
                                     yoga.displayLabel(using: settings),
                                     active: yogaDraft,
@@ -437,12 +423,12 @@ struct DataEntryView: View {
                                 }
                             }
                         }
-
+                        
                         HStack {
-
+                            
                             if let dibuix,
                                !dibuix.isHidden(using: settings) {
-
+                                
                                 selectable(
                                     dibuix.displayLabel(using: settings),
                                     active: dibuixDraft,
@@ -451,10 +437,10 @@ struct DataEntryView: View {
                                     dibuixDraft.toggle()
                                 }
                             }
-
+                            
                             if let llegir,
                                !llegir.isHidden(using: settings) {
-
+                                
                                 selectable(
                                     llegir.displayLabel(using: settings),
                                     active: llegirDraft,
@@ -469,21 +455,21 @@ struct DataEntryView: View {
             }
         }
     }
-
+    
     // MARK: SPORTS ✅ GRID + EDIT MODE
-
+    
     private func sportsSection(_ e: DailyEntry) -> some View {
         section("Esports") {
             
             let selectedSports = Set(sportsDraft)
-
+            
             VStack(spacing: 10) {
-
+                
                 HStack {
                     TextField("Nou esport", text: $newSport)
                         .padding()
                         .background(theme.card)  // ✅ CHANGE
-
+                    
                     Button("+") {
                         guard !newSport.isEmpty else { return }
                         let s = CustomSport(name: newSport)
@@ -492,26 +478,26 @@ struct DataEntryView: View {
                         newSport = ""
                     }
                 }
-
+                
                 HStack {
                     Spacer()
                     Button(isEditingSports ? "Fet" : "Editar") {
                         isEditingSports.toggle()
                     }
                 }
-
+                
                 // ✅ CHANGE GRID
                 
                 LazyVGrid(columns: [GridItem(), GridItem()]) {
                     ForEach(customSports) { sport in
                         ZStack(alignment: .topTrailing) {
-
+                            
                             selectable(sport.name,
                                        active: selectedSports.contains(sport.name),
                                        color: .purple) {
-                                toggleSport(e, sport.name)
+                                toggleSport(sport.name)
                             }
-
+                            
                             if isEditingSports {
                                 Button("✕") {
                                     ctx.delete(sport)
@@ -524,9 +510,8 @@ struct DataEntryView: View {
             }
         }
     }
-
+    
     private func toggleSport(
-        _ e: DailyEntry,
         _ name: String
     ) {
         
@@ -541,37 +526,37 @@ struct DataEntryView: View {
             sportsDraft.append(name)
         }
     }
-
+    
     // MARK: COUNTER ✅ 2 LINES UX
-
-
+    
+    
     private func counterSection(_ e: DailyEntry) -> some View {
-
+        
         let counter = builtIn("counter")
-
+        
         return Group {
-
+            
             if counter?.isHidden(using: settings) != true {
-
+                
                 section(
                     counter?.displayLabel(using: settings)
                     ?? "Pitells"
                 ) {
-
+                    
                     VStack(spacing: 16) {
-
+                        
                         HStack {
-
+                            
                             Text("\(counterDraft)")
                                 .font(.system(size: 34, weight: .bold))
                                 .frame(width: 90, height: 60)
                                 .background(theme.border.opacity(0.25))
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
-
+                            
                             Spacer()
-
+                            
                             Button {
-                                counterDraft = max(0, (e.counter ?? 0) - 1)
+                                counterDraft = max(0, counterDraft - 1)
                             } label: {
                                 Image(systemName: "minus")
                                     .font(.title2.bold())
@@ -579,7 +564,7 @@ struct DataEntryView: View {
                             }
                             .background(theme.border.opacity(0.25))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
-
+                            
                             Button {
                                 counterDraft += 1
                             } label: {
@@ -590,11 +575,11 @@ struct DataEntryView: View {
                             .background(theme.border.opacity(0.25))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
-
+                        
                         HStack(spacing: 10) {
-
+                            
                             ForEach([5, 10, 15, 20], id: \.self) { value in
-
+                                
                                 Button("\(value)") {
                                     counterDraft = value
                                 }
@@ -602,7 +587,7 @@ struct DataEntryView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                                 .background(
-                                    (e.counter ?? 0) == value
+                                    counterDraft == value
                                     ? theme.accent
                                     : theme.border.opacity(0.25)
                                 )
@@ -621,27 +606,24 @@ struct DataEntryView: View {
             }
         }
     }
-
-
+    
+    
     // MARK: CUSTOM VARIABLES
-
+    
     private func customVariablesSection(_ e: DailyEntry) -> some View {
         
-        
         Group {
-
+            
             if !customVariables.isEmpty {
-
+                
                 section("Personalitzats") {
-
-                    let values = customValuesDraft
                     
                     let booleans = customVariables.filter {
                         $0.type == "boolean"
                     }
-
+                    
                     if !booleans.isEmpty {
-
+                        
                         LazyVGrid(
                             columns: [
                                 GridItem(.flexible()),
@@ -649,65 +631,65 @@ struct DataEntryView: View {
                             ],
                             spacing: 10
                         ) {
-
+                            
                             ForEach(booleans) { v in
-
+                                
                                 selectable(
                                     v.label,
-                                    active: (values[v.variableId] ?? 0) > 0,
+                                    active: (customValuesDraft[v.variableId] ?? 0) > 0,
                                     color: Color(hex: v.colorHex)
                                 ) {
-
+                                    
                                     var cv = customValuesDraft
-
+                                    
                                     cv[v.variableId] =
-                                        (cv[v.variableId] ?? 0) > 0
-                                        ? 0
-                                        : 1
-
+                                    (cv[v.variableId] ?? 0) > 0
+                                    ? 0
+                                    : 1
+                                    
                                     customValuesDraft = cv
                                 }
                             }
                         }
                     }
-
+                    
                     ForEach(
                         customVariables.filter {
                             $0.type == "counter"
                         }
                     ) { v in
-
+                        
                         VStack(
                             alignment: .leading,
                             spacing: 8
                         ) {
-
+                            
                             Text(v.label)
                                 .font(.headline)
-
+                            
                             HStack {
-
+                                
                                 Text(
-                                    "\(values[v.variableId] ?? 0) \(v.unit)"
+                                    "\(customValuesDraft[v.variableId] ?? 0) \(v.unit)"
                                 )
                                 .font(.title3.bold())
-
+                                
                                 Spacer()
-
+                                
                                 Button {
-
+                                    
                                     var cv = customValuesDraft
-
+                                    
                                     cv[v.variableId] =
-                                        max(
-                                            0,
-                                            (cv[v.variableId] ?? 0) - 1
-                                        )
-
+                                    max(
+                                        0,
+                                        (cv[v.variableId] ?? 0) - 1
+                                    )
+                                    
                                     customValuesDraft = cv
-
+                                    
                                 } label: {
-
+                                    
                                     Image(systemName: "minus")
                                         .frame(width: 44, height: 44)
                                 }
@@ -718,18 +700,18 @@ struct DataEntryView: View {
                                 .clipShape(
                                     RoundedRectangle(cornerRadius: 8)
                                 )
-
+                                
                                 Button {
-
+                                    
                                     var cv = customValuesDraft
-
+                                    
                                     cv[v.variableId] =
-                                        (cv[v.variableId] ?? 0) + 1
-
+                                    (cv[v.variableId] ?? 0) + 1
+                                    
                                     customValuesDraft = cv
-
+                                    
                                 } label: {
-
+                                    
                                     Image(systemName: "plus")
                                         .frame(width: 44, height: 44)
                                 }
@@ -744,43 +726,46 @@ struct DataEntryView: View {
                         }
                         .padding(.top, 8)
                     }
-
+                    
                     ForEach(
                         customVariables.filter {
                             $0.type == "rating"
                         }
                     ) { v in
-
+                        
                         VStack(
                             alignment: .leading,
                             spacing: 8
                         ) {
-
+                            
                             Text(v.label)
                                 .font(.headline)
-
+                            
                             HStack {
-
+                                
                                 ForEach(1...5, id: \.self) { star in
-
+                                    
                                     Button {
-
+                                        
                                         var cv = customValuesDraft
-                                        let current = cv[v.variableId] ?? 0
-
+                                        
+                                        let current =
+                                        cv[v.variableId] ?? 0
+                                        
                                         cv[v.variableId] =
-                                            current == star
-                                            ? 0
-                                            : star
+                                        current == star
+                                        ? 0
+                                        : star
+                                        
                                         customValuesDraft = cv
-
+                                        
                                     } label: {
-
+                                        
                                         Image(
                                             systemName:
-                                                star <= (e.customValues[v.variableId] ?? 0)
-                                                ? "star.fill"
-                                                : "star"
+                                                star <= (customValuesDraft[v.variableId] ?? 0)
+                                            ? "star.fill"
+                                            : "star"
                                         )
                                         .font(.title2)
                                         .foregroundStyle(
@@ -789,11 +774,13 @@ struct DataEntryView: View {
                                     }
                                     .buttonStyle(.plain)
                                 }
-
+                                
                                 Spacer()
-
-                                Text("\(values[v.variableId] ?? 0)/5")
-                                    .foregroundStyle(theme.secondary)
+                                
+                                Text(
+                                    "\(customValuesDraft[v.variableId] ?? 0)/5"
+                                )
+                                .foregroundStyle(theme.secondary)
                             }
                         }
                         .padding(.top, 8)
@@ -802,8 +789,9 @@ struct DataEntryView: View {
             }
         }
     }
+    
     // MARK: NOTES ✅ STYLED
-
+    
     private func notesSection(_ e: DailyEntry) -> some View {
         section("Notes") {
             TextEditor(text: $notesDraft)
@@ -815,54 +803,75 @@ struct DataEntryView: View {
                 .onAppear {
                     notesDraft = e.notes ?? ""
                 }
-                .onChange(of: isEditingNotes) { _, editing in
-                    if !editing {
-                        e.notes = notesDraft
-                    }
-                }
         }
     }
-
-    // MARK: SAVE
-
+    
     private func saveSection() -> some View {
-
+        
         Button {
-
+            
             if let e = entry {
-
-                e.sleepQuality =
-                    Int(sleepQualityDraft)
-
-                e.notes =
-                    notesDraft
-
-                e.customValues =
-                    customValuesDraft
                 
-                e.workedAtJob = workedAtJobDraft
-                e.workedAtHome = workedAtHomeDraft
-                e.fum = fumDraft
-                e.gat = gatDraft
-                e.meditation = meditationDraft
-                e.yoga = yogaDraft
-                e.dibuix = dibuixDraft
-                e.llegir = llegirDraft
-                e.sports = sportsDraft
+                e.wakeUpTime =
+                wakeUpDraft.isEmpty
+                ? nil
+                : wakeUpDraft
+                
+                e.bedTime =
+                bedTimeDraft.isEmpty
+                ? nil
+                : bedTimeDraft
+                
+                e.sleepQuality =
+                Int(sleepQualityDraft)
+                
+                e.notes =
+                notesDraft
+                
+                e.customValues =
+                customValuesDraft
+                
+                e.workedAtJob =
+                workedAtJobDraft
+                
+                e.workedAtHome =
+                workedAtHomeDraft
+                
+                e.fum =
+                fumDraft
+                
+                e.gat =
+                gatDraft
+                
+                e.meditation =
+                meditationDraft
+                
+                e.yoga =
+                yogaDraft
+                
+                e.dibuix =
+                dibuixDraft
+                
+                e.llegir =
+                llegirDraft
+                
+                e.sports =
+                sportsDraft
+                
                 e.counter =
-                    counterDraft == 0
-                    ? nil
-                    : counterDraft
+                counterDraft == 0
+                ? nil
+                : counterDraft
             }
-
+            
             try? ctx.save()
-
+            
             selectedTab = 2
-
+            
             dismiss()
-
+            
         } label: {
-
+            
             Text("Guardar")
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -892,9 +901,190 @@ struct DataEntryView: View {
                 )
         }
     }
-
-    // MARK: HELPERS
-
+    
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.title3.weight(.semibold)) // ✅ CHANGE
+            content()
+        }
+        .padding()
+        .background(theme.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    private func sleepText(for entry: DailyEntry) -> String {
+        
+        guard
+            let currentDate = Date.from(isoDate: entry.date),
+            let wake = wakeUpDraft.parseHHmm()
+        else {
+            return "-"
+        }
+        
+        guard
+            let previousDate = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: currentDate
+            )
+        else {
+            return "-"
+        }
+        
+        guard
+            let previousEntry = entries.first(
+                where: { $0.date == previousDate.isoDate }
+            ),
+            let bed = previousEntry.bedTime?.parseHHmm()
+        else {
+            return "-"
+        }
+        
+        let bedMinutes =
+        bed.hour * 60 + bed.minute
+        
+        let wakeMinutes =
+        wake.hour * 60 + wake.minute
+        
+        var total =
+        wakeMinutes - bedMinutes
+        
+        if total < 0 {
+            total += 24 * 60
+        }
+        
+        let hours = total / 60
+        let minutes = total % 60
+        
+        return "\(hours)h \(String(format: "%02d", minutes))m"
+    }
+    
+    private func copyPreviousEntry() {
+        
+        guard let currentDate = Date.from(isoDate: dateString),
+              let previousDate = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: currentDate
+              )
+        else {
+            return
+        }
+        
+        guard let previous = entries.first(
+            where: { $0.date == previousDate.isoDate }
+        )
+        else {
+            return
+        }
+        
+        wakeUpDraft =
+        previous.wakeUpTime ?? ""
+        
+        bedTimeDraft =
+        previous.bedTime ?? ""
+        
+        sleepQualityDraft =
+        Double(previous.sleepQuality ?? 5)
+        
+        workedAtJobDraft =
+        previous.workedAtJob
+        
+        workedAtHomeDraft =
+        previous.workedAtHome
+        
+        fumDraft =
+        previous.fum
+        
+        gatDraft =
+        previous.gat
+        
+        meditationDraft =
+        previous.meditation
+        
+        yogaDraft =
+        previous.yoga
+        
+        dibuixDraft =
+        previous.dibuix
+        
+        llegirDraft =
+        previous.llegir
+        
+        sportsDraft =
+        previous.sports
+        
+        counterDraft =
+        previous.counter ?? 0
+        
+        customValuesDraft =
+        previous.customValues
+        
+        notesDraft =
+        previous.notes ?? ""
+    }
+    
+    private func loadOrCreate() {
+        
+        if let existing = entries.first(where: { $0.date == dateString }) {
+            
+            entry = existing
+            
+            sleepQualityDraft =
+            Double(existing.sleepQuality ?? 5)
+            
+            notesDraft =
+            existing.notes ?? ""
+            
+            customValuesDraft =
+            existing.customValues
+            
+            workedAtJobDraft = existing.workedAtJob
+            workedAtHomeDraft = existing.workedAtHome
+            fumDraft = existing.fum
+            gatDraft = existing.gat
+            meditationDraft = existing.meditation
+            yogaDraft = existing.yoga
+            dibuixDraft = existing.dibuix
+            llegirDraft = existing.llegir
+            counterDraft = existing.counter ?? 0
+            sportsDraft = existing.sports
+            wakeUpDraft = existing.wakeUpTime ?? ""
+            bedTimeDraft = existing.bedTime ?? ""
+            
+        } else {
+            
+            let e = DailyEntry(date: dateString)
+            
+            ctx.insert(e)
+            try? ctx.save()
+            
+            entry = e
+            
+            sleepQualityDraft =
+            Double(e.sleepQuality ?? 5)
+            
+            notesDraft = ""
+            
+            customValuesDraft = [:]
+            
+            workedAtJobDraft = false
+            workedAtHomeDraft = false
+            fumDraft = false
+            gatDraft = false
+            meditationDraft = false
+            yogaDraft = false
+            dibuixDraft = false
+            llegirDraft = false
+            counterDraft = 0
+            sportsDraft = []
+            wakeUpDraft = ""
+            bedTimeDraft = ""
+            
+        }
+    }
+    
     private func builtIn(
         _ fieldKey: String
     ) -> BuiltInVariable? {
@@ -945,247 +1135,91 @@ struct DataEntryView: View {
                 )
         }
     }
-
-
-    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading) {
-            Text(title)
-                .font(.title3.weight(.semibold)) // ✅ CHANGE
-            content()
-        }
-        .padding()
-        .background(theme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
     
-    private func sleepText(for entry: DailyEntry) -> String {
-
-        guard
-            let currentDate = Date.from(isoDate: entry.date),
-            let wake = entry.wakeUpTime?.parseHHmm()
-        else {
-            return "-"
-        }
-
-        guard
-            let previousDate = Calendar.current.date(
-                byAdding: .day,
-                value: -1,
-                to: currentDate
-            )
-        else {
-            return "-"
-        }
-
-        guard
-            let previousEntry = entries.first(
-                where: { $0.date == previousDate.isoDate }
-            ),
-            let bed = previousEntry.bedTime?.parseHHmm()
-        else {
-            return "-"
-        }
-
-        let bedMinutes =
-            bed.hour * 60 + bed.minute
-
-        let wakeMinutes =
-            wake.hour * 60 + wake.minute
-
-        var total =
-            wakeMinutes - bedMinutes
-
-        if total < 0 {
-            total += 24 * 60
-        }
-
-        let hours = total / 60
-        let minutes = total % 60
-
-        return "\(hours)h \(String(format: "%02d", minutes))m"
-    }
-
-    private func copyPreviousEntry() {
-
-        guard let currentDate = Date.from(isoDate: dateString),
-              let previousDate = Calendar.current.date(
-                byAdding: .day,
-                value: -1,
-                to: currentDate
-              )
-        else {
-            return
-        }
-
-        guard let previous = entries.first(
-            where: { $0.date == previousDate.isoDate }
-        ),
-        let current = entry
-        else {
-            return
-        }
-        current.bedTime = previous.bedTime
-        current.wakeUpTime = previous.wakeUpTime
-        current.sleepQuality = previous.sleepQuality
-        current.workedAtJob = previous.workedAtJob
-        current.workedAtHome = previous.workedAtHome
-
-        current.fum = previous.fum
-        current.gat = previous.gat
-
-        current.meditation = previous.meditation
-        current.yoga = previous.yoga
-        current.dibuix = previous.dibuix
-        current.llegir = previous.llegir
-
-        current.sports = previous.sports
-
-        current.counter = previous.counter
-
-        current.customValues = previous.customValues
-        entry = nil
-        entry = current
-        try? ctx.save()
-    }
     
-    private func loadOrCreate() {
-
-        if let existing = entries.first(where: { $0.date == dateString }) {
-
-            entry = existing
-
-            sleepQualityDraft =
-                Double(existing.sleepQuality ?? 5)
-
-            notesDraft =
-                existing.notes ?? ""
-
-            customValuesDraft =
-                existing.customValues
+    
+    private struct TimePicker: View {
+        
+        let label: String
+        
+        @Binding var value: String
+        
+        @State private var time = Date()
+        
+        var body: some View {
             
-            workedAtJobDraft = existing.workedAtJob
-            workedAtHomeDraft = existing.workedAtHome
-            fumDraft = existing.fum
-            gatDraft = existing.gat
-            meditationDraft = existing.meditation
-            yogaDraft = existing.yoga
-            dibuixDraft = existing.dibuix
-            llegirDraft = existing.llegir
-            counterDraft = existing.counter ?? 0
-            sportsDraft = existing.sports
-            
-        } else {
-
-            let e = DailyEntry(date: dateString)
-
-            ctx.insert(e)
-            try? ctx.save()
-
-            entry = e
-
-            sleepQualityDraft =
-                Double(e.sleepQuality ?? 5)
-
-            notesDraft = ""
-
-            customValuesDraft = [:]
-            
-            workedAtJobDraft = false
-            workedAtHomeDraft = false
-            fumDraft = false
-            gatDraft = false
-            meditationDraft = false
-            yogaDraft = false
-            dibuixDraft = false
-            llegirDraft = false
-            counterDraft = 0
-            sportsDraft = []
-
-        }
-    }
-}
-
-private struct TimePicker: View {
-
-    let label: String
-
-    @Binding var value: String
-
-    @State private var time = Date()
-
-    var body: some View {
-
-        VStack(alignment: .leading) {
-
-            if !label.isEmpty {
-                Text(label)
-            }
-
-            DatePicker(
-                "",
-                selection: $time,
-                displayedComponents: .hourAndMinute,
-            )
-            .labelsHidden()
-            
-
-            .onAppear {
-
-                guard let parsed = value.parseHHmm()
-                else { return }
-
-                var comps =
+            VStack(alignment: .leading) {
+                
+                if !label.isEmpty {
+                    Text(label)
+                }
+                
+                DatePicker(
+                    "",
+                    selection: $time,
+                    displayedComponents: .hourAndMinute,
+                )
+                .labelsHidden()
+                
+                
+                .onAppear {
+                    
+                    guard let parsed = value.parseHHmm()
+                    else { return }
+                    
+                    var comps =
                     Calendar.current.dateComponents(
                         [.year,.month,.day],
                         from: Date()
                     )
-
-                comps.hour = parsed.hour
-                comps.minute = parsed.minute
-
-                if let d =
-                    Calendar.current.date(from: comps) {
-
-                    time = d
+                    
+                    comps.hour = parsed.hour
+                    comps.minute = parsed.minute
+                    
+                    if let d =
+                        Calendar.current.date(from: comps) {
+                        
+                        time = d
+                    }
                 }
-            }
-
-            .onChange(of: time) {
-                value = formatTime(time)
-            }
-            .onChange(of: value) {
-
-                guard let parsed = value.parseHHmm()
-                else { return }
-
-                var comps =
+                
+                .onChange(of: time) {
+                    value = formatTime(time)
+                }
+                .onChange(of: value) {
+                    
+                    guard let parsed = value.parseHHmm()
+                    else { return }
+                    
+                    var comps =
                     Calendar.current.dateComponents(
                         [.year,.month,.day],
                         from: Date()
                     )
-
-                comps.hour = parsed.hour
-                comps.minute = parsed.minute
-
-                if let d = Calendar.current.date(from: comps) {
-                    time = d
+                    
+                    comps.hour = parsed.hour
+                    comps.minute = parsed.minute
+                    
+                    if let d = Calendar.current.date(from: comps) {
+                        time = d
+                    }
                 }
             }
         }
-    }
-
-    private func formatTime(_ d: Date) -> String {
-
-        let c =
+        
+        private func formatTime(_ d: Date) -> String {
+            
+            let c =
             Calendar.current.dateComponents(
                 [.hour,.minute],
                 from: d
             )
-
-        return String(
-            format: "%02d:%02d",
-            c.hour ?? 0,
-            c.minute ?? 0
-        )
+            
+            return String(
+                format: "%02d:%02d",
+                c.hour ?? 0,
+                c.minute ?? 0
+            )
+        }
     }
 }

@@ -25,6 +25,17 @@ struct DataEntryView: View {
     @State private var isEditingSports = false
     @State private var showDeleteAlert = false
     @State private var sleepQualityDraft = 5.0
+    @State private var testToggle = false
+    @State private var workedAtJobDraft = false
+    @State private var workedAtHomeDraft = false
+    @State private var fumDraft = false
+    @State private var gatDraft = false
+    @State private var meditationDraft = false
+    @State private var yogaDraft = false
+    @State private var dibuixDraft = false
+    @State private var llegirDraft = false
+    @State private var counterDraft = 0
+    @State private var sportsDraft: [String] = []
     
     init(
         selectedTab: Binding<Int>,
@@ -36,7 +47,7 @@ struct DataEntryView: View {
             initialValue: initialDate ?? Date()
         )
     }
-
+    @State private var customValuesDraft: [String:Int] = [:]
     @State private var notesDraft = ""
     @FocusState private var isEditingNotes: Bool
 
@@ -47,6 +58,12 @@ struct DataEntryView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     datePicker
+                    Button(testToggle ? "TEST ON" : "TEST OFF") {
+                        testToggle.toggle()
+                    }
+                    .padding()
+                    .background(.green.opacity(0.2))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     
                     Button {
 
@@ -295,10 +312,10 @@ struct DataEntryView: View {
 
                             selectable(
                                 job.displayLabel(using: settings),
-                                active: e.workedAtJob,
+                                active: workedAtJobDraft,
                                 color: job.displayColor(using: settings)
                             ) {
-                                e.workedAtJob.toggle()
+                                workedAtJobDraft.toggle()
                             }
                         }
 
@@ -307,10 +324,10 @@ struct DataEntryView: View {
 
                             selectable(
                                 home.displayLabel(using: settings),
-                                active: e.workedAtHome,
+                                active: workedAtHomeDraft,
                                 color: home.displayColor(using: settings)
                             ) {
-                                e.workedAtHome.toggle()
+                                workedAtHomeDraft.toggle()
                             }
                         }
                     }
@@ -344,10 +361,10 @@ struct DataEntryView: View {
 
                             selectable(
                                 fum.displayLabel(using: settings),
-                                active: e.fum,
+                                active: fumDraft,
                                 color: fum.displayColor(using: settings)
                             ) {
-                                e.fum.toggle()
+                                fumDraft.toggle()
                             }
                         }
 
@@ -356,10 +373,10 @@ struct DataEntryView: View {
 
                             selectable(
                                 gat.displayLabel(using: settings),
-                                active: e.gat,
+                                active: gatDraft,
                                 color: gat.displayColor(using: settings)
                             ) {
-                                e.gat.toggle()
+                                gatDraft.toggle()
                             }
                         }
                     }
@@ -401,10 +418,10 @@ struct DataEntryView: View {
 
                                 selectable(
                                     meditation.displayLabel(using: settings),
-                                    active: e.meditation,
+                                    active: meditationDraft,
                                     color: meditation.displayColor(using: settings)
                                 ) {
-                                    e.meditation.toggle()
+                                    meditationDraft.toggle()
                                 }
                             }
 
@@ -413,10 +430,10 @@ struct DataEntryView: View {
 
                                 selectable(
                                     yoga.displayLabel(using: settings),
-                                    active: e.yoga,
+                                    active: yogaDraft,
                                     color: yoga.displayColor(using: settings)
                                 ) {
-                                    e.yoga.toggle()
+                                    yogaDraft.toggle()
                                 }
                             }
                         }
@@ -428,10 +445,10 @@ struct DataEntryView: View {
 
                                 selectable(
                                     dibuix.displayLabel(using: settings),
-                                    active: e.dibuix,
+                                    active: dibuixDraft,
                                     color: dibuix.displayColor(using: settings)
                                 ) {
-                                    e.dibuix.toggle()
+                                    dibuixDraft.toggle()
                                 }
                             }
 
@@ -440,10 +457,10 @@ struct DataEntryView: View {
 
                                 selectable(
                                     llegir.displayLabel(using: settings),
-                                    active: e.llegir,
+                                    active: llegirDraft,
                                     color: llegir.displayColor(using: settings)
                                 ) {
-                                    e.llegir.toggle()
+                                    llegirDraft.toggle()
                                 }
                             }
                         }
@@ -458,8 +475,7 @@ struct DataEntryView: View {
     private func sportsSection(_ e: DailyEntry) -> some View {
         section("Esports") {
             
-            let selectedSports = Set(e.sports)
-            
+            let selectedSports = Set(sportsDraft)
 
             VStack(spacing: 10) {
 
@@ -509,11 +525,21 @@ struct DataEntryView: View {
         }
     }
 
-    private func toggleSport(_ e: DailyEntry, _ name: String) {
-        var s = e.sports
-        if s.contains(name) { s.removeAll { $0 == name } }
-        else { s.append(name) }
-        e.sports = s
+    private func toggleSport(
+        _ e: DailyEntry,
+        _ name: String
+    ) {
+        
+        if sportsDraft.contains(name) {
+            
+            sportsDraft.removeAll {
+                $0 == name
+            }
+            
+        } else {
+            
+            sportsDraft.append(name)
+        }
     }
 
     // MARK: COUNTER ✅ 2 LINES UX
@@ -536,7 +562,7 @@ struct DataEntryView: View {
 
                         HStack {
 
-                            Text("\(e.counter ?? 0)")
+                            Text("\(counterDraft)")
                                 .font(.system(size: 34, weight: .bold))
                                 .frame(width: 90, height: 60)
                                 .background(theme.border.opacity(0.25))
@@ -545,7 +571,7 @@ struct DataEntryView: View {
                             Spacer()
 
                             Button {
-                                e.counter = max(0, (e.counter ?? 0) - 1)
+                                counterDraft = max(0, (e.counter ?? 0) - 1)
                             } label: {
                                 Image(systemName: "minus")
                                     .font(.title2.bold())
@@ -555,7 +581,7 @@ struct DataEntryView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
 
                             Button {
-                                e.counter = (e.counter ?? 0) + 1
+                                counterDraft += 1
                             } label: {
                                 Image(systemName: "plus")
                                     .font(.title2.bold())
@@ -570,7 +596,7 @@ struct DataEntryView: View {
                             ForEach([5, 10, 15, 20], id: \.self) { value in
 
                                 Button("\(value)") {
-                                    e.counter = value
+                                    counterDraft = value
                                 }
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
@@ -581,7 +607,7 @@ struct DataEntryView: View {
                                     : theme.border.opacity(0.25)
                                 )
                                 .foregroundStyle(
-                                    (e.counter ?? 0) == value
+                                    counterDraft == value
                                     ? .white
                                     : theme.text
                                 )
@@ -608,7 +634,7 @@ struct DataEntryView: View {
 
                 section("Personalitzats") {
 
-                    let values = e.customValues
+                    let values = customValuesDraft
                     
                     let booleans = customVariables.filter {
                         $0.type == "boolean"
@@ -632,14 +658,14 @@ struct DataEntryView: View {
                                     color: Color(hex: v.colorHex)
                                 ) {
 
-                                    var cv = e.customValues
+                                    var cv = customValuesDraft
 
                                     cv[v.variableId] =
                                         (cv[v.variableId] ?? 0) > 0
                                         ? 0
                                         : 1
 
-                                    e.customValues = cv
+                                    customValuesDraft = cv
                                 }
                             }
                         }
@@ -670,7 +696,7 @@ struct DataEntryView: View {
 
                                 Button {
 
-                                    var cv = e.customValues
+                                    var cv = customValuesDraft
 
                                     cv[v.variableId] =
                                         max(
@@ -678,7 +704,7 @@ struct DataEntryView: View {
                                             (cv[v.variableId] ?? 0) - 1
                                         )
 
-                                    e.customValues = cv
+                                    customValuesDraft = cv
 
                                 } label: {
 
@@ -695,12 +721,12 @@ struct DataEntryView: View {
 
                                 Button {
 
-                                    var cv = e.customValues
+                                    var cv = customValuesDraft
 
                                     cv[v.variableId] =
                                         (cv[v.variableId] ?? 0) + 1
 
-                                    e.customValues = cv
+                                    customValuesDraft = cv
 
                                 } label: {
 
@@ -739,14 +765,14 @@ struct DataEntryView: View {
 
                                     Button {
 
-                                        var cv = e.customValues
+                                        var cv = customValuesDraft
                                         let current = cv[v.variableId] ?? 0
 
                                         cv[v.variableId] =
                                             current == star
                                             ? 0
                                             : star
-                                        e.customValues = cv
+                                        customValuesDraft = cv
 
                                     } label: {
 
@@ -800,11 +826,33 @@ struct DataEntryView: View {
     // MARK: SAVE
 
     private func saveSection() -> some View {
+
         Button {
 
             if let e = entry {
-                e.sleepQuality = Int(sleepQualityDraft)
-                e.notes = notesDraft
+
+                e.sleepQuality =
+                    Int(sleepQualityDraft)
+
+                e.notes =
+                    notesDraft
+
+                e.customValues =
+                    customValuesDraft
+                
+                e.workedAtJob = workedAtJobDraft
+                e.workedAtHome = workedAtHomeDraft
+                e.fum = fumDraft
+                e.gat = gatDraft
+                e.meditation = meditationDraft
+                e.yoga = yogaDraft
+                e.dibuix = dibuixDraft
+                e.llegir = llegirDraft
+                e.sports = sportsDraft
+                e.counter =
+                    counterDraft == 0
+                    ? nil
+                    : counterDraft
             }
 
             try? ctx.save()
@@ -814,6 +862,7 @@ struct DataEntryView: View {
             dismiss()
 
         } label: {
+
             Text("Guardar")
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -1004,8 +1053,27 @@ struct DataEntryView: View {
         if let existing = entries.first(where: { $0.date == dateString }) {
 
             entry = existing
-            sleepQualityDraft = Double(existing.sleepQuality ?? 5)
 
+            sleepQualityDraft =
+                Double(existing.sleepQuality ?? 5)
+
+            notesDraft =
+                existing.notes ?? ""
+
+            customValuesDraft =
+                existing.customValues
+            
+            workedAtJobDraft = existing.workedAtJob
+            workedAtHomeDraft = existing.workedAtHome
+            fumDraft = existing.fum
+            gatDraft = existing.gat
+            meditationDraft = existing.meditation
+            yogaDraft = existing.yoga
+            dibuixDraft = existing.dibuix
+            llegirDraft = existing.llegir
+            counterDraft = existing.counter ?? 0
+            sportsDraft = existing.sports
+            
         } else {
 
             let e = DailyEntry(date: dateString)
@@ -1014,7 +1082,25 @@ struct DataEntryView: View {
             try? ctx.save()
 
             entry = e
-            sleepQualityDraft = Double(e.sleepQuality ?? 5)
+
+            sleepQualityDraft =
+                Double(e.sleepQuality ?? 5)
+
+            notesDraft = ""
+
+            customValuesDraft = [:]
+            
+            workedAtJobDraft = false
+            workedAtHomeDraft = false
+            fumDraft = false
+            gatDraft = false
+            meditationDraft = false
+            yogaDraft = false
+            dibuixDraft = false
+            llegirDraft = false
+            counterDraft = 0
+            sportsDraft = []
+
         }
     }
 }

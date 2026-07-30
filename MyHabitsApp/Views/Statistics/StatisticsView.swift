@@ -95,52 +95,93 @@ struct StatisticsView: View {
             
             NavigationStack {
 
-                VStack(spacing: 20) {
+                let values = chart.data.map(\.1)
 
-                    Text(chart.title)
-                        .font(.title.bold())
+                ScrollView {
 
-                    Chart {
+                    VStack(spacing: 20) {
 
-                        ForEach(
-                            chart.data,
-                            id: \.0
-                        ) { point in
+                        Chart {
 
-                            LineMark(
-                                x: .value(
-                                    "Data",
-                                    point.0
-                                ),
-                                y: .value(
-                                    chart.title,
-                                    point.1
+                            ForEach(
+                                chart.data,
+                                id: \.0
+                            ) { point in
+
+                                LineMark(
+                                    x: .value(
+                                        "Data",
+                                        point.0
+                                    ),
+                                    y: .value(
+                                        chart.title,
+                                        point.1
+                                    )
                                 )
-                            )
-                            .foregroundStyle(chart.color)
+                                .foregroundStyle(chart.color)
 
-                            PointMark(
-                                x: .value(
-                                    "Data",
-                                    point.0
-                                ),
-                                y: .value(
-                                    chart.title,
-                                    point.1
+                                PointMark(
+                                    x: .value(
+                                        "Data",
+                                        point.0
+                                    ),
+                                    y: .value(
+                                        chart.title,
+                                        point.1
+                                    )
                                 )
-                            )
-                            .foregroundStyle(chart.color)
+                                .foregroundStyle(chart.color)
+                            }
+                        }
+                        .chartScrollableAxes(.horizontal)
+                        .frame(height: 450)
+                        //.chartScrollableAxes(.horizontal)
+                        //.chartXVisibleDomain(length: 10)
+                        
+                        if !values.isEmpty {
+
+                            HStack(spacing: 12) {
+
+                                statBox(
+                                    title: "Mínim",
+                                    value: String(
+                                        format: "%.1f%@",
+                                        values.min() ?? 0,
+                                        chart.unit
+                                    ),
+                                    color: .green
+                                )
+
+                                statBox(
+                                    title: "Mitjana",
+                                    value: String(
+                                        format: "%.1f%@",
+                                        values.reduce(0,+)
+                                        / Double(values.count),
+                                        chart.unit
+                                    ),
+                                    color: .orange
+                                )
+
+                                statBox(
+                                    title: "Màxim",
+                                    value: String(
+                                        format: "%.1f%@",
+                                        values.max() ?? 0,
+                                        chart.unit
+                                    ),
+                                    color: .red
+                                )
+                            }
                         }
                     }
-                    .frame(height: 450)
-
-                    Spacer()
+                    .padding()
                 }
-                .padding()
                 .navigationTitle(chart.title)
                 .navigationBarTitleDisplayMode(.inline)
             }
-        }    }
+        }
+    }
 
     // MARK: - Month navigator
 

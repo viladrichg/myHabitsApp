@@ -117,6 +117,12 @@ struct CustomVariablesView: View {
 
                             Spacer()
 
+                            if variable.isHidden {
+
+                                Image(systemName: "eye.slash")
+                                    .foregroundStyle(theme.secondary)
+                            }
+
                             Image(systemName: "pencil")
                                 .foregroundStyle(theme.secondary)
                         }
@@ -124,6 +130,7 @@ struct CustomVariablesView: View {
                     .foregroundStyle(theme.text)
                 }
                 .onDelete(perform: deleteVariables)
+                .onMove(perform: moveVariables)
 
                 Button {
 
@@ -278,6 +285,7 @@ struct CustomVariablesView: View {
         selected: Binding<String>
     ) -> some View {
 
+        
         LazyVGrid(
             columns: Array(
                 repeating: GridItem(.flexible()),
@@ -314,6 +322,25 @@ struct CustomVariablesView: View {
 
         offsets.forEach {
             ctx.delete(variables[$0])
+        }
+
+        try? ctx.save()
+    }
+    
+    private func moveVariables(
+        from source: IndexSet,
+        to destination: Int
+    ) {
+
+        var reordered = variables
+
+        reordered.move(
+            fromOffsets: source,
+            toOffset: destination
+        )
+
+        for (index, variable) in reordered.enumerated() {
+            variable.order = index
         }
 
         try? ctx.save()
@@ -364,6 +391,12 @@ private struct EditVariableSheet: View {
                         isOn: $variable.ignoreZerosInStats
                     )
                 }
+                
+                Toggle(
+                    "Variable oculta",
+                    isOn: $variable.isHidden
+                )
+
 
                 LazyVGrid(
                     columns: Array(

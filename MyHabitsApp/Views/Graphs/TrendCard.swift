@@ -152,6 +152,7 @@ struct TrendCard: View {
 
                     ForEach(
                         customVariables.filter {
+                            !$0.isHidden &&
                             $0.type == "boolean"
                         }
                     ) { v in

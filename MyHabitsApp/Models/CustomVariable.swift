@@ -20,6 +20,8 @@ final class CustomVariable {
     var order: Int
 
     var ignoreZerosInStats: Bool = true
+    
+    var isHidden: Bool = false
 
     var createdAt: Date = Date()
 
@@ -29,7 +31,8 @@ final class CustomVariable {
         colorHex: String,
         unit: String = "",
         order: Int,
-        ignoreZerosInStats: Bool = true
+        ignoreZerosInStats: Bool = true,
+        isHidden: Bool = false
     ) {
         self.variableId = "cv_\(UUID().uuidString.lowercased())"
         self.label = label
@@ -38,6 +41,7 @@ final class CustomVariable {
         self.unit = unit
         self.order = order
         self.ignoreZerosInStats = ignoreZerosInStats
+        self.isHidden = isHidden
     }
 }
 // MARK: - Built-in Variables

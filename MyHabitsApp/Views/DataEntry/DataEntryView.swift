@@ -619,6 +619,7 @@ struct DataEntryView: View {
                 section("Personalitzats") {
                     
                     let booleans = customVariables.filter {
+                        !$0.isHidden &&
                         $0.type == "boolean"
                     }
                     
@@ -655,6 +656,7 @@ struct DataEntryView: View {
                     
                     ForEach(
                         customVariables.filter {
+                            !$0.isHidden &&
                             $0.type == "counter"
                         }
                     ) { v in
@@ -729,6 +731,7 @@ struct DataEntryView: View {
                     
                     ForEach(
                         customVariables.filter {
+                            !$0.isHidden &&
                             $0.type == "rating"
                         }
                     ) { v in

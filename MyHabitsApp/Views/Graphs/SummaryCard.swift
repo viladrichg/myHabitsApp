@@ -54,6 +54,7 @@ struct SummaryCard: View {
 
             let booleanVariables =
                 customVariables.filter {
+                    !$0.isHidden &&
                     $0.type == "boolean"
                 }
 

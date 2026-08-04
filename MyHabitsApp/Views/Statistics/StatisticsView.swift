@@ -69,8 +69,8 @@ struct StatisticsView: View {
 
                     ForEach(
                         customVariables.filter {
-                            $0.type == "counter" ||
-                            $0.type == "rating"
+                            !$0.isHidden && ($0.type == "counter" ||
+                            $0.type == "rating")
                         }
                     ) { variable in
 

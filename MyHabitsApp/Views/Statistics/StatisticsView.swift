@@ -93,93 +93,14 @@ struct StatisticsView: View {
 
         }.sheet(item: $selectedExpandedChart) { chart in
             
-            NavigationStack {
-
-                let values = chart.data.map(\.1)
-
-                ScrollView {
-
-                    VStack(spacing: 20) {
-
-                        Chart {
-
-                            ForEach(
-                                chart.data,
-                                id: \.0
-                            ) { point in
-
-                                LineMark(
-                                    x: .value(
-                                        "Data",
-                                        point.0
-                                    ),
-                                    y: .value(
-                                        chart.title,
-                                        point.1
-                                    )
-                                )
-                                .foregroundStyle(chart.color)
-
-                                PointMark(
-                                    x: .value(
-                                        "Data",
-                                        point.0
-                                    ),
-                                    y: .value(
-                                        chart.title,
-                                        point.1
-                                    )
-                                )
-                                .foregroundStyle(chart.color)
-                            }
-                        }
-                        .chartScrollableAxes(.horizontal)
-                        .frame(height: 450)
-                        //.chartScrollableAxes(.horizontal)
-                        //.chartXVisibleDomain(length: 10)
-                        
-                        if !values.isEmpty {
-
-                            HStack(spacing: 12) {
-
-                                statBox(
-                                    title: "Mínim",
-                                    value: String(
-                                        format: "%.1f%@",
-                                        values.min() ?? 0,
-                                        chart.unit
-                                    ),
-                                    color: .green
-                                )
-
-                                statBox(
-                                    title: "Mitjana",
-                                    value: String(
-                                        format: "%.1f%@",
-                                        values.reduce(0,+)
-                                        / Double(values.count),
-                                        chart.unit
-                                    ),
-                                    color: .orange
-                                )
-
-                                statBox(
-                                    title: "Màxim",
-                                    value: String(
-                                        format: "%.1f%@",
-                                        values.max() ?? 0,
-                                        chart.unit
-                                    ),
-                                    color: .red
-                                )
-                            }
-                        }
-                    }
-                    .padding()
-                }
-                .navigationTitle(chart.title)
-                .navigationBarTitleDisplayMode(.inline)
-            }
+            ExpandedChartView(
+                content: .line(
+                    title: chart.title,
+                    points: chart.data,
+                    color: chart.color,
+                    unit: chart.unit
+                )
+            )
         }
     }
 

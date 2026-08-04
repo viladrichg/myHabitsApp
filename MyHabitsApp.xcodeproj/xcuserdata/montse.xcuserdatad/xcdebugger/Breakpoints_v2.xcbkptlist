@@ -14,10 +14,10 @@
             filePath = "MyHabitsApp/Views/Statistics/StatisticsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "575"
-            endingLineNumber = "575"
-            landmarkName = "sleepData"
-            landmarkType = "24">
+            startingLineNumber = "496"
+            endingLineNumber = "496"
+            landmarkName = "StatisticsView"
+            landmarkType = "14">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -46,10 +46,10 @@
             filePath = "MyHabitsApp/Views/Statistics/StatisticsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "849"
-            endingLineNumber = "849"
-            landmarkName = "customCounterCard(_:)"
-            landmarkType = "7">
+            startingLineNumber = "770"
+            endingLineNumber = "770"
+            landmarkName = "pitellsCard"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

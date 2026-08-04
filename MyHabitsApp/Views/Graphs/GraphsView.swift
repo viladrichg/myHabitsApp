@@ -12,43 +12,102 @@ struct GraphsView: View {
 
     @State private var selectedField = "meditation"
     @State private var chartType: ChartType = .accumulated
+    @State private var expandedTrend: ExpandedTrend?
+    @State private var expandedMultiSeries: ExpandedMultiSeries?
 
     enum ChartType: String, CaseIterable {
         case accumulated = "Acumulat"
         case monthly     = "Mensual"
     }
+    
+    private struct ExpandedTrend: Identifiable {
+
+        let id = UUID()
+
+        let title: String
+
+        let points: [TrendCalculator.Point]
+    }
+
+    private struct ExpandedMultiSeries: Identifiable {
+
+        let id = UUID()
+
+        let series: [
+            (
+                field: String,
+                label: String,
+                color: Color,
+                points: [(Date, Double)]
+            )
+        ]
+    }
+
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    // 1. Summary
+
                     SummaryCard(
                         entries: filteredEntries,
                         customVariables: customVariables
                     )
 
-                    // 2. Trend / Ritme
                     TrendCard(
                         entries: filteredEntries,
                         customVariables: customVariables,
                         selectedField: $selectedField,
-                        timeframe: settings?.chartTimeframe ?? "month"
+                        timeframe: settings?.chartTimeframe ?? "month",
+                        onOpenFullscreen: { title, points in
+
+                            expandedTrend = ExpandedTrend(
+                                title: title,
+                                points: points
+                            )
+                        }
                     )
 
-                    // 3. Multi-series chart
                     chartTypePickerView
+
                     MultiSeriesChartCard(
                         entries: filteredEntries,
                         chartType: chartType,
-                        customVariables: customVariables
+                        customVariables: customVariables,
+                        onOpenFullscreen: { series in
+
+                            expandedMultiSeries = ExpandedMultiSeries(
+                                series: series
+                            )
+                        }
                     )
                 }
                 .padding()
             }
             .background(theme.bg.ignoresSafeArea())
             .navigationTitle("Gràfics")
-            .toolbar { timeframeToolbar }
+            .toolbar {
+                timeframeToolbar
+            }
+        }
+        .sheet(item: $expandedTrend) { trend in
+
+            ExpandedChartView(
+                content: .trend(
+                    title: trend.title,
+                    points: trend.points
+                )
+            )
+        }
+        
+        .sheet(item: $expandedMultiSeries) { data in
+
+            ExpandedChartView(
+                content: .multiSeries(
+                    title: chartType.rawValue,
+                    series: data.series
+                )
+            )
         }
     }
 

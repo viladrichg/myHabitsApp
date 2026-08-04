@@ -7,18 +7,22 @@ import SwiftData
 /// The Y axis is normalized 0–1: 1 = fastest improvement pace seen in the period.
 struct TrendCard: View {
     @Environment(\.appTheme) var theme
+
     @Query(sort: \AppSettings.createdAt)
     private var allSettings: [AppSettings]
 
     private var settings: AppSettings? {
         allSettings.first
     }
+
     let entries: [DailyEntry]
     let customVariables: [CustomVariable]
 
     @Binding var selectedField: String
 
     let timeframe: String
+    let onOpenFullscreen: ((String, [TrendCalculator.Point]) -> Void)?
+
 
     private var dates: [Date] { TrendCalculator.dates(for: timeframe) }
 
@@ -119,6 +123,13 @@ struct TrendCard: View {
                     }
                 }
                 .frame(height: 180)
+                .onTapGesture {
+
+                    onOpenFullscreen?(
+                        currentFieldLabel,
+                        trendPoints
+                    )
+                }
             }
         }
         .padding()

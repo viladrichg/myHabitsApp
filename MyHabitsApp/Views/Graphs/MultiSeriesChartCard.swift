@@ -7,6 +7,12 @@ struct MultiSeriesChartCard: View {
     let entries: [DailyEntry]
     let chartType: GraphsView.ChartType
     let customVariables: [CustomVariable]
+    let onOpenFullscreen: ((
+        [(field: String,
+          label: String,
+          color: Color,
+          points: [(Date, Double)])]
+    ) -> Void)?
     
     @Query(sort: \AppSettings.createdAt)
     private var allSettings: [AppSettings]
@@ -184,6 +190,9 @@ struct MultiSeriesChartCard: View {
                 }
                 .chartLegend(.hidden)  // We use the chips above
                 .frame(height: 260)
+                .onTapGesture {
+                    onOpenFullscreen?(seriesData)
+                }
             }
         }
         .padding()

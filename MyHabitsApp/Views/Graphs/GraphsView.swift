@@ -114,10 +114,33 @@ struct GraphsView: View {
     // MARK: - Filtered entries for current timeframe
 
     private var filteredEntries: [DailyEntry] {
-        let dates = TrendCalculator.dates(for: settings?.chartTimeframe ?? "month")
-        guard let start = dates.first, let end = dates.last else { return [] }
-        let s = start.isoDate; let e = end.isoDate
-        return entries.filter { $0.date >= s && $0.date <= e }
+
+        let today = Date().isoDate
+
+        if settings?.chartTimeframe == "all" {
+
+            return entries.filter {
+                $0.date <= today
+            }
+        }
+
+        let dates = TrendCalculator.dates(
+            for: settings?.chartTimeframe ?? "month"
+        )
+
+        guard let start = dates.first,
+              let end = dates.last
+        else {
+            return []
+        }
+
+        let s = start.isoDate
+        let e = min(end.isoDate, today)
+
+        return entries.filter {
+            $0.date >= s &&
+            $0.date <= e
+        }
     }
 
     private var chartTypePickerView: some View {

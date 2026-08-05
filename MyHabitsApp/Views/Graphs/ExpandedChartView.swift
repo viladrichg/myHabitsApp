@@ -32,6 +32,9 @@ enum ExpandedChartContent {
 struct ExpandedChartView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
+    
     @State private var zoomDays = 30
     
     let content: ExpandedChartContent
@@ -39,65 +42,86 @@ struct ExpandedChartView: View {
     var body: some View {
         
         NavigationStack {
+                    
+                    VStack(spacing: 20) {
+                        
+                        HStack {
+
+                            Spacer()
+
+                            Button {
+
+                                dismiss()
+
+                            } label: {
+
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        
+                        switch content {
+                            
+                        case let .line(
+                            title,
+                            points,
+                            color,
+                            unit
+                        ):
+                            
+                            lineChart(
+                                title: title,
+                                points: points,
+                                color: color,
+                                unit: unit
+                            )
+                            
+                        case let .trend(
+                            title,
+                            points
+                        ):
+                            
+                            trendChart(
+                                title: title,
+                                points: points
+                            )
+                            
+                        case let .multiSeries(
+                            title,
+                            series
+                        ):
+                            
+                            multiSeriesChart(
+                                title: title,
+                                series: series
+                            )
+                        }
+                    }
+                    .padding()
+                }
             
-            ScrollView {
-                
-                VStack(spacing: 20) {
-                    
-                    switch content {
-                        
-                    case let .line(
-                        title,
-                        points,
-                        color,
-                        unit
-                    ):
-                        
-                        lineChart(
-                            title: title,
-                            points: points,
-                            color: color,
-                            unit: unit
-                        )
-                        
-                    case let .trend(
-                        title,
-                        points
-                    ):
-                        
-                        trendChart(
-                            title: title,
-                            points: points
-                        )
-                        
-                    case let .multiSeries(
-                        title,
-                        series
-                    ):
-                        
-                        multiSeriesChart(
-                            title: title,
-                            series: series
-                        )
-                    }
-                }
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                
-                ToolbarItem(
-                    placement: .topBarTrailing
-                ) {
-                    
-                    Button("Tancar") {
-                        dismiss()
-                    }
-                }
-            }
+    }
+    
+    private var visibleDomain: TimeInterval {
+
+        switch zoomDays {
+
+        case 7:
+            return 7 * 86400
+
+        case 30:
+            return 30 * 86400
+
+        case 90:
+            return 90 * 86400
+
+        default:
+            return 3650 * 86400
         }
     }
     
+    // MARK: LineChart
     @ViewBuilder
     private func lineChart(
         title: String,
@@ -106,26 +130,7 @@ struct ExpandedChartView: View {
         unit: String
     ) -> some View {
         
-        let cutoffDate = Calendar.current.date(
-            byAdding: .day,
-            value: -zoomDays,
-            to: Date()
-        )
-
-        let visiblePoints = points.filter {
-
-            if zoomDays >= 3650 {
-                return true
-            }
-
-            guard let cutoffDate else {
-                return true
-            }
-
-            return $0.0 >= cutoffDate
-        }
-
-        let values = visiblePoints.map { $0.1 }
+        let values = points.map { $0.1 }
         
         Text(title)
             .font(.title.bold())
@@ -145,7 +150,7 @@ struct ExpandedChartView: View {
         Chart {
 
             ForEach(
-                visiblePoints,
+                points,
                 id: \.0
             ) { point in
 
@@ -174,7 +179,9 @@ struct ExpandedChartView: View {
                 .foregroundStyle(color)
             }
         }
-        .frame(height: 450)
+        .chartScrollableAxes(.horizontal)
+        .chartXVisibleDomain(length: visibleDomain)
+        .frame(height: chartHeight)
 
         if !values.isEmpty {
 
@@ -213,6 +220,17 @@ struct ExpandedChartView: View {
             }
         }
     }
+    
+    private var chartHeight: CGFloat {
+
+        horizontalSizeClass == .regular
+        ? 650
+        : 450
+    }
+    
+    
+    // MARK: TrendChart
+
     @ViewBuilder
     private func trendChart(
         title: String,
@@ -231,27 +249,7 @@ struct ExpandedChartView: View {
         }
         .pickerStyle(.segmented)
 
-        let cutoffDate = Calendar.current.date(
-            byAdding: .day,
-            value: -zoomDays,
-            to: Date()
-        )
-
-        let visiblePoints = points.filter {
-
-            if zoomDays >= 3650 {
-                return true
-            }
-
-            guard let cutoffDate else {
-                return true
-            }
-
-            return $0.date >= cutoffDate
-        }
-        
-
-        Chart(visiblePoints) { point in
+        Chart(points) { point in
 
             AreaMark(
                 x: .value(
@@ -275,9 +273,13 @@ struct ExpandedChartView: View {
                 )
             )
         }
-        .chartYScale(domain: 0...1)
-        .frame(height: 450)
+        .chartScrollableAxes(.horizontal)
+        .chartXVisibleDomain(length: visibleDomain)
+        .frame(height: chartHeight)
     }
+    
+    // MARK: MultiSeriesChart
+
 
     @ViewBuilder
     private func multiSeriesChart(
@@ -311,34 +313,18 @@ struct ExpandedChartView: View {
         }
         .pickerStyle(.segmented)
         
-        let cutoffDate = Calendar.current.date(
-    
-        byAdding: .day,
-        
-        value: -zoomDays,
-        
-        to: Date()
-        
-        )
+        Text("Gira el dispositiu per veure més detall")
+            .font(.caption)
+            .foregroundStyle(.secondary)
         
         Chart {
 
             ForEach(series, id: \.field) { item in
 
-                let visiblePoints = item.points.filter {
-
-                    if zoomDays >= 3650 {
-                        return true
-                    }
-
-                    guard let cutoffDate else {
-                        return true
-                    }
-
-                    return $0.0 >= cutoffDate
-                }
-
-                ForEach(visiblePoints, id: \.0) { point in
+                ForEach(
+                    item.points,
+                    id: \.0
+                ){ point in
 
                     LineMark(
                         x: .value(
@@ -368,7 +354,8 @@ struct ExpandedChartView: View {
             position: .bottom
         )
         .chartScrollableAxes(.horizontal)
-        .frame(height: 500)
+        .chartXVisibleDomain(length: visibleDomain)
+        .frame(height: chartHeight)
     }
     
     private func statBox(

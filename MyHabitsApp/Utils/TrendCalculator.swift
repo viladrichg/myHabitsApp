@@ -81,7 +81,7 @@ struct TrendCalculator {
         case "3months":   return stride(today, days: 90)
         case "6months":   return stride(today, days: 180)
         case "year":      return stride(today, days: 365)
-        default:          return stride(today, days: 365)
+        default:          return stride(today, days: 10000)
         }
     }
 

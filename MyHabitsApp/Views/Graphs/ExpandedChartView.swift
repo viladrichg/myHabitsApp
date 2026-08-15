@@ -169,7 +169,13 @@ struct ExpandedChartView: View {
         let minValue = values.min() ?? 0
         let maxValue = values.max() ?? 1
 
-        let padding = (maxValue - minValue) * 0.2
+        let range = max(maxValue - minValue, 1)
+
+        let padding: Double =
+            (selectedRange == .days15 ||
+             selectedRange == .month)
+            ? range * 0.1
+            : range * 0.1
         
         Text(title)
             .font(.title.bold())
@@ -184,22 +190,17 @@ struct ExpandedChartView: View {
 
         Chart {
 
-            ForEach(
-                points,
-                id: \.0
-            ) { point in
+            ForEach(points, id: \.0) { point in
 
-                LineMark(
-                    x: .value(
-                        "Data",
-                        point.0
-                    ),
-                    y: .value(
-                        title,
-                        point.1
+                if selectedRange == .days15 ||
+                   selectedRange == .month {
+
+                    LineMark(
+                        x: .value("Data", point.0),
+                        y: .value(title, point.1)
                     )
-                )
-                .foregroundStyle(color)
+                    .foregroundStyle(color)
+                }
 
                 PointMark(
                     x: .value(
@@ -223,7 +224,7 @@ struct ExpandedChartView: View {
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleDomainLength(for: points))
         .frame(height: chartHeight)
-        //.chartYScale(domain: (minValue - padding)...(maxValue + padding))
+        .chartYScale(domain: (minValue - padding)...(maxValue + padding))
         .chartXAxis {
 
             AxisMarks { value in

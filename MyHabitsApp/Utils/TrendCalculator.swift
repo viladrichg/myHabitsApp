@@ -102,7 +102,7 @@ struct TrendCalculator {
 
 /// Returns at most `maxLabels` evenly-spaced dates from the range,
 /// formatted as "dd/MM/yyyy". Used by all chart views.
-func sparseXLabels(from dates: [Date], maxLabels: Int = 6) -> [(date: Date, label: String)] {
+func sparseXLabels(from dates: [Date], maxLabels: Int = 10) -> [(date: Date, label: String)] {
     guard !dates.isEmpty else { return [] }
     let step = max(1, dates.count / max(1, maxLabels - 1))
     var result: [(Date, String)] = []

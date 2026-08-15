@@ -32,12 +32,63 @@ enum ExpandedChartContent {
 struct ExpandedChartView: View {
     
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.horizontalSizeClass)
-    private var horizontalSizeClass
-    
-    @State private var zoomDays = 30
+    @Environment(\.verticalSizeClass)
+    private var verticalSizeClass
     
     let content: ExpandedChartContent
+    
+    @State private var scrollPosition: Date = .now
+    
+    @State private var selectedRange: ChartRange = .month
+    
+    enum ChartRange: String, CaseIterable {
+        case days15 = "15D"
+        case month = "1M"
+        case threeMonths = "3M"
+        case year = "1A"
+        case all = "Tot"
+
+        var days: Int? {
+            switch self {
+            case .days15: return 15
+            case .month: return 30
+            case .threeMonths: return 90
+            case .year: return 365
+            case .all: return nil
+            }
+        }
+    }
+    
+    private func visibleDomainLength(
+        for points: [(Date, Double)]
+    ) -> TimeInterval {
+
+        switch selectedRange {
+
+        case .days15:
+            return 15 * 24 * 60 * 60
+
+        case .month:
+            return 30 * 24 * 60 * 60
+
+        case .threeMonths:
+            return 90 * 24 * 60 * 60
+
+        case .year:
+            return 365 * 24 * 60 * 60
+
+        case .all:
+
+            guard
+                let first = points.first?.0,
+                let last = points.last?.0
+            else {
+                return 30 * 24 * 60 * 60
+            }
+
+            return last.timeIntervalSince(first)
+        }
+    }
     
     var body: some View {
         
@@ -59,6 +110,7 @@ struct ExpandedChartView: View {
                                     .font(.title)
                                     .foregroundStyle(.secondary)
                             }
+                            .padding(.top,8)
                         }
                         
                         switch content {
@@ -99,26 +151,9 @@ struct ExpandedChartView: View {
                         }
                     }
                     .padding()
+                    
                 }
             
-    }
-    
-    private var visibleDomain: TimeInterval {
-
-        switch zoomDays {
-
-        case 7:
-            return 7 * 86400
-
-        case 30:
-            return 30 * 86400
-
-        case 90:
-            return 90 * 86400
-
-        default:
-            return 3650 * 86400
-        }
     }
     
     // MARK: LineChart
@@ -131,19 +166,19 @@ struct ExpandedChartView: View {
     ) -> some View {
         
         let values = points.map { $0.1 }
+        let minValue = values.min() ?? 0
+        let maxValue = values.max() ?? 1
+
+        let padding = (maxValue - minValue) * 0.2
         
         Text(title)
             .font(.title.bold())
-
-        Picker("", selection: $zoomDays) {
-
-            Text("7d").tag(7)
-
-            Text("30d").tag(30)
-
-            Text("90d").tag(90)
-
-            Text("Tot").tag(3650)
+        
+        Picker("", selection: $selectedRange) {
+            ForEach(ChartRange.allCases, id: \.self) { range in
+                Text(range.rawValue)
+                    .tag(range)
+            }
         }
         .pickerStyle(.segmented)
 
@@ -179,9 +214,75 @@ struct ExpandedChartView: View {
                 .foregroundStyle(color)
             }
         }
+        .onAppear {
+            if let lastDate = points.last?.0 {
+                scrollPosition = lastDate
+            }
+        }
+        .chartScrollPosition(x: $scrollPosition)
         .chartScrollableAxes(.horizontal)
-        .chartXVisibleDomain(length: visibleDomain)
+        .chartXVisibleDomain(length: visibleDomainLength(for: points))
         .frame(height: chartHeight)
+        //.chartYScale(domain: (minValue - padding)...(maxValue + padding))
+        .chartXAxis {
+
+            AxisMarks { value in
+
+                AxisGridLine()
+
+                AxisTick()
+
+                AxisValueLabel {
+
+                    if let date = value.as(Date.self) {
+
+                        switch selectedRange {
+
+                        case .days15, .month:
+
+                            Text(
+                                date.formatted(
+                                    .dateTime
+                                        .day()
+                                        .month(.abbreviated)
+                                        .year()
+                                )
+                            )
+
+                        case .threeMonths:
+
+                            Text(
+                                date.formatted(
+                                    .dateTime
+                                        .month(.abbreviated)
+                                        .year()
+                                )
+                            )
+
+                        case .year:
+
+                            Text(
+                                date.formatted(
+                                    .dateTime
+                                        .month(.abbreviated)
+                                        .year()
+                                )
+                            )
+
+                        case .all:
+
+                            Text(
+                                date.formatted(
+                                    .dateTime
+                                        .year()
+                                )
+                            )
+                        }
+                    }
+                }
+                .font(.caption2)
+            }
+        }
 
         if !values.isEmpty {
 
@@ -221,11 +322,12 @@ struct ExpandedChartView: View {
         }
     }
     
+    
     private var chartHeight: CGFloat {
 
-        horizontalSizeClass == .regular
-        ? 650
-        : 450
+        verticalSizeClass == .regular
+        ? 500
+        : 350
     }
     
     
@@ -239,15 +341,6 @@ struct ExpandedChartView: View {
 
         Text(title)
             .font(.title.bold())
-
-        Picker("", selection: $zoomDays) {
-
-            Text("7d").tag(7)
-            Text("30d").tag(30)
-            Text("90d").tag(90)
-            Text("Tot").tag(3650)
-        }
-        .pickerStyle(.segmented)
 
         Chart(points) { point in
 
@@ -273,8 +366,6 @@ struct ExpandedChartView: View {
                 )
             )
         }
-        .chartScrollableAxes(.horizontal)
-        .chartXVisibleDomain(length: visibleDomain)
         .frame(height: chartHeight)
     }
     
@@ -296,22 +387,6 @@ struct ExpandedChartView: View {
 
         Text(title)
             .font(.title.bold())
-        
-        Picker("", selection: $zoomDays) {
-
-            Text("7d")
-                .tag(7)
-
-            Text("30d")
-                .tag(30)
-
-            Text("90d")
-                .tag(90)
-
-            Text("Tot")
-                .tag(3650)
-        }
-        .pickerStyle(.segmented)
         
         Text("Gira el dispositiu per veure més detall")
             .font(.caption)
@@ -346,15 +421,14 @@ struct ExpandedChartView: View {
                 }
             }
         }
+        
+        .chartScrollableAxes(.horizontal)
+        .chartXVisibleDomain(length: 30 * 24 * 60 * 60)
         .chartForegroundStyleScale(
             domain: series.map(\.label),
             range: series.map(\.color)
         )
-        .chartLegend(
-            position: .bottom
-        )
-        .chartScrollableAxes(.horizontal)
-        .chartXVisibleDomain(length: visibleDomain)
+        .chartLegend(position: .bottom)
         .frame(height: chartHeight)
     }
     

@@ -518,10 +518,41 @@ struct StatisticsView: View {
             let bedMinutes = bed.hour * 60 + bed.minute
             let wakeMinutes = wake.hour * 60 + wake.minute
 
-            var total = wakeMinutes - bedMinutes
+            func sleepDuration(
+                bed: Int,
+                wake: Int
+            ) -> Int {
 
-            if total < 0 {
-                total += 24 * 60
+                var duration = wake - bed
+
+                if duration < 0 {
+                    duration += 24 * 60
+                }
+
+                return duration
+            }
+
+            let normalDuration = sleepDuration(
+                bed: bedMinutes,
+                wake: wakeMinutes
+            )
+
+            let swappedDuration = sleepDuration(
+                bed: wakeMinutes,
+                wake: bedMinutes
+            )
+
+            let total: Int
+
+            if normalDuration > 14 * 60 &&
+               swappedDuration >= 3 * 60 &&
+               swappedDuration <= 14 * 60 {
+
+                total = swappedDuration
+
+            } else {
+
+                total = normalDuration
             }
 
             return (
@@ -532,7 +563,83 @@ struct StatisticsView: View {
         }
         .sorted { $0.0 < $1.0 }
     }
+    
+    private var entriesByDate: [String: DailyEntry] {
+        Dictionary(
+            uniqueKeysWithValues:
+                entries.map { ($0.date, $0) }
+        )
+    }
 
+    private var allSleepData: [(Date, Double)] {
+
+        entries
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
+
+                guard let date = Date.from(isoDate: entry.date),
+                      let wake = entry.wakeUpTime?.parseHHmm()
+                else { return nil }
+
+                guard let previousDate = Calendar.current.date(
+                    byAdding: .day,
+                    value: -1,
+                    to: date
+                ) else { return nil }
+
+                guard let previousEntry =
+                    entriesByDate[previousDate.isoDate],
+                let bed = previousEntry.bedTime?.parseHHmm()
+                else { return nil }
+
+                let bedMinutes = bed.hour * 60 + bed.minute
+                let wakeMinutes = wake.hour * 60 + wake.minute
+
+                func sleepDuration(
+                    bed: Int,
+                    wake: Int
+                ) -> Int {
+
+                    var duration = wake - bed
+
+                    if duration < 0 {
+                        duration += 24 * 60
+                    }
+
+                    return duration
+                }
+
+                let normalDuration = sleepDuration(
+                    bed: bedMinutes,
+                    wake: wakeMinutes
+                )
+
+                let swappedDuration = sleepDuration(
+                    bed: wakeMinutes,
+                    wake: bedMinutes
+                )
+
+                let total: Int
+
+                if normalDuration > 14 * 60 &&
+                   swappedDuration >= 3 * 60 &&
+                   swappedDuration <= 14 * 60 {
+
+                    total = swappedDuration
+
+                } else {
+
+                    total = normalDuration
+                }
+
+                return (
+                    date,
+                    Double(total) / 60.0
+                )
+            }
+            .sorted { $0.0 < $1.0 }
+    }
+    
     private var sleepCard: some View {
 
         let values = sleepData.map(\.1)
@@ -564,7 +671,7 @@ struct StatisticsView: View {
 
                     selectedExpandedChart = ExpandedChart(
                         title: "Hores de son",
-                        data: sleepData,
+                        data: allSleepData,
                         color: theme.accent,
                         unit: "h"
                     )
@@ -639,6 +746,26 @@ struct StatisticsView: View {
         }
         .sorted { $0.0 < $1.0 }
     }
+    
+    private var allPitellsData: [(Date, Double)] {
+
+        entries
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
+
+                guard let date = Date.from(isoDate: entry.date)
+                else { return nil }
+
+                guard let counter = entry.counter
+                else { return nil }
+
+                return (
+                    date,
+                    Double(counter)
+                )
+            }
+            .sorted { $0.0 < $1.0 }
+    }
 
     private var pitellsCard: some View {
 
@@ -686,7 +813,7 @@ struct StatisticsView: View {
                             $0.fieldKey == "counter"
                         }?.displayLabel(using: settings)
                         ?? "Pitells",
-                        data: pitellsData,
+                        data: allPitellsData,
                         color: counterColor,
                         unit: ""
                     )
@@ -767,6 +894,40 @@ struct StatisticsView: View {
         .sorted { $0.0 < $1.0 }
     }
     
+    private func allCustomCounterData(
+        _ variable: CustomVariable
+    ) -> [(Date, Double)] {
+
+        entries
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
+
+            guard let date =
+                Date.from(isoDate: entry.date)
+            else {
+                return nil
+            }
+
+            let value =
+                entry.customValues[
+                    variable.variableId
+                ] ?? 0
+
+            if variable.ignoreZerosInStats &&
+                value == 0 {
+
+                return nil
+            }
+
+            return (
+                date,
+                Double(value)
+            )
+        }
+        .sorted { $0.0 < $1.0 }
+    }
+
+    
     private func customCounterCard(
         _ variable: CustomVariable
     ) -> some View {
@@ -837,7 +998,7 @@ struct StatisticsView: View {
 
                     selectedExpandedChart = ExpandedChart(
                         title: variable.label,
-                        data: data,
+                        data: allCustomCounterData(variable),
                         color: Color(hex: variable.colorHex),
                         unit: variable.unit
                     )

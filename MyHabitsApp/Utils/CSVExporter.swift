@@ -220,6 +220,10 @@ struct CSVExporter {
         settings: AppSettings?
     ) -> String {
 
+        let sortedEntries = entries.sorted {
+            $0.date > $1.date
+        }
+
         let columns =
             columns(
                 customVariables: customVariables,
@@ -237,7 +241,7 @@ struct CSVExporter {
                 .joined(separator: ",")
         ]
 
-        for entry in entries {
+        for entry in sortedEntries {
 
             let row =
                 columns.map {

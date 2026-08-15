@@ -119,9 +119,13 @@ struct GraphsView: View {
 
         if settings?.chartTimeframe == "all" {
 
-            return entries.filter {
-                $0.date <= today
-            }
+            return entries
+                .filter {
+                    $0.date <= today
+                }
+                .sorted {
+                    $0.date < $1.date
+                }
         }
 
         let dates = TrendCalculator.dates(
@@ -134,13 +138,14 @@ struct GraphsView: View {
             return []
         }
 
-        let s = start.isoDate
-        let e = min(end.isoDate, today)
-
-        return entries.filter {
-            $0.date >= s &&
-            $0.date <= e
-        }
+        return entries
+            .filter {
+                $0.date >= start.isoDate &&
+                $0.date <= min(end.isoDate, today)
+            }
+            .sorted {
+                $0.date < $1.date
+            }
     }
 
     private var chartTypePickerView: some View {

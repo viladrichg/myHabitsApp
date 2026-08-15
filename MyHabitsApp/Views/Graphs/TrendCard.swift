@@ -37,7 +37,7 @@ struct TrendCard: View {
 
     // Sparse X-axis labels (max 6, dd/MM/yyyy)
     private var xLabels: [(date: Date, label: String)] {
-        sparseXLabels(from: dates, maxLabels: 6)
+        sparseXLabels(from: dates, maxLabels: 5)
     }
 
     var body: some View {
@@ -117,7 +117,6 @@ struct TrendCard: View {
                                 Text(d.displayDate)
                                     .font(.caption2)
                                     .foregroundStyle(theme.secondary)
-                                    .rotationEffect(.degrees(-30))
                             }
                         }
                     }

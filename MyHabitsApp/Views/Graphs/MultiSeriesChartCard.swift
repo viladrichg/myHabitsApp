@@ -32,7 +32,7 @@ struct MultiSeriesChartCard: View {
     }
 
     private var xLabels: [(date: Date, label: String)] {
-        sparseXLabels(from: dates, maxLabels: 6)
+        sparseXLabels(from: dates, maxLabels: 5)
     }
 
     private var seriesData: [(field: String, label: String, color: Color, points: [(Date, Double)])] {
@@ -183,7 +183,6 @@ struct MultiSeriesChartCard: View {
                                 Text(d.displayDate)
                                     .font(.caption2)
                                     .foregroundStyle(theme.secondary)
-                                    .rotationEffect(.degrees(-30))
                             }
                         }
                     }

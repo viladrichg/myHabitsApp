@@ -455,20 +455,6 @@ struct HomeView: View {
         _ e: DailyEntry
     ) -> String {
 
-        let workLabel =
-            builtInVariables.first {
-                $0.fieldKey == "workedAtJob"
-            }?.displayLabel(
-                using: settings
-            ) ?? "Feina"
-
-        let homeLabel =
-            builtInVariables.first {
-                $0.fieldKey == "workedAtHome"
-            }?.displayLabel(
-                using: settings
-            ) ?? "Casa"
-
         if e.workedAtJob && e.workedAtHome {
             return "💼🏠 Ambdues"
         }

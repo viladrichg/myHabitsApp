@@ -328,7 +328,7 @@ struct ExpandedChartView: View {
 
         verticalSizeClass == .regular
         ? 500
-        : 350
+        : 298
     }
     
     

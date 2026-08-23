@@ -12,21 +12,11 @@ struct GraphsView: View {
 
     @State private var selectedField = "meditation"
     @State private var chartType: ChartType = .accumulated
-    @State private var expandedTrend: ExpandedTrend?
     @State private var expandedMultiSeries: ExpandedMultiSeries?
 
     enum ChartType: String, CaseIterable {
         case accumulated = "Acumulat"
         case monthly     = "Mensual"
-    }
-    
-    private struct ExpandedTrend: Identifiable {
-
-        let id = UUID()
-
-        let title: String
-
-        let points: [TrendCalculator.Point]
     }
 
     private struct ExpandedMultiSeries: Identifiable {
@@ -54,24 +44,13 @@ struct GraphsView: View {
                         customVariables: customVariables
                     )
 
-                    TrendCard(
-                        entries: filteredEntries,
-                        customVariables: customVariables,
-                        selectedField: $selectedField,
-                        timeframe: settings?.chartTimeframe ?? "month",
-                        onOpenFullscreen: { title, points in
-
-                            expandedTrend = ExpandedTrend(
-                                title: title,
-                                points: points
-                            )
-                        }
-                    )
-
+                    //InsightsPlaceholderCard()
+                    Text("insights ...")
+                    
                     chartTypePickerView
 
                     MultiSeriesChartCard(
-                        entries: filteredEntries,
+                        entries: entries,
                         chartType: chartType,
                         customVariables: customVariables,
                         onOpenFullscreen: { series in
@@ -90,16 +69,6 @@ struct GraphsView: View {
                 timeframeToolbar
             }
         }
-        .sheet(item: $expandedTrend) { trend in
-
-            ExpandedChartView(
-                content: .trend(
-                    title: trend.title,
-                    points: trend.points
-                )
-            )
-        }
-        
         .sheet(item: $expandedMultiSeries) { data in
 
             ExpandedChartView(

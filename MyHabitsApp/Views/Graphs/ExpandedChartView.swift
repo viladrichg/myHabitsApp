@@ -10,10 +10,7 @@ enum ExpandedChartContent {
         unit: String
     )
 
-    case trend(
-        title: String,
-        points: [TrendCalculator.Point]
-    )
+//    case insights
     
     case multiSeries(
         title: String,
@@ -40,6 +37,15 @@ struct ExpandedChartView: View {
     @State private var scrollPosition: Date = .now
     
     @State private var selectedRange: ChartRange = .month
+
+    @State private var zoomIndex = 0
+
+    private let zoomLevels: [Double] = [
+        1.0,
+        0.75,
+        0.5,
+        0.25
+    ]
     
     enum ChartRange: String, CaseIterable {
         case days15 = "15D"
@@ -95,12 +101,11 @@ struct ExpandedChartView: View {
         NavigationStack {
                     
                     VStack(spacing: 20) {
-                        
                         HStack {
 
-                            Spacer()
+                            //Spacer()
 
-                            Button {
+                            /*Button {
 
                                 dismiss()
 
@@ -110,7 +115,7 @@ struct ExpandedChartView: View {
                                     .font(.title)
                                     .foregroundStyle(.secondary)
                             }
-                            .padding(.top,8)
+                            .padding(.top,8)*/
                         }
                         
                         switch content {
@@ -129,15 +134,8 @@ struct ExpandedChartView: View {
                                 unit: unit
                             )
                             
-                        case let .trend(
-                            title,
-                            points
-                        ):
-                            
-                            trendChart(
-                                title: title,
-                                points: points
-                            )
+                     //   case let .insights(
+  
                             
                         case let .multiSeries(
                             title,
@@ -328,46 +326,7 @@ struct ExpandedChartView: View {
 
         verticalSizeClass == .regular
         ? 500
-        : 298
-    }
-    
-    
-    // MARK: TrendChart
-
-    @ViewBuilder
-    private func trendChart(
-        title: String,
-        points: [TrendCalculator.Point]
-    ) -> some View {
-
-        Text(title)
-            .font(.title.bold())
-
-        Chart(points) { point in
-
-            AreaMark(
-                x: .value(
-                    "Data",
-                    point.date
-                ),
-                y: .value(
-                    "Tendència",
-                    point.value
-                )
-            )
-
-            LineMark(
-                x: .value(
-                    "Data",
-                    point.date
-                ),
-                y: .value(
-                    "Tendència",
-                    point.value
-                )
-            )
-        }
-        .frame(height: chartHeight)
+        : 250
     }
     
     // MARK: MultiSeriesChart
@@ -386,15 +345,44 @@ struct ExpandedChartView: View {
         ]
     ) -> some View {
 
+        
         Text(title)
             .font(.title.bold())
         
-        Text("Gira el dispositiu per veure més detall")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+
+            Picker("", selection: $selectedRange) {
+                ForEach(ChartRange.allCases, id: \.self) { range in
+                    Text(range.rawValue)
+                        .tag(range)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Button {
+                zoomIndex = (zoomIndex + 1) % zoomLevels.count
+            } label: {
+                Text("\(Int(zoomLevels[zoomIndex] * 100))%")
+                    .font(.caption.bold())
+                    .frame(minWidth: 44)
+            }
+        }
+
+
+
+           let allValues = series
+            .flatMap(\.points)
+            .map(\.1)
+        
+        let maxValue = allValues.max() ?? 1
+        
+        let upperBound = max(
+            10,
+            maxValue * 1.15 * zoomLevels[zoomIndex]
+        )
         
         Chart {
-
+            
             ForEach(series, id: \.field) { item in
 
                 ForEach(
@@ -424,12 +412,30 @@ struct ExpandedChartView: View {
         }
         
         .chartScrollableAxes(.horizontal)
-        .chartXVisibleDomain(length: 30 * 24 * 60 * 60)
         .chartForegroundStyleScale(
             domain: series.map(\.label),
             range: series.map(\.color)
         )
         .chartLegend(position: .bottom)
+        .chartScrollPosition(x: $scrollPosition)
+        .onAppear {
+            if let lastDate = series
+                .flatMap(\.points)
+                .map(\.0)
+                .max() {
+
+                scrollPosition = lastDate
+            }
+        }
+        
+        .chartXVisibleDomain(
+            length: visibleDomainLength(
+                for: series.flatMap(\.points)
+            )
+        )
+        .chartYScale(
+            domain: 0...upperBound
+        )
         .frame(height: chartHeight)
     }
     

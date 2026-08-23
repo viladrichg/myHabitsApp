@@ -20,6 +20,8 @@ struct MultiSeriesChartCard: View {
     private var settings: AppSettings? {
         allSettings.first
     }
+    
+    @State private var scrollPosition: Date = .now
 
     // Which fields are toggled on
     @State private var visibleFields: Set<String> = [
@@ -31,8 +33,17 @@ struct MultiSeriesChartCard: View {
         entries.compactMap { Date.from(isoDate: $0.date) }.sorted()
     }
 
+    @State private var zoomIndex = 0
+
+    private let zoomLevels: [Double] = [
+        1.0,
+        0.75,
+        0.5,
+        0.25
+    ]
+    
     private var xLabels: [(date: Date, label: String)] {
-        sparseXLabels(from: dates, maxLabels: 5)
+        sparseXLabels(from: visibleDates, maxLabels: 5)
     }
 
     private var seriesData: [(field: String, label: String, color: Color, points: [(Date, Double)])] {
@@ -74,73 +85,129 @@ struct MultiSeriesChartCard: View {
         return builtIn + custom
     }
 
+    private var visibleDays: Double {
 
+        switch settings?.chartTimeframe {
+
+        case "week":
+            return 7 * 24 * 60 * 60
+
+        case "15days":
+            return 15 * 24 * 60 * 60
+
+        case "month":
+            return 30 * 24 * 60 * 60
+
+        case "3months":
+            return 90 * 24 * 60 * 60
+
+        case "6months":
+            return 180 * 24 * 60 * 60
+
+        case "year":
+            return 365 * 24 * 60 * 60
+
+        default:
+            guard
+                let first = dates.first,
+                let last = dates.last
+            else {
+                return 30 * 24 * 60 * 60
+            }
+
+            return last.timeIntervalSince(first)
+        }
+    }
+    
+    
+    private var visibleSeriesData:
+    [(field: String,
+      label: String,
+      color: Color,
+      points: [(Date, Double)])] {
+
+        guard let visibleStartDate else {
+            return seriesData
+        }
+
+        return seriesData.map { series in
+            (
+                field: series.field,
+                label: series.label,
+                color: series.color,
+                points: series.points.filter {
+                    $0.0 >= visibleStartDate
+                }
+            )
+        }
+    }
+    
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(chartType.rawValue)
                 .font(.headline)
                 .foregroundStyle(theme.text)
 
-            // Toggle chips
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(
-                        builtInVariables.filter {
-                            $0.type == "boolean"
-                            &&
-                            !$0.isHidden(using: settings)
-                        }
-                    ) { v in
-
-                        Toggle(
-                            v.displayLabel(using: settings),
-                            isOn: Binding(
-                                get: { visibleFields.contains(v.fieldKey) },
-                                set: { on in
-                                    if on {
-                                        visibleFields.insert(v.fieldKey)
-                                    } else {
-                                        visibleFields.remove(v.fieldKey)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(
+                            builtInVariables.filter {
+                                $0.type == "boolean"
+                                &&
+                                !$0.isHidden(using: settings)
+                            }
+                        ) { v in
+                            
+                            Toggle(
+                                v.displayLabel(using: settings),
+                                isOn: Binding(
+                                    get: { visibleFields.contains(v.fieldKey) },
+                                    set: { on in
+                                        if on {
+                                            visibleFields.insert(v.fieldKey)
+                                        } else {
+                                            visibleFields.remove(v.fieldKey)
+                                        }
                                     }
-                                }
+                                )
                             )
-                        )
-                        .toggleStyle(
-                            ChipToggleStyle(
-                                color: Color(hex: v.colorHex)
+                            .toggleStyle(
+                                ChipToggleStyle(
+                                    color: Color(hex: v.colorHex)
+                                )
                             )
-                        )
-                    }
-
-                    ForEach(
-                        customVariables.filter {
-                            !$0.isHidden &&
-                            $0.type == "boolean"
                         }
-                    ) { v in
-
-                        Toggle(
-                            v.label,
-                            isOn: Binding(
-                                get: { visibleFields.contains(v.variableId) },
-                                set: { on in
-                                    if on {
-                                        visibleFields.insert(v.variableId)
-                                    } else {
-                                        visibleFields.remove(v.variableId)
+                        
+                        ForEach(
+                            customVariables.filter {
+                                !$0.isHidden &&
+                                $0.type == "boolean"
+                            }
+                        ) { v in
+                            
+                            Toggle(
+                                v.label,
+                                isOn: Binding(
+                                    get: { visibleFields.contains(v.variableId) },
+                                    set: { on in
+                                        if on {
+                                            visibleFields.insert(v.variableId)
+                                        } else {
+                                            visibleFields.remove(v.variableId)
+                                        }
                                     }
-                                }
+                                )
                             )
-                        )
-                        .toggleStyle(
-                            ChipToggleStyle(
-                                color: Color(hex: v.colorHex)
+                            .toggleStyle(
+                                ChipToggleStyle(
+                                    color: Color(hex: v.colorHex)
+                                )
                             )
-                        )
+                        }
                     }
+                    .padding(.horizontal, 2)
                 }
-                .padding(.horizontal, 2)
-            }
 
             if seriesData.isEmpty || dates.isEmpty {
                 Text("Selecciona els camps que vols mostrar.")
@@ -149,8 +216,21 @@ struct MultiSeriesChartCard: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 40)
             } else {
+                
+                let allValues = visibleSeriesData
+                    .flatMap(\.points)
+                    .map(\.1)
+
+                let maxValue = allValues.max() ?? 1
+
+                let upperBound = max(
+                    10,
+                    maxValue * 1.15)
+                
+                
                 Chart {
-                    ForEach(seriesData, id: \.field) { series in
+                    
+                    ForEach(visibleSeriesData, id: \.field) { series in
                         ForEach(series.points, id: \.0) { (date, value) in
                             LineMark(
                                 x: .value("Data", date),
@@ -162,6 +242,7 @@ struct MultiSeriesChartCard: View {
                         }
                     }
                 }
+            
                 .chartForegroundStyleScale(
                     domain: seriesData.map(\.label),
                     range: seriesData.map(\.color)
@@ -177,6 +258,7 @@ struct MultiSeriesChartCard: View {
                 .chartXAxis {
                     AxisMarks(values: xLabels.map(\.date)) { val in
                         AxisGridLine().foregroundStyle(theme.border.opacity(0.5))
+                        AxisGridLine().foregroundStyle(theme.text.opacity(0.25))
                         AxisTick().foregroundStyle(theme.border)
                         AxisValueLabel {
                             if let d = val.as(Date.self) {
@@ -187,6 +269,12 @@ struct MultiSeriesChartCard: View {
                         }
                     }
                 }
+                .chartYScale(
+                    domain: 0...upperBound
+                )
+                .chartXScale(
+                    domain: (visibleDates.first ?? .now)...(visibleDates.last ?? .now)
+                )
                 .chartLegend(.hidden)  // We use the chips above
                 .frame(height: 260)
                 .onTapGesture {
@@ -198,6 +286,41 @@ struct MultiSeriesChartCard: View {
         .cardStyle()
     }
 
+    private var visibleDates: [Date] {
+
+        guard let visibleStartDate else {
+            return dates
+        }
+
+        return dates.filter {
+            $0 >= visibleStartDate
+        }
+    }
+    
+    private var visibleStartDate: Date? {
+
+        guard let last = dates.last else { return nil }
+
+        let days: Int
+
+        switch settings?.chartTimeframe {
+        case "week": days = 7
+        case "15days": days = 15
+        case "month": days = 30
+        case "3months": days = 90
+        case "6months": days = 180
+        case "year": days = 365
+        default:
+            return dates.first
+        }
+
+        return Calendar.current.date(
+            byAdding: .day,
+            value: -days,
+            to: last
+        )
+    }
+    
     // MARK: - Series builder
 
     private func buildSeries(fieldKey: String) -> [(Date, Double)] {

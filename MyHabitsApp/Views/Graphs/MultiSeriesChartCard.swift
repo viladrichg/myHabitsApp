@@ -27,6 +27,8 @@ struct MultiSeriesChartCard: View {
     @State private var visibleFields: Set<String> = [
         "meditation",
         "workedAtJob",
+        "workedAtHome",
+        "fum",
         "sports"
     ]
     private var dates: [Date] {

@@ -260,12 +260,16 @@ struct StatisticsView: View {
 
     private func activityDots(_ e: DailyEntry) -> some View {
 
+        let useHiddenVariables =
+            settings?.showHiddenVariablesInCalendar ?? false
+
         let builtInActive =
             builtInVariables
                 .filter {
                     $0.type == "boolean"
                 }
                 .filter {
+                    useHiddenVariables ||
                     !$0.isHidden(using: settings)
                 }
                 .filter {
@@ -277,6 +281,10 @@ struct StatisticsView: View {
 
         let customActive =
             customVariables
+                .filter {
+                    useHiddenVariables ||
+                    !$0.isHidden
+                }
                 .filter {
                     e.isActive(field: $0.variableId)
                 }
@@ -438,9 +446,18 @@ struct StatisticsView: View {
                     )
                 }
 
+        
+        let useHiddenVariables =
+            settings?.showHiddenVariablesInCalendar ?? false
+
         let customRows =
             customVariables
-                .filter { $0.type == "boolean" }
+                .filter {
+                    $0.type == "boolean"
+                }
+                .filter {
+                    useHiddenVariables || !$0.isHidden
+                }
                 .map { v in
 
                 (

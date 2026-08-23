@@ -614,7 +614,12 @@ struct DataEntryView: View {
         
         Group {
             
-            if !customVariables.isEmpty {
+            let visibleCustomVariables =
+                customVariables.filter {
+                    !$0.isHidden
+                }
+
+            if !visibleCustomVariables.isEmpty {
                 
                 section("Personalitzats") {
                     

@@ -14,8 +14,8 @@
             filePath = "MyHabitsApp/Views/Statistics/StatisticsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "513"
-            endingLineNumber = "513"
+            startingLineNumber = "533"
+            endingLineNumber = "533"
             landmarkName = "sleepData"
             landmarkType = "24">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "MyHabitsApp/Views/Statistics/StatisticsView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "948"
-            endingLineNumber = "948"
+            startingLineNumber = "968"
+            endingLineNumber = "968"
             landmarkName = "customCounterCard(_:)"
             landmarkType = "7">
          </BreakpointContent>

@@ -13,6 +13,7 @@ struct SummaryCard: View {
     }
 
     var body: some View {
+        
         VStack(alignment: .leading, spacing: 12) {
             Text("Resum")
                 .font(.headline)

@@ -13,7 +13,8 @@ struct StatisticsView: View {
     private var settings: AppSettings? {
         allSettings.first
     }
-    
+
+    @State private var calendarMode: CalendarMode = .month
     @State private var displayMonth = Date()
     @State private var selectedExpandedChart: ExpandedChart?
     private struct ExpandedChart: Identifiable {
@@ -27,6 +28,11 @@ struct StatisticsView: View {
         let color: Color
 
         let unit: String
+    }
+    
+    enum CalendarMode: String, CaseIterable {
+        case month = "Mensual"
+        case year = "Anual"
     }
 
     private struct SelectedDay: Identifiable {
@@ -57,7 +63,21 @@ struct StatisticsView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     monthNavigator
-                    calendarGrid
+                    
+                    Picker("", selection: $calendarMode) {
+                        ForEach(CalendarMode.allCases, id: \.self) {
+                            Text($0.rawValue)
+                                .tag($0)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    if calendarMode == .month {
+                        calendarGrid
+                    } else {
+                        yearCalendarView
+                    }
+                    
                     sleepCard
 
                     if !(builtInVariables.first {
@@ -1094,8 +1114,129 @@ struct StatisticsView: View {
         )
     }
 
+    private var yearCalendarView: some View {
+
+        LazyVGrid(
+            columns: Array(
+                repeating: GridItem(
+                    .flexible(),
+                    spacing:0.5
+               ),
+                count: 3
+            ),
+            spacing: 5
+        ) {
+
+            ForEach(1...12, id: \.self) { month in
+
+                VStack {
+
+                    Text(monthName(month))
+                        .font(.caption.bold())
+
+                    let date = monthDate(for: month)
+
+                    let days = daysInMonth(for: date)
+
+                    let offset = firstWeekdayOfMonth(for: date)
+
+                    let cells =
+                        Array(repeating: 0, count: offset)
+                        + days
+
+                    LazyVGrid(
+                        columns: Array(
+                            repeating: GridItem(
+                                .flexible(),
+                                spacing:2
+                            ),
+                            count: 7
+                        ),
+                        spacing: 4
+                    ) {
+
+                        ForEach(
+                            Array(cells.enumerated()),
+                            id: \.offset
+                        ) { _, value in
+
+                            if value == 0 {
+
+                                Color.clear
+                                    .frame(height: 10)
+
+                            } else {
+
+                                Rectangle()
+                                    .fill(theme.border.opacity(0.3))
+                                    .frame(height: 10)
+                            }
+                        }
+                    }
+                }
+                .padding(0.5)
+                .cardStyle()
+            }
+        }
+    }
+    
+    private func monthName(_ month: Int) -> String {
+
+        let months = [
+            "Gener",
+            "Febrer",
+            "Març",
+            "Abril",
+            "Maig",
+            "Juny",
+            "Juliol",
+            "Agost",
+            "Setembre",
+            "Octubre",
+            "Novembre",
+            "Desembre"
+        ]
+
+        return months[month - 1]
+    }
+    
+    
     // MARK: - Calendar helpers
 
+    private func monthDate(for month: Int) -> Date {
+
+        var comps = DateComponents()
+
+        comps.year = year
+        comps.month = month
+        comps.day = 1
+
+        return cal.date(from: comps)!
+    }
+
+    private func daysInMonth(for date: Date) -> [Int] {
+
+        let range = cal.range(
+            of: .day,
+            in: .month,
+            for: date
+        )!
+
+        return Array(range)
+    }
+
+    private func firstWeekdayOfMonth(
+        for date: Date
+    ) -> Int {
+
+        let weekday = cal.component(
+            .weekday,
+            from: date
+        )
+
+        return (weekday - cal.firstWeekday + 7) % 7
+    }
+    
     private func daysInMonth() -> [Int] {
         let range = cal.range(of: .day, in: .month, for: displayMonth)!
         return Array(range)

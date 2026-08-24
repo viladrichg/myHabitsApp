@@ -8,19 +8,41 @@ struct NotificationSettingsView: View {
     @State private var pendingDescriptions: [String] = []
     @State private var showingPending = false
 
-    private let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let dayNames = ["Dg", "Dl", "Dt", "Dc", "Dj", "Dv", "Ds"]
 
     var body: some View {
         Form {
-            Section("Reminders") {
-                Toggle("Enable notifications", isOn: $settings.notificationsEnabled)
+            Section("Recordatoris") {
+                Toggle("Activar notifications", isOn: $settings.notificationsEnabled)
                     .onChange(of: settings.notificationsEnabled) { reschedule() }
 
                 if settings.notificationsEnabled {
+
                     morningPicker
+
+                    Picker(
+                        "Notificacions",
+                        selection: $settings.notificationMode
+                    ) {
+                        Text("Matí")
+                            .tag(AppSettings.NotificationMode.morning.rawValue)
+
+                        Text("Nit")
+                            .tag(AppSettings.NotificationMode.evening.rawValue)
+
+                        Text("Ambdues")
+                            .tag(AppSettings.NotificationMode.both.rawValue)
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: settings.notificationMode) {
+                        reschedule()
+                    }
+
                     eveningPicker
+
                     daysPicker
                 }
+                
             }
             .listRowBackground(theme.card)
 
@@ -59,7 +81,7 @@ struct NotificationSettingsView: View {
 
     private var morningPicker: some View {
         HStack {
-            Text("Morning")
+            Text("Matí")
             Spacer()
             TimePicker2(value: $settings.morningReminderTime)
                 .onChange(of: settings.morningReminderTime) { reschedule() }
@@ -68,7 +90,7 @@ struct NotificationSettingsView: View {
 
     private var eveningPicker: some View {
         HStack {
-            Text("Evening")
+            Text("Nit")
             Spacer()
             TimePicker2(value: $settings.eveningReminderTime)
                 .onChange(of: settings.eveningReminderTime) { reschedule() }
@@ -77,7 +99,7 @@ struct NotificationSettingsView: View {
 
     private var daysPicker: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Active days")
+            Text("Dies actius")
                 .font(.subheadline)
                 .foregroundStyle(theme.secondary)
             HStack {

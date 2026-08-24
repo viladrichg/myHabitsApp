@@ -43,6 +43,14 @@ final class AppSettings {
     var showHiddenVariablesInCalendar: Bool = false
     init() {}
 
+    enum NotificationMode: String, Codable {
+        case morning
+        case evening
+        case both
+    }
+    
+    var notificationMode: String = NotificationMode.both.rawValue
+    
     // MARK: - Variable Labels
 
     var variableLabels: [String:String] {

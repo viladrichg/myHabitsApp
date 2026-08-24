@@ -32,22 +32,39 @@ final class NotificationManager {
         // Clear existing
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         guard settings.notificationsEnabled else { return }
+        
 
         let days = settings.reminderDays    // e.g. [1,2,3,4,5]
-        if let morning = settings.morningReminderTime.parseHHmm() {
-            schedule(identifier: "morning",
-                     title: "Good morning!",
-                     body: "Time to log your morning data.",
-                     hour: morning.hour, minute: morning.minute,
-                     weekdays: days)
+        
+        let mode = AppSettings.NotificationMode(
+            rawValue: settings.notificationMode
+        ) ?? .both
+
+        if (mode == .morning || mode == .both),
+           let morning = settings.morningReminderTime.parseHHmm() {
+
+            schedule(
+                identifier: "morning",
+                title: "Good morning!",
+                body: "Time to log your morning data.",
+                hour: morning.hour,
+                minute: morning.minute,
+                weekdays: days
+            )
         }
-        if let evening = settings.eveningReminderTime.parseHHmm() {
-            schedule(identifier: "evening",
-                     title: "Daily check-in",
-                     body: "Don't forget to fill in today's habits.",
-                     hour: evening.hour, minute: evening.minute,
-                     weekdays: days)
-        }
+            
+            if (mode == .evening || mode == .both),
+               let evening = settings.eveningReminderTime.parseHHmm() {
+
+                schedule(
+                    identifier: "evening",
+                    title: "Daily check-in",
+                    body: "Don't forget to fill in today's habits.",
+                    hour: evening.hour,
+                    minute: evening.minute,
+                    weekdays: days
+                )
+            }
     }
 
     // MARK: - Debug helper

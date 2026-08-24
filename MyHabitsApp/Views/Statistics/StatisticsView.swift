@@ -58,11 +58,24 @@ struct StatisticsView: View {
         )
     }
 
+    private var entriesByDate: [String: DailyEntry] {
+        Dictionary(
+            uniqueKeysWithValues:
+                entries.map {
+                    ($0.date, $0)
+                }
+        )
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    monthNavigator
+                    if calendarMode == .month {
+                        monthNavigator
+                    }else {
+                        yearNavigator
+                    }
                     
                     Picker("", selection: $calendarMode) {
                         ForEach(CalendarMode.allCases, id: \.self) {
@@ -76,28 +89,32 @@ struct StatisticsView: View {
                         calendarGrid
                     } else {
                         yearCalendarView
+                            .padding(.horizontal, -6)
                     }
                     
-                    sleepCard
+                    if calendarMode == .month {
 
-                    if !(builtInVariables.first {
-                        $0.fieldKey == "counter"
-                    }?.isHidden(using: settings) ?? false) {
+                        sleepCard
 
-                        pitellsCard
-                    }
+                        if !(builtInVariables.first {
+                            $0.fieldKey == "counter"
+                        }?.isHidden(using: settings) ?? false) {
 
-                    ForEach(
-                        customVariables.filter {
-                            !$0.isHidden && ($0.type == "counter" ||
-                            $0.type == "rating")
+                            pitellsCard
                         }
-                    ) { variable in
 
-                        customCounterCard(variable)
+                        ForEach(
+                            customVariables.filter {
+                                !$0.isHidden &&
+                                ($0.type == "counter" || $0.type == "rating")
+                            }
+                        ) { variable in
+
+                            customCounterCard(variable)
+                        }
+
+                        legendView
                     }
-
-                    legendView
                 }
                 .padding()
             }
@@ -142,6 +159,41 @@ struct StatisticsView: View {
         }
         .padding(.horizontal)
     }
+    
+    private var yearNavigator: some View {
+        HStack {
+
+            Button {
+                displayMonth =
+                    cal.date(
+                        byAdding: .year,
+                        value: -1,
+                        to: displayMonth
+                    )!
+            } label: {
+                Image(systemName: "chevron.left")
+            }
+
+            Spacer()
+
+            Text(String(year))
+                .font(.headline)
+
+            Spacer()
+
+            Button {
+                displayMonth =
+                    cal.date(
+                        byAdding: .year,
+                        value: 1,
+                        to: displayMonth
+                    )!
+            } label: {
+                Image(systemName: "chevron.right")
+            }
+        }
+        .padding(.horizontal)
+    }
 
     private var monthLabel: String {
 
@@ -170,7 +222,9 @@ struct StatisticsView: View {
         let days = daysInMonth()
         let offset = firstWeekdayOfMonth()
 
-        let cells = Array(repeating: 0, count: offset) + days
+        let cells =
+            Array(repeating: 0, count: offset)
+            + days
 
         return LazyVGrid(
             columns: Array(repeating: GridItem(.flexible()), count: 7),
@@ -180,8 +234,9 @@ struct StatisticsView: View {
             ForEach(["Dl","Dt","Dc","Dj","Dv","Ds","Dg"], id: \.self) {
                 Text($0)
                     .frame(maxWidth: .infinity)
+                    .padding(.bottom, 8)
             }
-
+            
             ForEach(Array(cells.enumerated()), id: \.offset) { _, value in
 
                 if value == 0 {
@@ -599,13 +654,6 @@ struct StatisticsView: View {
 
         }
         .sorted { $0.0 < $1.0 }
-    }
-    
-    private var entriesByDate: [String: DailyEntry] {
-        Dictionary(
-            uniqueKeysWithValues:
-                entries.map { ($0.date, $0) }
-        )
     }
 
     private var allSleepData: [(Date, Double)] {
@@ -1114,70 +1162,127 @@ struct StatisticsView: View {
         )
     }
 
+
     private var yearCalendarView: some View {
 
         LazyVGrid(
             columns: Array(
                 repeating: GridItem(
                     .flexible(),
-                    spacing:0.5
-               ),
+                    spacing: 0
+                ),
                 count: 3
             ),
-            spacing: 5
+            spacing: 15
         ) {
 
             ForEach(1...12, id: \.self) { month in
 
-                VStack {
+                Button {
 
-                    Text(monthName(month))
-                        .font(.caption.bold())
+                    var comps = DateComponents()
 
-                    let date = monthDate(for: month)
+                    comps.year = year
+                    comps.month = month
+                    comps.day = 1
 
-                    let days = daysInMonth(for: date)
+                    if let date = cal.date(from: comps) {
 
-                    let offset = firstWeekdayOfMonth(for: date)
+                        displayMonth = date
+                        calendarMode = .month
+                    }
 
-                    let cells =
-                        Array(repeating: 0, count: offset)
-                        + days
+                } label: {
 
-                    LazyVGrid(
-                        columns: Array(
-                            repeating: GridItem(
-                                .flexible(),
-                                spacing:2
+                    VStack {
+
+                        Text(monthName(month))
+                            .font(.caption.bold())
+
+                        let date = monthDate(for: month)
+
+                        let days = daysInMonth(for: date)
+
+                        let offset = firstWeekdayOfMonth(for: date)
+
+                        let baseCells =
+                            Array(repeating: 0, count: offset)
+                            + days
+
+                        let cells =
+                            baseCells
+                            + Array(
+                                repeating: 0,
+                                count: max(
+                                    0,
+                                    42 - baseCells.count
+                                )
+                            )
+
+                        LazyVGrid(
+                            columns: Array(
+                                repeating: GridItem(
+                                    .flexible(),
+                                    spacing: 1.5
+                                ),
+                                count: 7
                             ),
-                            count: 7
-                        ),
-                        spacing: 4
-                    ) {
+                            spacing: 5
+                        ) {
 
-                        ForEach(
-                            Array(cells.enumerated()),
-                            id: \.offset
-                        ) { _, value in
+                            ForEach(
+                                Array(cells.enumerated()),
+                                id: \.offset
+                            ) { _, value in
 
-                            if value == 0 {
+                                if value == 0 {
 
-                                Color.clear
+                                    Color.clear
+                                        .frame(height: 10)
+
+                                } else {
+
+                                    RoundedRectangle(
+                                        cornerRadius: 2
+                                    )
+                                    .fill(
+                                        colorForDay(
+                                            day: value,
+                                            month: month
+                                        )
+                                    )
                                     .frame(height: 10)
-
-                            } else {
-
-                                Rectangle()
-                                    .fill(theme.border.opacity(0.3))
-                                    .frame(height: 10)
+                                }
                             }
                         }
                     }
+                    .padding(1)
+                    .cardStyle()
                 }
-                .padding(0.5)
-                .cardStyle()
+                .buttonStyle(.plain)
             }
         }
+    }
+    
+    private func colorForDay(
+        day: Int,
+        month: Int
+    ) -> Color {
+
+        let dateString =
+            String(
+                format: "%04d-%02d-%02d",
+                year,
+                month,
+                day
+            )
+
+        guard let entry = entriesByDate[dateString] else {
+            return theme.border.opacity(0.25)
+        }
+        
+        return dominantColor(entry)
+        ?? theme.border.opacity(0.25)
     }
     
     private func monthName(_ month: Int) -> String {

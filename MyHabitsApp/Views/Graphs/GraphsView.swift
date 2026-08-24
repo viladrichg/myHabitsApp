@@ -44,14 +44,9 @@ struct GraphsView: View {
                         customVariables: customVariables
                     )
 
-                    //InsightsPlaceholderCard()
-                    Text("insights ...")
-                    
-                    chartTypePickerView
-
                     MultiSeriesChartCard(
                         entries: entries,
-                        chartType: chartType,
+                        chartType: $chartType,
                         customVariables: customVariables,
                         onOpenFullscreen: { series in
 
@@ -60,6 +55,9 @@ struct GraphsView: View {
                             )
                         }
                     )
+                    
+                    //InsightsPlaceholderCard()
+                    Text("insights ...")
                 }
                 .padding()
             }
@@ -116,15 +114,7 @@ struct GraphsView: View {
                 $0.date < $1.date
             }
     }
-
-    private var chartTypePickerView: some View {
-        Picker("Tipus de gràfic", selection: $chartType) {
-            ForEach(ChartType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-        }
-        .pickerStyle(.segmented)
-        .padding(.horizontal)
-    }
-
+    
     @ToolbarContentBuilder
     private var timeframeToolbar: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {

@@ -5,7 +5,7 @@ import Charts
 struct MultiSeriesChartCard: View {
     @Environment(\.appTheme) var theme
     let entries: [DailyEntry]
-    let chartType: GraphsView.ChartType
+    @Binding var chartType: GraphsView.ChartType
     let customVariables: [CustomVariable]
     let onOpenFullscreen: ((
         [(field: String,
@@ -147,10 +147,23 @@ struct MultiSeriesChartCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(chartType.rawValue)
-                .font(.headline)
-                .foregroundStyle(theme.text)
 
+            Picker(
+                "",
+                selection: $chartType
+            ) {
+                ForEach(
+                    GraphsView.ChartType.allCases,
+                    id: \.self
+                ) {
+                    Text($0.rawValue)
+                        .tag($0)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.bottom, 16)
+            .padding(.top, 8)
+            
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(

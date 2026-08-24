@@ -15,13 +15,17 @@ struct SummaryCard: View {
     var body: some View {
         
         VStack(alignment: .leading, spacing: 12) {
-            Text("Resum")
-                .font(.headline)
-                .foregroundStyle(theme.text)
+            HStack {
 
-            Text("\(entries.count) dies registrats")
-                .font(.subheadline)
-                .foregroundStyle(theme.secondary)
+                Text("Resum")
+                    .font(.headline)
+
+                Text("· \(entries.count) dies")
+                    .font(.subheadline)
+                    .foregroundStyle(theme.secondary)
+
+                Spacer()
+            }
 
             
             Divider().background(theme.border)

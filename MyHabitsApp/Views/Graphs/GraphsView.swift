@@ -56,8 +56,9 @@ struct GraphsView: View {
                         }
                     )
                     
-                    //InsightsPlaceholderCard()
-                    Text("insights ...")
+                    InsightsView(
+                        entries: filteredEntries
+                    )
                 }
                 .padding()
             }

@@ -113,6 +113,16 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
             
             
             Section("Zona de perill") {
+                
+                NavigationLink {
+                    DeletePeriodView()
+                } label: {
+
+                    Label(
+                        "Eliminar període",
+                        systemImage: "calendar.badge.minus"
+                    )
+                }
 
                 Button(
                     role: .destructive

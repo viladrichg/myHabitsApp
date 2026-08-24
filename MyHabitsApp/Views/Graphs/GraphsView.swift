@@ -117,20 +117,48 @@ struct GraphsView: View {
     
     @ToolbarContentBuilder
     private var timeframeToolbar: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
+        
+        ToolbarItem(
+            placement: .navigationBarTrailing
+        ) {
+            
             if let s = settings {
                 Menu {
-                    ForEach(["week","15days","month","3months","6months","year","all"], id: \.self) { tf in
-                        Button(timeframeLabel(tf)) { s.chartTimeframe = tf }
+                    ForEach(
+                        [
+                            "week", "15days", "month", "3months", "6months", "year", "all"
+                        ],
+                        id: \.self
+                    ) { tf in
+                        
+                        Button {
+                            
+                            s.chartTimeframe = tf
+                            
+                        } label: {
+                            
+                            Label(
+                                timeframeLabel(tf),
+                                systemImage:
+                                    s.chartTimeframe == tf
+                                    ? "checkmark"
+                                    : ""
+                            )
+                        }
                     }
+                    
                 } label: {
-                    Label(timeframeLabel(s.chartTimeframe), systemImage: "calendar.badge.clock")
-                        .font(.caption)
+                    
+                    Label(
+                        timeframeLabel(s.chartTimeframe),
+                        systemImage: "calendar.badge.clock"
+                    )
+                    .font(.caption)
                 }
             }
         }
     }
-
+    
     private func timeframeLabel(_ tf: String) -> String {
 
         switch tf {

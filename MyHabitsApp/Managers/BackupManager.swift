@@ -99,7 +99,7 @@ final class BackupManager {
         
         let template =
 """
-date,bedtime,wakeup_time,sleep_quality,habit1,habit2,negative1,negative2,positive1,positive2,positive3,positive4,counter,sports,notes
+date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive1,positive2,positive3,positive4,counter,sports,notes
 2026-06-01,23:00,07:00,8,1,0,0,1,1,0,0,1,10,Running|Gym,Good day
 2026-06-02,22:45,07:15,7,1,0,0,0,1,1,0,0,5,Yoga,Felt relaxed
 2026-06-03,23:30,06:50,6,0,1,1,0,0,0,1,0,15,Cycling,Tired
@@ -369,12 +369,12 @@ date,bedtime,wakeup_time,sleep_quality,habit1,habit2,negative1,negative2,positiv
                 updated += 1
             }
 
-            if let value = dict["bedTime"] {
-                entry.bedTime = value
+            if let value = dict["sleepStart"] {
+                entry.sleepStart = value
             }
 
-            if let value = dict["wakeUpTime"] {
-                entry.wakeUpTime = value
+            if let value = dict["sleepEnd"] {
+                entry.sleepEnd = value
             }
 
             if let value = dict["sleepQuality"] {

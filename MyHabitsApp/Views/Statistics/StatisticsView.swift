@@ -592,7 +592,7 @@ struct StatisticsView: View {
             .compactMap { entry in
 
             guard let date = Date.from(isoDate: entry.date),
-                  let wake = entry.wakeUpTime?.parseHHmm()
+                  let wake = entry.sleepEnd?.parseHHmm()
             else { return nil }
 
             guard let previousDate = Calendar.current.date(
@@ -604,7 +604,7 @@ struct StatisticsView: View {
             guard let previousEntry = entries.first(
                 where: { $0.date == previousDate.isoDate }
             ),
-            let bed = previousEntry.bedTime?.parseHHmm()
+            let bed = previousEntry.sleepStart?.parseHHmm()
             else { return nil }
 
             let bedMinutes = bed.hour * 60 + bed.minute
@@ -663,7 +663,7 @@ struct StatisticsView: View {
             .compactMap { entry in
 
                 guard let date = Date.from(isoDate: entry.date),
-                      let wake = entry.wakeUpTime?.parseHHmm()
+                      let wake = entry.sleepEnd?.parseHHmm()
                 else { return nil }
 
                 guard let previousDate = Calendar.current.date(
@@ -674,7 +674,7 @@ struct StatisticsView: View {
 
                 guard let previousEntry =
                     entriesByDate[previousDate.isoDate],
-                let bed = previousEntry.bedTime?.parseHHmm()
+                let bed = previousEntry.sleepStart?.parseHHmm()
                 else { return nil }
 
                 let bedMinutes = bed.hour * 60 + bed.minute

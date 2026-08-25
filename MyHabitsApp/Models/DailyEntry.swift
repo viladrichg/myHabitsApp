@@ -7,8 +7,8 @@ final class DailyEntry {
     @Attribute(.unique) var date: String   // "YYYY-MM-DD"
 
     // Sleep
-    var bedTime: String?       // "HH:mm"
-    var wakeUpTime: String?    // "HH:mm"
+    var sleepStart: String?       // "HH:mm"
+    var sleepEnd: String?    // "HH:mm"
     var sleepQuality: Int?     // 1–10
 
     // Work (mutually exclusive in UI, not enforced at model level)
@@ -40,8 +40,8 @@ final class DailyEntry {
     var isEmpty: Bool {
 
         sleepQuality == nil &&
-        wakeUpTime == nil &&
-        bedTime == nil &&
+        sleepEnd == nil &&
+        sleepStart == nil &&
         habit1 == false &&
         habit2 == false &&
         negative1 == false &&
@@ -92,8 +92,8 @@ final class DailyEntry {
     /// Sleep duration based on bedtime and wake-up
     var sleepHours: Double? {
 
-        guard let bed = bedTime?.parseHHmm(),
-              let wake = wakeUpTime?.parseHHmm()
+        guard let bed = sleepStart?.parseHHmm(),
+              let wake = sleepEnd?.parseHHmm()
         else {
             return nil
         }

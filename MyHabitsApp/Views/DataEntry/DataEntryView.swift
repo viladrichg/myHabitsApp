@@ -36,8 +36,8 @@ struct DataEntryView: View {
     @State private var positive4Draft = false
     @State private var counterDraft = 0
     @State private var sportsDraft: [String] = []
-    @State private var wakeUpDraft = ""
-    @State private var bedTimeDraft = ""
+    @State private var sleepEndDraft = ""
+    @State private var sleepStartDraft = ""
     
     init(
         selectedTab: Binding<Int>,
@@ -218,7 +218,7 @@ struct DataEntryView: View {
                     
                     TimePicker(
                         label: "",
-                        value: $wakeUpDraft
+                        value: $sleepEndDraft
                     )
                 }
                 
@@ -230,7 +230,7 @@ struct DataEntryView: View {
                     
                     TimePicker(
                         label: "",
-                        value: $bedTimeDraft
+                        value: $sleepStartDraft
                     )
                 }
                 
@@ -820,15 +820,15 @@ struct DataEntryView: View {
             
             if let e = entry {
                 
-                e.wakeUpTime =
-                wakeUpDraft.isEmpty
+                e.sleepEnd =
+                sleepEndDraft.isEmpty
                 ? nil
-                : wakeUpDraft
+                : sleepEndDraft
                 
-                e.bedTime =
-                bedTimeDraft.isEmpty
+                e.sleepStart =
+                sleepStartDraft.isEmpty
                 ? nil
-                : bedTimeDraft
+                : sleepStartDraft
                 
                 e.sleepQuality =
                 Int(sleepQualityDraft)
@@ -925,7 +925,7 @@ struct DataEntryView: View {
         
         guard
             let currentDate = Date.from(isoDate: entry.date),
-            let wake = wakeUpDraft.parseHHmm()
+            let wake = sleepEndDraft.parseHHmm()
         else {
             return "-"
         }
@@ -944,7 +944,7 @@ struct DataEntryView: View {
             let previousEntry = entries.first(
                 where: { $0.date == previousDate.isoDate }
             ),
-            let bed = previousEntry.bedTime?.parseHHmm()
+            let bed = previousEntry.sleepStart?.parseHHmm()
         else {
             return "-"
         }
@@ -987,11 +987,11 @@ struct DataEntryView: View {
             return
         }
         
-        wakeUpDraft =
-        previous.wakeUpTime ?? ""
+        sleepEndDraft =
+        previous.sleepEnd ?? ""
         
-        bedTimeDraft =
-        previous.bedTime ?? ""
+        sleepStartDraft =
+        previous.sleepStart ?? ""
         
         sleepQualityDraft =
         Double(previous.sleepQuality ?? 5)
@@ -1058,8 +1058,8 @@ struct DataEntryView: View {
             positive4Draft = existing.positive4
             counterDraft = existing.counter ?? 0
             sportsDraft = existing.sports
-            wakeUpDraft = existing.wakeUpTime ?? ""
-            bedTimeDraft = existing.bedTime ?? ""
+            sleepEndDraft = existing.sleepEnd ?? ""
+            sleepStartDraft = existing.sleepStart ?? ""
             
         } else {
             
@@ -1087,8 +1087,8 @@ struct DataEntryView: View {
             positive4Draft = false
             counterDraft = 0
             sportsDraft = []
-            wakeUpDraft = ""
-            bedTimeDraft = ""
+            sleepEndDraft = ""
+            sleepStartDraft = ""
             
         }
     }

@@ -24,14 +24,14 @@ struct CSVExporter {
 
             .init(
                 title: "Hora dormir",
-                key: "bedTime",
-                value: { $0.bedTime ?? "" }
+                key: "sleepStart",
+                value: { $0.sleepStart ?? "" }
             ),
 
             .init(
                 title: "Hora llevar-se",
-                key: "wakeUpTime",
-                value: { $0.wakeUpTime ?? "" }
+                key: "sleepEnd",
+                value: { $0.sleepEnd ?? "" }
             ),
 
             .init(

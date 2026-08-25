@@ -359,7 +359,7 @@ struct HomeView: View {
 
     private func sleepText(_ e: DailyEntry) -> String {
         if let h = e.sleepHours { return String(format: "%.1f h", h) }
-        return e.bedTime != nil ? e.bedTime! : "–"
+        return e.sleepStart != nil ? e.sleepStart! : "–"
     }
 
     private func workText(

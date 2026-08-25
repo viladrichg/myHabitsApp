@@ -388,60 +388,60 @@ struct StatisticsView: View {
         let useHiddenVariables =
             settings?.showHiddenVariablesInCalendar ?? false
 
-        let fumVisible =
+        let negative1Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "fum"
+                $0.fieldKey == "negative1"
             }?.isHidden(using: settings) ?? false)
 
-        let gatVisible =
+        let negative2Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "gat"
+                $0.fieldKey == "negative2"
             }?.isHidden(using: settings) ?? false)
 
         let workJobVisible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "workedAtJob"
+                $0.fieldKey == "habit1"
             }?.isHidden(using: settings) ?? false)
 
         let workHomeVisible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "workedAtHome"
+                $0.fieldKey == "habit2"
             }?.isHidden(using: settings) ?? false)
 
-        let meditationVisible =
+        let positive1Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "meditation"
+                $0.fieldKey == "positive1"
             }?.isHidden(using: settings) ?? false)
 
-        let yogaVisible =
+        let positive2Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "yoga"
+                $0.fieldKey == "positive2"
             }?.isHidden(using: settings) ?? false)
 
-        let dibuixVisible =
+        let positive3Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "dibuix"
+                $0.fieldKey == "positive3"
             }?.isHidden(using: settings) ?? false)
 
-        let llegirVisible =
+        let positive4Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
-                $0.fieldKey == "llegir"
+                $0.fieldKey == "positive4"
             }?.isHidden(using: settings) ?? false)
 
         let sportsVisible =
@@ -451,27 +451,27 @@ struct StatisticsView: View {
                 $0.fieldKey == "sports"
             }?.isHidden(using: settings) ?? false)
 
-        if fumVisible && e.fum {
+        if negative1Visible && e.negative1 {
             return .red
         }
 
-        if gatVisible && e.gat {
+        if negative2Visible && e.negative2 {
             return Color(hex: "#FF69B4")
         }
 
         let hasWork =
-            (workJobVisible && e.workedAtJob)
+            (workJobVisible && e.habit1)
             ||
-            (workHomeVisible && e.workedAtHome)
+            (workHomeVisible && e.habit2)
 
         let hasActivities =
-            (meditationVisible && e.meditation)
+            (positive1Visible && e.positive1)
             ||
-            (yogaVisible && e.yoga)
+            (positive2Visible && e.positive2)
             ||
-            (dibuixVisible && e.dibuix)
+            (positive3Visible && e.positive3)
             ||
-            (llegirVisible && e.llegir)
+            (positive4Visible && e.positive4)
             ||
             (sportsVisible && !e.sports.isEmpty)
 
@@ -486,11 +486,11 @@ struct StatisticsView: View {
         }
 
         // Casa preval sobre feina
-        if workHomeVisible && e.workedAtHome {
+        if workHomeVisible && e.habit2 {
             return .orange
         }
 
-        if workJobVisible && e.workedAtJob {
+        if workJobVisible && e.habit1 {
             return .blue
         }
 

@@ -71,7 +71,7 @@ struct InsightsView: View {
         allSettings.first
     }
 
-    @State private var selectedField = "meditation"
+    @State private var selectedField = "positive1"
 
     private var currentStreak: Int {
         streakForField(selectedField)
@@ -82,9 +82,9 @@ struct InsightsView: View {
     }
     
     private var isNegativeVariable: Bool {
-        selectedField == "fum"
+        selectedField == "negative1"
         ||
-        selectedField == "gat"
+        selectedField == "negative2"
     }
     
     private var adherenceText: String {

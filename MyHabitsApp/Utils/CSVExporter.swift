@@ -49,98 +49,98 @@ struct CSVExporter {
 
             switch variable.fieldKey {
 
-            case "workedAtJob":
+            case "habit1":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "workedAtJob",
+                        key: "habit1",
                         value: {
-                            $0.workedAtJob ? "1" : "0"
+                            $0.habit1 ? "1" : "0"
                         }
                     )
                 )
 
-            case "workedAtHome":
+            case "habit2":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "workedAtHome",
+                        key: "habit2",
                         value: {
-                            $0.workedAtHome ? "1" : "0"
+                            $0.habit2 ? "1" : "0"
                         }
                     )
                 )
 
-            case "fum":
+            case "negative1":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "fum",
+                        key: "negative1",
                         value: {
-                            $0.fum ? "1" : "0"
+                            $0.negative1 ? "1" : "0"
                         }
                     )
                 )
 
-            case "gat":
+            case "negative2":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "gat",
+                        key: "negative2",
                         value: {
-                            $0.gat ? "1" : "0"
+                            $0.negative2 ? "1" : "0"
                         }
                     )
                 )
 
-            case "meditation":
+            case "positive1":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "meditation",
+                        key: "positive1",
                         value: {
-                            $0.meditation ? "1" : "0"
+                            $0.positive1 ? "1" : "0"
                         }
                     )
                 )
 
-            case "yoga":
+            case "positive2":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "yoga",
+                        key: "positive2",
                         value: {
-                            $0.yoga ? "1" : "0"
+                            $0.positive2 ? "1" : "0"
                         }
                     )
                 )
 
-            case "dibuix":
+            case "positive3":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "dibuix",
+                        key: "positive3",
                         value: {
-                            $0.dibuix ? "1" : "0"
+                            $0.positive3 ? "1" : "0"
                         }
                     )
                 )
 
-            case "llegir":
+            case "positive4":
 
                 columns.append(
                     .init(
                         title: variable.displayLabel(using: settings),
-                        key: "llegir",
+                        key: "positive4",
                         value: {
-                            $0.llegir ? "1" : "0"
+                            $0.positive4 ? "1" : "0"
                         }
                     )
                 )

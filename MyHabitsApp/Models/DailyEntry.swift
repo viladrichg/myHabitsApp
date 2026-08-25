@@ -12,18 +12,18 @@ final class DailyEntry {
     var sleepQuality: Int?     // 1–10
 
     // Work (mutually exclusive in UI, not enforced at model level)
-    var workedAtJob: Bool  = false
-    var workedAtHome: Bool = false
+    var habit1: Bool  = false
+    var habit2: Bool = false
 
     // Missed objectives
-    var fum: Bool  = false
-    var gat: Bool  = false
+    var negative1: Bool  = false
+    var negative2: Bool  = false
 
     // Activities
-    var meditation: Bool = false
-    var yoga: Bool       = false
-    var dibuix: Bool     = false
-    var llegir: Bool     = false
+    var positive1: Bool = false
+    var positive2: Bool       = false
+    var positive3: Bool     = false
+    var positive4: Bool     = false
 
     // Counter (0–25)
     var counter: Int?
@@ -42,14 +42,14 @@ final class DailyEntry {
         sleepQuality == nil &&
         wakeUpTime == nil &&
         bedTime == nil &&
-        workedAtJob == false &&
-        workedAtHome == false &&
-        fum == false &&
-        gat == false &&
-        meditation == false &&
-        yoga == false &&
-        dibuix == false &&
-        llegir == false &&
+        habit1 == false &&
+        habit2 == false &&
+        negative1 == false &&
+        negative2 == false &&
+        positive1 == false &&
+        positive2 == false &&
+        positive3 == false &&
+        positive4 == false &&
         sports.isEmpty &&
         counter == nil &&
         customValues.values.allSatisfy { $0 == 0 } &&
@@ -144,14 +144,14 @@ final class DailyEntry {
     /// true if the given built-in field is active
     func isActive(field: String) -> Bool {
         switch field {
-        case "workedAtJob":  return workedAtJob
-        case "workedAtHome": return workedAtHome
-        case "fum":          return fum
-        case "gat":          return gat
-        case "meditation":   return meditation
-        case "yoga":         return yoga
-        case "dibuix":       return dibuix
-        case "llegir":       return llegir
+        case "habit1":       return habit1
+        case "habit2":       return habit2
+        case "negative1":    return negative1
+        case "negative2":    return negative2
+        case "positive1":    return positive1
+        case "positive2":    return positive2
+        case "positive3":    return positive3
+        case "positive4":    return positive4
         case "sports":       return !sports.isEmpty
         case "counter":      return (counter ?? 0) > 0
         default:

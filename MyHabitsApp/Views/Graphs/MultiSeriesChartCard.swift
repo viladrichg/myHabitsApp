@@ -25,10 +25,10 @@ struct MultiSeriesChartCard: View {
 
     // Which fields are toggled on
     @State private var visibleFields: Set<String> = [
-        "meditation",
-        "workedAtJob",
-        "workedAtHome",
-        "fum",
+        "positive1",
+        "habit1",
+        "habit2",
+        "negative1",
         "sports"
     ]
     private var dates: [Date] {

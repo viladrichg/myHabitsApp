@@ -26,14 +26,14 @@ struct DataEntryView: View {
     @State private var showDeleteAlert = false
     @State private var sleepQualityDraft = 5.0
     @State private var testToggle = false
-    @State private var workedAtJobDraft = false
-    @State private var workedAtHomeDraft = false
-    @State private var fumDraft = false
-    @State private var gatDraft = false
-    @State private var meditationDraft = false
-    @State private var yogaDraft = false
-    @State private var dibuixDraft = false
-    @State private var llegirDraft = false
+    @State private var habit1Draft = false
+    @State private var habit2Draft = false
+    @State private var negative1Draft = false
+    @State private var negative2Draft = false
+    @State private var positive1Draft = false
+    @State private var positive2Draft = false
+    @State private var positive3Draft = false
+    @State private var positive4Draft = false
     @State private var counterDraft = 0
     @State private var sportsDraft: [String] = []
     @State private var wakeUpDraft = ""
@@ -277,8 +277,8 @@ struct DataEntryView: View {
     
     private func workSection(_ e: DailyEntry) -> some View {
         
-        let job = builtIn("workedAtJob")
-        let home = builtIn("workedAtHome")
+        let job = builtIn("habit1")
+        let home = builtIn("habit2")
         
         let hasVisibleVariables =
         (job != nil && !(job!.isHidden(using: settings)))
@@ -298,10 +298,10 @@ struct DataEntryView: View {
                             
                             selectable(
                                 job.displayLabel(using: settings),
-                                active: workedAtJobDraft,
+                                active: habit1Draft,
                                 color: job.displayColor(using: settings)
                             ) {
-                                workedAtJobDraft.toggle()
+                                habit1Draft.toggle()
                             }
                         }
                         
@@ -310,10 +310,10 @@ struct DataEntryView: View {
                             
                             selectable(
                                 home.displayLabel(using: settings),
-                                active: workedAtHomeDraft,
+                                active: habit2Draft,
                                 color: home.displayColor(using: settings)
                             ) {
-                                workedAtHomeDraft.toggle()
+                                habit2Draft.toggle()
                             }
                         }
                     }
@@ -326,13 +326,13 @@ struct DataEntryView: View {
     
     private func objectivesSection(_ e: DailyEntry) -> some View {
         
-        let fum = builtIn("fum")
-        let gat = builtIn("gat")
+        let negative1 = builtIn("negative1")
+        let negative2 = builtIn("negative2")
         
         let hasVisibleVariables =
-        (fum != nil && !(fum!.isHidden(using: settings)))
+        (negative1 != nil && !(negative1!.isHidden(using: settings)))
         ||
-        (gat != nil && !(gat!.isHidden(using: settings)))
+        (negative2 != nil && !(negative2!.isHidden(using: settings)))
         
         return Group {
             
@@ -342,27 +342,27 @@ struct DataEntryView: View {
                     
                     HStack {
                         
-                        if let fum,
-                           !fum.isHidden(using: settings) {
+                        if let negative1,
+                           !negative1.isHidden(using: settings) {
                             
                             selectable(
-                                fum.displayLabel(using: settings),
-                                active: fumDraft,
-                                color: fum.displayColor(using: settings)
+                                negative1.displayLabel(using: settings),
+                                active: negative1Draft,
+                                color: negative1.displayColor(using: settings)
                             ) {
-                                fumDraft.toggle()
+                                negative1Draft.toggle()
                             }
                         }
                         
-                        if let gat,
-                           !gat.isHidden(using: settings) {
+                        if let negative2,
+                           !negative2.isHidden(using: settings) {
                             
                             selectable(
-                                gat.displayLabel(using: settings),
-                                active: gatDraft,
-                                color: gat.displayColor(using: settings)
+                                negative2.displayLabel(using: settings),
+                                active: negative2Draft,
+                                color: negative2.displayColor(using: settings)
                             ) {
-                                gatDraft.toggle()
+                                negative2Draft.toggle()
                             }
                         }
                     }
@@ -375,17 +375,17 @@ struct DataEntryView: View {
     
     private func activitiesSection(_ e: DailyEntry) -> some View {
         
-        let meditation = builtIn("meditation")
-        let yoga = builtIn("yoga")
-        let dibuix = builtIn("dibuix")
-        let llegir = builtIn("llegir")
+        let positive1 = builtIn("positive1")
+        let positive2 = builtIn("positive2")
+        let positive3 = builtIn("positive3")
+        let positive4 = builtIn("positive4")
         
         let hasVisibleVariables = [
             
-            meditation?.isHidden(using: settings) == false,
-            yoga?.isHidden(using: settings) == false,
-            dibuix?.isHidden(using: settings) == false,
-            llegir?.isHidden(using: settings) == false
+            positive1?.isHidden(using: settings) == false,
+            positive2?.isHidden(using: settings) == false,
+            positive3?.isHidden(using: settings) == false,
+            positive4?.isHidden(using: settings) == false
             
         ].contains(true)
         
@@ -399,54 +399,54 @@ struct DataEntryView: View {
                         
                         HStack {
                             
-                            if let meditation,
-                               !meditation.isHidden(using: settings) {
+                            if let positive1,
+                               !positive1.isHidden(using: settings) {
                                 
                                 selectable(
-                                    meditation.displayLabel(using: settings),
-                                    active: meditationDraft,
-                                    color: meditation.displayColor(using: settings)
+                                    positive1.displayLabel(using: settings),
+                                    active: positive1Draft,
+                                    color: positive1.displayColor(using: settings)
                                 ) {
-                                    meditationDraft.toggle()
+                                    positive1Draft.toggle()
                                 }
                             }
                             
-                            if let yoga,
-                               !yoga.isHidden(using: settings) {
+                            if let positive2,
+                               !positive2.isHidden(using: settings) {
                                 
                                 selectable(
-                                    yoga.displayLabel(using: settings),
-                                    active: yogaDraft,
-                                    color: yoga.displayColor(using: settings)
+                                    positive2.displayLabel(using: settings),
+                                    active: positive2Draft,
+                                    color: positive2.displayColor(using: settings)
                                 ) {
-                                    yogaDraft.toggle()
+                                    positive2Draft.toggle()
                                 }
                             }
                         }
                         
                         HStack {
                             
-                            if let dibuix,
-                               !dibuix.isHidden(using: settings) {
+                            if let positive3,
+                               !positive3.isHidden(using: settings) {
                                 
                                 selectable(
-                                    dibuix.displayLabel(using: settings),
-                                    active: dibuixDraft,
-                                    color: dibuix.displayColor(using: settings)
+                                    positive3.displayLabel(using: settings),
+                                    active: positive3Draft,
+                                    color: positive3.displayColor(using: settings)
                                 ) {
-                                    dibuixDraft.toggle()
+                                    positive3Draft.toggle()
                                 }
                             }
                             
-                            if let llegir,
-                               !llegir.isHidden(using: settings) {
+                            if let positive4,
+                               !positive4.isHidden(using: settings) {
                                 
                                 selectable(
-                                    llegir.displayLabel(using: settings),
-                                    active: llegirDraft,
-                                    color: llegir.displayColor(using: settings)
+                                    positive4.displayLabel(using: settings),
+                                    active: positive4Draft,
+                                    color: positive4.displayColor(using: settings)
                                 ) {
-                                    llegirDraft.toggle()
+                                    positive4Draft.toggle()
                                 }
                             }
                         }
@@ -839,29 +839,29 @@ struct DataEntryView: View {
                 e.customValues =
                 customValuesDraft
                 
-                e.workedAtJob =
-                workedAtJobDraft
+                e.habit1 =
+                habit1Draft
                 
-                e.workedAtHome =
-                workedAtHomeDraft
+                e.habit2 =
+                habit2Draft
                 
-                e.fum =
-                fumDraft
+                e.negative1 =
+                negative1Draft
                 
-                e.gat =
-                gatDraft
+                e.negative2 =
+                negative2Draft
                 
-                e.meditation =
-                meditationDraft
+                e.positive1 =
+                positive1Draft
                 
-                e.yoga =
-                yogaDraft
+                e.positive2 =
+                positive2Draft
                 
-                e.dibuix =
-                dibuixDraft
+                e.positive3 =
+                positive3Draft
                 
-                e.llegir =
-                llegirDraft
+                e.positive4 =
+                positive4Draft
                 
                 e.sports =
                 sportsDraft
@@ -996,29 +996,29 @@ struct DataEntryView: View {
         sleepQualityDraft =
         Double(previous.sleepQuality ?? 5)
         
-        workedAtJobDraft =
-        previous.workedAtJob
+        habit1Draft =
+        previous.habit1
         
-        workedAtHomeDraft =
-        previous.workedAtHome
+        habit2Draft =
+        previous.habit2
         
-        fumDraft =
-        previous.fum
+        negative1Draft =
+        previous.negative1
         
-        gatDraft =
-        previous.gat
+        negative2Draft =
+        previous.negative2
         
-        meditationDraft =
-        previous.meditation
+        positive1Draft =
+        previous.positive1
         
-        yogaDraft =
-        previous.yoga
+        positive2Draft =
+        previous.positive2
         
-        dibuixDraft =
-        previous.dibuix
+        positive3Draft =
+        previous.positive3
         
-        llegirDraft =
-        previous.llegir
+        positive4Draft =
+        previous.positive4
         
         sportsDraft =
         previous.sports
@@ -1048,14 +1048,14 @@ struct DataEntryView: View {
             customValuesDraft =
             existing.customValues
             
-            workedAtJobDraft = existing.workedAtJob
-            workedAtHomeDraft = existing.workedAtHome
-            fumDraft = existing.fum
-            gatDraft = existing.gat
-            meditationDraft = existing.meditation
-            yogaDraft = existing.yoga
-            dibuixDraft = existing.dibuix
-            llegirDraft = existing.llegir
+            habit1Draft = existing.habit1
+            habit2Draft = existing.habit2
+            negative1Draft = existing.negative1
+            negative2Draft = existing.negative2
+            positive1Draft = existing.positive1
+            positive2Draft = existing.positive2
+            positive3Draft = existing.positive3
+            positive4Draft = existing.positive4
             counterDraft = existing.counter ?? 0
             sportsDraft = existing.sports
             wakeUpDraft = existing.wakeUpTime ?? ""
@@ -1077,14 +1077,14 @@ struct DataEntryView: View {
             
             customValuesDraft = [:]
             
-            workedAtJobDraft = false
-            workedAtHomeDraft = false
-            fumDraft = false
-            gatDraft = false
-            meditationDraft = false
-            yogaDraft = false
-            dibuixDraft = false
-            llegirDraft = false
+            habit1Draft = false
+            habit2Draft = false
+            negative1Draft = false
+            negative2Draft = false
+            positive1Draft = false
+            positive2Draft = false
+            positive3Draft = false
+            positive4Draft = false
             counterDraft = 0
             sportsDraft = []
             wakeUpDraft = ""

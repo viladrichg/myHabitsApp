@@ -366,15 +366,15 @@ struct HomeView: View {
         _ e: DailyEntry
     ) -> String {
 
-        if e.workedAtJob && e.workedAtHome {
+        if e.habit1 && e.habit2 {
             return "💼🏠 Ambdues"
         }
 
-        if e.workedAtJob {
+        if e.habit1 {
             return "💼 Feina"
         }
 
-        if e.workedAtHome {
+        if e.habit2 {
             return "🏠 Casa"
         }
 

@@ -10,7 +10,7 @@ struct GraphsView: View {
 
     private var settings: AppSettings? { allSettings.first }
 
-    @State private var selectedField = "meditation"
+    @State private var selectedField = "positive1"
     @State private var chartType: ChartType = .accumulated
     @State private var expandedMultiSeries: ExpandedMultiSeries?
 

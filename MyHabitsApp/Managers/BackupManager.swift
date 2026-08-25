@@ -99,7 +99,7 @@ final class BackupManager {
         
         let template =
 """
-date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,meditation,yoga,dibuix,llegir,counter,sports,notes
+date,bedtime,wakeup_time,sleep_quality,habit1,habit2,negative1,negative2,positive1,positive2,positive3,positive4,counter,sports,notes
 2026-06-01,23:00,07:00,8,1,0,0,1,1,0,0,1,10,Running|Gym,Good day
 2026-06-02,22:45,07:15,7,1,0,0,0,1,1,0,0,5,Yoga,Felt relaxed
 2026-06-03,23:30,06:50,6,0,1,1,0,0,0,1,0,15,Cycling,Tired
@@ -185,7 +185,6 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
             )
         }
         
-        let labels = lines[0].components(separatedBy: ",")
         let headers = lines[1].components(separatedBy: ",")
         
         
@@ -382,36 +381,36 @@ date,bedtime,wakeup_time,sleep_quality,worked_at_job,worked_at_home,fum,gat,medi
                 entry.sleepQuality = Int(value)
             }
 
-            if let value = dict["workedAtJob"] {
-                entry.workedAtJob = value == "1"
+            if let value = dict["habit1"] {
+                entry.habit1 = value == "1"
             }
 
-            if let value = dict["workedAtHome"] {
-                entry.workedAtHome = value == "1"
+            if let value = dict["habit2"] {
+                entry.habit2 = value == "1"
             }
 
-            if let value = dict["fum"] {
-                entry.fum = value == "1"
+            if let value = dict["negative1"] {
+                entry.negative1 = value == "1"
             }
 
-            if let value = dict["gat"] {
-                entry.gat = value == "1"
+            if let value = dict["negative2"] {
+                entry.negative2 = value == "1"
             }
 
-            if let value = dict["meditation"] {
-                entry.meditation = value == "1"
+            if let value = dict["positive1"] {
+                entry.positive1 = value == "1"
             }
 
-            if let value = dict["yoga"] {
-                entry.yoga = value == "1"
+            if let value = dict["positive2"] {
+                entry.positive2 = value == "1"
             }
 
-            if let value = dict["dibuix"] {
-                entry.dibuix = value == "1"
+            if let value = dict["positive3"] {
+                entry.positive3 = value == "1"
             }
 
-            if let value = dict["llegir"] {
-                entry.llegir = value == "1"
+            if let value = dict["positive4"] {
+                entry.positive4 = value == "1"
             }
 
             if let value = dict["counter"] {

@@ -90,56 +90,56 @@ struct BuiltInVariable: Identifiable {
 let builtInVariables: [BuiltInVariable] = [
 
     .init(
-        fieldKey: "workedAtJob",
+        fieldKey: "habit1",
         label: "Feina",
         colorHex: "#0077BB",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "workedAtHome",
+        fieldKey: "habit2",
         label: "Casa",
         colorHex: "#EE7733",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "fum",
+        fieldKey: "negative1",
         label: "Fum",
         colorHex: "#CC3311",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "gat",
+        fieldKey: "negative2",
         label: "Gat",
         colorHex: "#EE3377",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "meditation",
+        fieldKey: "positive1",
         label: "Meditació",
         colorHex: "#009988",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "yoga",
+        fieldKey: "positive2",
         label: "Ioga",
         colorHex: "#33BBEE",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "dibuix",
+        fieldKey: "positive3",
         label: "Dibuix",
         colorHex: "#CCBB44",
         type: "boolean"
     ),
 
     .init(
-        fieldKey: "llegir",
+        fieldKey: "positive4",
         label: "Llegir",
         colorHex: "#0077BB",
         type: "boolean"

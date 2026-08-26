@@ -171,7 +171,10 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
                     if let previewData {
                         
-                        CSVPreview(preview: previewData)
+                        CSVPreview(
+                            preview: previewData,
+                            importMode: importMode
+                        )
                     }
 
                     Group {

@@ -402,14 +402,14 @@ struct StatisticsView: View {
                 $0.fieldKey == "negative2"
             }?.isHidden(using: settings) ?? false)
 
-        let workJobVisible =
+        let habit1Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
                 $0.fieldKey == "habit1"
             }?.isHidden(using: settings) ?? false)
 
-        let workHomeVisible =
+        let habit2Visible =
             useHiddenVariables
             ||
             !(builtInVariables.first {
@@ -451,47 +451,123 @@ struct StatisticsView: View {
                 $0.fieldKey == "sports"
             }?.isHidden(using: settings) ?? false)
 
+        // MARK: Negatives
+
         if negative1Visible && e.negative1 {
-            return .red
+
+            return builtInVariables.first {
+                $0.fieldKey == "negative1"
+            }?.displayColor(using: settings)
         }
 
         if negative2Visible && e.negative2 {
-            return Color(hex: "#FF69B4")
+
+            return builtInVariables.first {
+                $0.fieldKey == "negative2"
+            }?.displayColor(using: settings)
         }
 
-        let hasWork =
-            (workJobVisible && e.habit1)
-            ||
-            (workHomeVisible && e.habit2)
+        // MARK: Dia perfecte
 
-        let hasActivities =
-            (positive1Visible && e.positive1)
-            ||
-            (positive2Visible && e.positive2)
-            ||
-            (positive3Visible && e.positive3)
-            ||
-            (positive4Visible && e.positive4)
-            ||
-            (sportsVisible && !e.sports.isEmpty)
+        let activityCount =
+            [
+                habit1Visible && e.habit1,
+                habit2Visible && e.habit2,
+                positive1Visible && e.positive1,
+                positive2Visible && e.positive2,
+                positive3Visible && e.positive3,
+                positive4Visible && e.positive4,
+                sportsVisible && !e.sports.isEmpty
+            ]
+            .filter { $0 }
+            .count
 
-        // Dia perfecte
-        if hasWork && hasActivities {
-            return .green
+        if settings?.perfectDayEnabled == true &&
+           activityCount >= (
+                settings?.perfectDayThreshold ?? 3
+           ) {
+
+            return Color(
+                hex: settings?.perfectDayColorHex
+                ?? "#22c55e"
+            )
         }
 
-        // Només hàbits
-        if hasActivities {
-            return .yellow
+        // MARK: Variables integrades
+
+        if habit1Visible && e.habit1 {
+
+            return builtInVariables.first {
+                $0.fieldKey == "habit1"
+            }?.displayColor(using: settings)
         }
 
-        // Casa preval sobre feina
-        if workHomeVisible && e.habit2 {
-            return .orange
+        if habit2Visible && e.habit2 {
+
+            return builtInVariables.first {
+                $0.fieldKey == "habit2"
+            }?.displayColor(using: settings)
         }
 
-        if workJobVisible && e.habit1 {
-            return .blue
+        if positive1Visible && e.positive1 {
+
+            return builtInVariables.first {
+                $0.fieldKey == "positive1"
+            }?.displayColor(using: settings)
+        }
+
+        if positive2Visible && e.positive2 {
+
+            return builtInVariables.first {
+                $0.fieldKey == "positive2"
+            }?.displayColor(using: settings)
+        }
+
+        if positive3Visible && e.positive3 {
+
+            return builtInVariables.first {
+                $0.fieldKey == "positive3"
+            }?.displayColor(using: settings)
+        }
+
+        if positive4Visible && e.positive4 {
+
+            return builtInVariables.first {
+                $0.fieldKey == "positive4"
+            }?.displayColor(using: settings)
+        }
+
+        if sportsVisible && !e.sports.isEmpty {
+
+            return builtInVariables.first {
+                $0.fieldKey == "sports"
+            }?.displayColor(using: settings)
+        }
+        
+        // MARK: Variables personalitzades
+
+        let visibleCustomVariables =
+            customVariables
+                .filter {
+                    useHiddenVariables || !$0.isHidden
+                }
+                .sorted {
+                    $0.order < $1.order
+                }
+
+        for variable in visibleCustomVariables {
+
+            let value =
+                e.customValues[
+                    variable.variableId
+                ] ?? 0
+
+            if value > 0 {
+
+                return Color(
+                    hex: variable.colorHex
+                )
+            }
         }
 
         return nil

@@ -39,8 +39,9 @@ final class BackupManager {
         let lastDate: String?
 
         let conflictDates: [String]
+
+        let invalidRows: Int
     }
-    
     
     // MARK: EXPORT
     
@@ -138,6 +139,55 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         }
     }
     
+    //MARK: validate
+    
+    private func validateRow(
+        values: [String],
+        headers: [String]
+    ) -> Bool {
+
+        guard values.count == headers.count else {
+            return false
+        }
+
+        let dict = Dictionary(
+            uniqueKeysWithValues: zip(headers, values)
+        )
+
+        guard let date = dict["date"],
+              !date.isEmpty
+        else {
+            return false
+        }
+
+        if let value = dict["sleepQuality"],
+           !value.isEmpty,
+           Int(value) == nil {
+            return false
+        }
+
+        if let value = dict["counter"],
+           !value.isEmpty,
+           Int(value) == nil {
+            return false
+        }
+
+        for (key, value) in dict {
+
+            guard key.hasPrefix("cv_") else {
+                continue
+            }
+
+            if !value.isEmpty,
+               Int(value) == nil {
+
+                return false
+            }
+        }
+
+        return true
+    }
+    
     // MARK: PREVIEW
 
     func previewCSV(
@@ -169,7 +219,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 existingEntries: 0,
                 firstDate: nil,
                 lastDate: nil,
-                conflictDates: []
+                conflictDates: [],
+                invalidRows: 0
         
             )
         }
@@ -181,7 +232,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 existingEntries: 0,
                 firstDate: nil,
                 lastDate: nil,
-                conflictDates: []
+                conflictDates: [],
+                invalidRows: 0
             )
         }
         
@@ -215,7 +267,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 existingEntries: 0,
                 firstDate: nil,
                 lastDate: nil,
-                conflictDates: []
+                conflictDates: [],
+                invalidRows: 0
             )
         }
         
@@ -223,17 +276,23 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         var newEntries = 0
         var existingEntriesCount = 0
         var conflictDates: [String] = []
+        var invalidRows = 0
         
         for line in lines.dropFirst(2) where !line.isEmpty {
-            
+
             let values = parse(line)
-            
-            guard values.count > dateIndex else {
+
+            guard validateRow(
+                values: values,
+                headers: headers
+            ) else {
+
+                invalidRows += 1
                 continue
             }
-            
+
             let date = values[dateIndex]
-            
+
             dates.append(date)
 
             if existingEntries.contains(where: { $0.date == date }) {
@@ -245,7 +304,6 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
 
                 newEntries += 1
             }
-            
         }
         
         let sorted = dates.sorted()
@@ -256,7 +314,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             existingEntries: existingEntriesCount,
             firstDate: sorted.first,
             lastDate: sorted.last,
-            conflictDates: conflictDates.sorted()
+            conflictDates: conflictDates.sorted(),
+            invalidRows: invalidRows
         )
     }
         
@@ -327,7 +386,11 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
 
             let values = parse(line)
 
-            guard values.count == headers.count else {
+            guard validateRow(
+                values: values,
+                headers: headers
+            ) else {
+
                 skipped += 1
                 continue
             }

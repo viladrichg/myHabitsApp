@@ -913,7 +913,7 @@ struct InsightsView: View {
                         ? "✅"
                         : "🥇",
                         title: isNegativeVariable
-                        ? "Mes més controlat"
+                        ? "Mes més complicat"
                         : "Millor mes",
                         value: bestMonthText
                     )
@@ -923,7 +923,7 @@ struct InsightsView: View {
                         ? "🔥"
                         : "🥶",
                         title: isNegativeVariable
-                        ? "Mes més complicat"
+                        ? "Mes més controlat"
                         : "Pitjor mes",
                         value: worstMonthText
                     )

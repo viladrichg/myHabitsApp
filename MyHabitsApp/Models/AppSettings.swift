@@ -40,6 +40,16 @@ final class AppSettings {
 
     var hiddenVariablesJSON: String = "[]"
     
+    // visualització
+    
+    var lineChartStyle: String = "line"
+    
+    var perfectDayColorHex: String = "#22c55e"
+    
+    var perfectDayThreshold: Int = 3
+    
+    var perfectDayEnabled: Bool = true
+    
     var showHiddenVariablesInCalendar: Bool = false
     init() {}
 

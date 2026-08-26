@@ -8,18 +8,63 @@ struct SettingsView: View {
 
     private var settings: AppSettings? { allSettings.first }
 
+    private let colorOptions = [
+        "#06b6d4",
+        "#f97316",
+        "#84cc16",
+        "#ec4899",
+        "#a78bfa",
+        "#14b8a6",
+        "#f59e0b",
+        "#ef4444",
+        "#3b82f6",
+        "#22c55e"
+    ]
+    
+    private func colorPicker(
+        selected: Binding<String>
+    ) -> some View {
+
+        LazyVGrid(
+            columns: Array(
+                repeating: GridItem(.flexible()),
+                count: 5
+            )
+        ) {
+
+            ForEach(colorOptions, id: \.self) { hex in
+
+                Circle()
+                    .fill(Color(hex: hex))
+                    .frame(width: 32, height: 32)
+
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                selected.wrappedValue == hex
+                                ? Color.primary
+                                : Color.clear,
+                                lineWidth: 3
+                            )
+                    )
+
+                    .onTapGesture {
+                        selected.wrappedValue = hex
+                    }
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             Form {
                 if let s = settings {
                     themeSection(s)
                     displaySection(s)
+                    customVariablesSection
                     notificationsSection(s)
                     backupSection(s)
                 }
-
-                //variableColorsSection
-                customVariablesSection
 
                 aboutSection
             }
@@ -59,56 +104,57 @@ struct SettingsView: View {
 
         Section("Visualització") {
 
-            Picker(
-                "Període gràfics",
-                selection: Binding(
-                    get: { s.chartTimeframe },
-                    set: { s.chartTimeframe = $0 }
+            NavigationLink {
+
+                CalendarSettingsView()
+
+            } label: {
+
+                Label(
+                    "Calendari",
+                    systemImage: "calendar"
                 )
-            ) {
-
-                Text("1 setmana")
-                    .tag("week")
-
-                Text("15 dies")
-                    .tag("15days")
-
-                Text("1 mes")
-                    .tag("month")
-
-                Text("3 mesos")
-                    .tag("3months")
-
-                Text("6 mesos")
-                    .tag("6months")
-
-                Text("1 any")
-                    .tag("year")
-
-                Text("Tot")
-                    .tag("all")
             }
 
-            Picker(
-                "Valors",
-                selection: Binding(
-                    get: { s.displayMode },
-                    set: { s.displayMode = $0 }
+            NavigationLink {
+
+                ChartSettingsView()
+
+            } label: {
+
+                Label(
+                    "Gràfics",
+                    systemImage: "chart.xyaxis.line"
                 )
-            ) {
+            }
+        }
+        .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
+        .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
+    }
+    
+    // MARK: - Custom Variables
 
-                Text("Absolut")
-                    .tag("absolute")
+    private var customVariablesSection: some View {
 
-                Text("Percentatge")
-                    .tag("percentage")
+        Section("Variables personalitzades") {
+
+            NavigationLink {
+
+                CustomVariablesView()
+
+            } label: {
+
+                Label(
+                    "Gestionar variables",
+                    systemImage: "slider.horizontal.3"
+                )
             }
         }
         .listRowBackground(theme.card)
         .foregroundStyle(theme.text)
     }
-
-    // MARK: - NEW VARIABLE COLORS ✅ CHANGE
 
     // MARK: - Notifications
 
@@ -132,44 +178,6 @@ struct SettingsView: View {
         .listRowBackground(theme.card)
     }
 
-    // MARK: - Custom Variables
-
-    private var customVariablesSection: some View {
-
-        Section("Variables personalitzades") {
-
-            NavigationLink {
-
-                CustomVariablesView()
-
-            } label: {
-
-                Label(
-                    "Gestionar variables",
-                    systemImage: "slider.horizontal.3"
-                )
-            }
-
-            if let s = settings {
-
-                Toggle(
-                    "Tenir en compte variables amagades al calendari",
-                    isOn: Binding(
-                        get: {
-                            s.showHiddenVariablesInCalendar
-                        },
-                        set: {
-                            s.showHiddenVariablesInCalendar = $0
-                            s.updatedAt = Date()
-                        }
-                    )
-                )
-            }
-        }
-        .listRowBackground(theme.card)
-        .foregroundStyle(theme.text)
-    }
-    
     // MARK: - About
 
     private var aboutSection: some View {

@@ -751,7 +751,7 @@ struct DataEntryView: View {
                             
                             HStack {
                                 
-                                ForEach(1...5, id: \.self) { star in
+                                ForEach(1...7, id: \.self) { star in
                                     
                                     Button {
                                         
@@ -786,7 +786,7 @@ struct DataEntryView: View {
                                 Spacer()
                                 
                                 Text(
-                                    "\(customValuesDraft[v.variableId] ?? 0)/5"
+                                    "\(customValuesDraft[v.variableId] ?? 0)/7"
                                 )
                                 .foregroundStyle(theme.secondary)
                             }

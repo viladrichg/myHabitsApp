@@ -38,6 +38,7 @@ struct DataEntryView: View {
     @State private var sportsDraft: [String] = []
     @State private var sleepEndDraft = ""
     @State private var sleepStartDraft = ""
+    @State private var sportSearch = ""
     
     init(
         selectedTab: Binding<Int>,
@@ -52,6 +53,33 @@ struct DataEntryView: View {
     @State private var customValuesDraft: [String:Int] = [:]
     @State private var notesDraft = ""
     @FocusState private var isEditingNotes: Bool
+    
+    private var visibleSports: [CustomSport] {
+
+        if !sportSearch.isEmpty {
+
+            return customSports.filter {
+                $0.name.localizedCaseInsensitiveContains(
+                    sportSearch
+                )
+            }
+        }
+
+        let selected = customSports.filter {
+            sportsDraft.contains($0.name)
+        }
+
+        let notSelected = customSports.filter {
+            !sportsDraft.contains($0.name)
+        }
+
+        let combined =
+            selected + notSelected
+
+        return Array(
+            combined.prefix(8)
+        )
+    }
     
     private var dateString: String { selectedDate.isoDate }
     
@@ -459,50 +487,107 @@ struct DataEntryView: View {
     // MARK: SPORTS ✅ GRID + EDIT MODE
     
     private func sportsSection(_ e: DailyEntry) -> some View {
+
         section("Esports") {
-            
+
             let selectedSports = Set(sportsDraft)
-            
+
             VStack(spacing: 10) {
-                
+
                 HStack {
-                    TextField("Nou esport", text: $newSport)
+
+                    if isEditingSports {
+
+                        TextField(
+                            "Nou esport",
+                            text: $newSport
+                        )
                         .padding()
-                        .background(theme.card)  // ✅ CHANGE
-                    
-                    Button("+") {
-                        guard !newSport.isEmpty else { return }
-                        let s = CustomSport(name: newSport)
-                        ctx.insert(s)
-                        try? ctx.save()
-                        newSport = ""
+                        .background(theme.card)
+
+                        Button {
+                            guard !newSport.isEmpty else { return }
+
+                            let s = CustomSport(name: newSport)
+
+                            ctx.insert(s)
+
+                            try? ctx.save()
+
+                            newSport = ""
+
+                        } label: {
+
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                        }
+                        .padding(.trailing, 28)
+                        
+                    } else if customSports.count > 12 {
+
+                        TextField(
+                            "Cercar esport",
+                            text: $sportSearch
+                        )
+                        .padding()
+                        .background(theme.card)
                     }
-                }
-                
-                HStack {
+                      
                     Spacer()
-                    Button(isEditingSports ? "Fet" : "Editar") {
+
+                    Button(
+                        isEditingSports
+                        ? "Fet"
+                        : "Editar"
+                    ) {
                         isEditingSports.toggle()
                     }
                 }
+                Spacer()
+                    .frame(height: 8)
                 
-                // ✅ CHANGE GRID
-                
-                LazyVGrid(columns: [GridItem(), GridItem()]) {
-                    ForEach(customSports) { sport in
-                        ZStack(alignment: .topTrailing) {
-                            
-                            selectable(sport.name,
-                                       active: selectedSports.contains(sport.name),
-                                       color: .purple) {
+                LazyVGrid(
+                    columns: [
+                        GridItem(),
+                        GridItem()
+                    ]
+                ) {
+
+                    ForEach(visibleSports) { sport in
+
+                        ZStack(
+                            alignment: .topTrailing
+                        ) {
+
+                            selectable(
+                                sport.name,
+                                active: selectedSports.contains(sport.name),
+                                color: .purple
+                            ) {
+
+                                guard !isEditingSports else {
+                                    return
+                                }
+
                                 toggleSport(sport.name)
                             }
-                            
+
                             if isEditingSports {
-                                Button("✕") {
+
+                                Button {
+
                                     ctx.delete(sport)
+
                                     try? ctx.save()
+
+                                } label: {
+
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.title3)
+                                        .foregroundStyle(.red)
                                 }
+                                .padding(8)
+                                .offset(x: -2, y: 2)
                             }
                         }
                     }

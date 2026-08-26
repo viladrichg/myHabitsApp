@@ -861,6 +861,10 @@ struct InsightsView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .onChange(of: selectedField) { _, newValue in
+
+                    settings?.lastAnalysisField = newValue
+                }                
             }
             
             Divider()
@@ -1026,8 +1030,8 @@ struct InsightsView: View {
         .cardStyle()
         .onAppear {
             
-            if let first = availableVariables.first {
-                selectedField = first.id
+            if let settings {
+                selectedField = settings.lastAnalysisField
             }
         }
     }

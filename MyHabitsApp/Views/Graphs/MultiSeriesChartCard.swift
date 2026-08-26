@@ -236,12 +236,14 @@ struct MultiSeriesChartCard: View {
                     .flatMap(\.points)
                     .map(\.1)
 
+                let minValue = allValues.min() ?? 0
                 let maxValue = allValues.max() ?? 1
 
-                let upperBound = max(
-                    10,
-                    maxValue * 1.15)
-                
+                let range = max(maxValue - minValue, 1)
+                let padding = range * 0.25
+
+                let lowerBound = minValue - padding
+                let upperBound = maxValue + padding
                 
                 Chart {
                     
@@ -285,7 +287,7 @@ struct MultiSeriesChartCard: View {
                     }
                 }
                 .chartYScale(
-                    domain: 0...upperBound
+                    domain: lowerBound...upperBound
                 )
                 .chartXScale(
                     domain: (visibleDates.first ?? .now)...(visibleDates.last ?? .now)

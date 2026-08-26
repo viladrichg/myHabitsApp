@@ -48,6 +48,8 @@ final class AppSettings {
     
     var perfectDayThreshold: Int = 3
     
+    var lastAnalysisField: String = "positive1"
+    
     var perfectDayEnabled: Bool = true
     
     var showHiddenVariablesInCalendar: Bool = false

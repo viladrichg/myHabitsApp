@@ -136,7 +136,8 @@ struct StatisticsView: View {
                     points: chart.data,
                     color: chart.color,
                     unit: chart.unit
-                )
+                ),
+                lineChartStyle: settings?.lineChartStyle ?? "line"
             )
         }
     }
@@ -816,15 +817,26 @@ struct StatisticsView: View {
 
                     ForEach(sleepData, id: \.0) { point in
 
-                        LineMark(
-                            x: .value("Data", point.0),
-                            y: .value("Hores", point.1)
-                        )
+                        if settings?.lineChartStyle == "bar" {
 
-                        PointMark(
-                            x: .value("Data", point.0),
-                            y: .value("Hores", point.1)
-                        )
+                            BarMark(
+                                x: .value("Data", point.0),
+                                y: .value("Hores", point.1)
+                            )
+                            .foregroundStyle(theme.accent)
+
+                        } else {
+
+                            LineMark(
+                                x: .value("Data", point.0),
+                                y: .value("Hores", point.1)
+                            )
+
+                            PointMark(
+                                x: .value("Data", point.0),
+                                y: .value("Hores", point.1)
+                            )
+                        }
                     }
                 }
                 .frame(height: 180)
@@ -953,17 +965,28 @@ struct StatisticsView: View {
 
                     ForEach(pitellsData, id: \.0) { point in
 
-                        LineMark(
-                            x: .value("Data", point.0),
-                            y: .value("Pitells", point.1)
-                        )
-                        .foregroundStyle(counterColor)
+                        if settings?.lineChartStyle == "bar" {
 
-                        PointMark(
-                            x: .value("Data", point.0),
-                            y: .value("Pitells", point.1)
-                        )
-                        .foregroundStyle(counterColor)
+                            BarMark(
+                                x: .value("Data", point.0),
+                                y: .value("Pitells", point.1)
+                            )
+                            .foregroundStyle(counterColor)
+
+                        } else {
+
+                            LineMark(
+                                x: .value("Data", point.0),
+                                y: .value("Pitells", point.1)
+                            )
+                            .foregroundStyle(counterColor)
+
+                            PointMark(
+                                x: .value("Data", point.0),
+                                y: .value("Pitells", point.1)
+                            )
+                            .foregroundStyle(counterColor)
+                        }
                     }
                 }
                 .frame(height: 180)
@@ -1121,39 +1144,61 @@ struct StatisticsView: View {
                         id: \.0
                     ) { point in
 
-                        LineMark(
-                            x: .value(
-                                "Data",
-                                point.0
-                            ),
-                            y: .value(
-                                variable.label,
-                                point.1
-                            )
-                        )
-                        .foregroundStyle(
-                            Color(
-                                hex: variable.colorHex
-                            )
-                        )
+                        if settings?.lineChartStyle == "bar" {
 
-                        PointMark(
-                            x: .value(
-                                "Data",
-                                point.0
-                            ),
-                            y: .value(
-                                variable.label,
-                                point.1
+                            BarMark(
+                                x: .value(
+                                    "Data",
+                                    point.0
+                                ),
+                                y: .value(
+                                    variable.label,
+                                    point.1
+                                )
                             )
-                        )
-                        .foregroundStyle(
-                            Color(
-                                hex: variable.colorHex
+                            .foregroundStyle(
+                                Color(
+                                    hex: variable.colorHex
+                                )
                             )
-                        )
+
+                        } else {
+
+                            LineMark(
+                                x: .value(
+                                    "Data",
+                                    point.0
+                                ),
+                                y: .value(
+                                    variable.label,
+                                    point.1
+                                )
+                            )
+                            .foregroundStyle(
+                                Color(
+                                    hex: variable.colorHex
+                                )
+                            )
+
+                            PointMark(
+                                x: .value(
+                                    "Data",
+                                    point.0
+                                ),
+                                y: .value(
+                                    variable.label,
+                                    point.1
+                                )
+                            )
+                            .foregroundStyle(
+                                Color(
+                                    hex: variable.colorHex
+                                )
+                            )
+                        }
                     }
                 }
+                
                 .frame(height: 180)
                 .onTapGesture {
 

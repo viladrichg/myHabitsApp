@@ -74,7 +74,8 @@ struct GraphsView: View {
                 content: .multiSeries(
                     title: chartType.rawValue,
                     series: data.series
-                )
+                ),
+                lineChartStyle: settings?.lineChartStyle ?? "line"
             )
         }
     }

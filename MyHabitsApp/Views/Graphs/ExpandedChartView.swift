@@ -27,15 +27,18 @@ enum ExpandedChartContent {
 }
 
 struct ExpandedChartView: View {
-    
+
     @Environment(\.dismiss) private var dismiss
+
     @Environment(\.verticalSizeClass)
     private var verticalSizeClass
-    
+
     let content: ExpandedChartContent
-    
+
+    let lineChartStyle: String
+
     @State private var scrollPosition: Date = .now
-    
+
     @State private var selectedRange: ChartRange = .month
 
     @State private var zoomIndex = 0
@@ -101,23 +104,7 @@ struct ExpandedChartView: View {
         NavigationStack {
                     
                     VStack(spacing: 20) {
-                        HStack {
-
-                            //Spacer()
-
-                            /*Button {
-
-                                dismiss()
-
-                            } label: {
-
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.top,8)*/
-                        }
-                        
+                     
                         switch content {
                             
                         case let .line(
@@ -133,9 +120,6 @@ struct ExpandedChartView: View {
                                 color: color,
                                 unit: unit
                             )
-                            
-                     //   case let .insights(
-  
                             
                         case let .multiSeries(
                             title,
@@ -190,27 +174,38 @@ struct ExpandedChartView: View {
 
             ForEach(points, id: \.0) { point in
 
-                if selectedRange == .days15 ||
-                   selectedRange == .month {
+                if lineChartStyle == "bar" {
 
-                    LineMark(
+                    BarMark(
                         x: .value("Data", point.0),
                         y: .value(title, point.1)
                     )
                     .foregroundStyle(color)
-                }
 
-                PointMark(
-                    x: .value(
-                        "Data",
-                        point.0
-                    ),
-                    y: .value(
-                        title,
-                        point.1
+                } else {
+
+                    if selectedRange == .days15 ||
+                       selectedRange == .month {
+
+                        LineMark(
+                            x: .value("Data", point.0),
+                            y: .value(title, point.1)
+                        )
+                        .foregroundStyle(color)
+                    }
+
+                    PointMark(
+                        x: .value(
+                            "Data",
+                            point.0
+                        ),
+                        y: .value(
+                            title,
+                            point.1
+                        )
                     )
-                )
-                .foregroundStyle(color)
+                    .foregroundStyle(color)
+                }
             }
         }
         .onAppear {

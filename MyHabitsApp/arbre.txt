@@ -36,4 +36,5 @@
 ./Views/Settings/CustomVariablesView.swift
 ./Views/Settings/NotificationSettingsView.swift
 ./Views/Settings/SettingsView.swift
-./Views/Statistics/StatisticsView.swift
+./Views/Statistics/CalendarView.swift
+

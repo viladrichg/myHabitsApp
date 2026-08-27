@@ -13,7 +13,7 @@ struct CalendarView: View {
     private var settings: AppSettings? {
         allSettings.first
     }
-
+    
     @State private var calendarMode: CalendarMode = .month
     @State private var displayMonth = Date()
     @State private var selectedExpandedChart: ExpandedChart?
@@ -67,6 +67,7 @@ struct CalendarView: View {
         )
     }
     
+    //MARK: body
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -809,6 +810,8 @@ struct CalendarView: View {
             .sorted { $0.0 < $1.0 }
     }
     
+    //MARK: SLEEP CARD
+    
     private var sleepCard: some View {
 
         let values = sleepData.map(\.1)
@@ -903,8 +906,6 @@ struct CalendarView: View {
 
     private var pitellsData: [(Date, Double)] {
 
-
-
         monthEntries.values
             .filter { !$0.isEmpty }
             .compactMap { entry in
@@ -947,6 +948,7 @@ struct CalendarView: View {
             .sorted { $0.0 < $1.0 }
     }
 
+    //MARK: pitells CARD
     private var pitellsCard: some View {
 
         let counterColor =
@@ -1052,6 +1054,8 @@ struct CalendarView: View {
         .cardStyle()
     }
 
+    // MARK: CUSTOMDATA
+    
     private func customCounterData(
         _ variable: CustomVariable
     ) -> [(Date, Double)] {

@@ -33,7 +33,7 @@ struct GraphsView: View {
         ]
     }
 
-
+//MARK: body
     var body: some View {
         NavigationStack {
             ScrollView {

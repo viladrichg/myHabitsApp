@@ -20,7 +20,7 @@ struct ContentView: View {
                 .tabItem { Label("Avui", systemImage: "plus.circle.fill") }
                 .tag(1)
 
-            StatisticsView()
+            CalendarView()
                 .tabItem { Label("Calendari", systemImage: "calendar") }
                 .tag(2)
 

@@ -40,6 +40,7 @@ struct DataEntryView: View {
     @State private var sleepStartDraft = ""
     @State private var sportSearch = ""
     
+    
     init(
         selectedTab: Binding<Int>,
         initialDate: Date? = nil
@@ -1145,6 +1146,8 @@ struct DataEntryView: View {
             sportsDraft = existing.sports
             sleepEndDraft = existing.sleepEnd ?? ""
             sleepStartDraft = existing.sleepStart ?? ""
+            sleepQualityDraft = Double(existing.sleepQuality ?? 5)
+
             
         } else {
             

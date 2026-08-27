@@ -14,6 +14,13 @@ struct CalendarView: View {
         allSettings.first
     }
     
+    enum SleepMetric: String, CaseIterable {
+        case hours = "Hores"
+        case quality = "Qualitat"
+    }
+
+    @State private var sleepMetric: SleepMetric = .hours
+    
     @State private var calendarMode: CalendarMode = .month
     @State private var displayMonth = Date()
     @State private var selectedExpandedChart: ExpandedChart?
@@ -663,6 +670,41 @@ struct CalendarView: View {
     
     // MARK: - Sleep
 
+    private var sleepQualityData: [(Date, Double)] {
+        monthEntries.values
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
+
+                guard let date = Date.from(isoDate: entry.date),
+                      let quality = entry.sleepQuality
+                else { return nil }
+
+                return (
+                    date,
+                    Double(quality)
+                )
+            }
+            .sorted { $0.0 < $1.0 }
+    }
+    
+    private var allSleepQualityData: [(Date, Double)] {
+
+        entries
+            .filter { !$0.isEmpty }
+            .compactMap { entry in
+
+                guard let date = Date.from(isoDate: entry.date),
+                      let quality = entry.sleepQuality
+                else { return nil }
+
+                return (
+                    date,
+                    Double(quality)
+                )
+            }
+            .sorted { $0.0 < $1.0 }
+    }
+    
     private var sleepData: [(Date, Double)] {
 
         monthEntries.values
@@ -814,18 +856,33 @@ struct CalendarView: View {
     
     private var sleepCard: some View {
 
-        let values = sleepData.map(\.1)
+        let data =
+            sleepMetric == .hours
+            ? sleepData
+            : sleepQualityData
+
+        let values = data.map(\.1)
 
         return VStack(alignment: .leading, spacing: 12) {
 
-            Text("Hores de son")
+            Text("Son")
                 .font(.headline)
 
-            if sleepData.count >= 2 {
+            Picker("", selection: $sleepMetric) {
+                Text("Hores de son")
+                    .tag(SleepMetric.hours)
+
+                Text("Qualitat")
+                    .tag(SleepMetric.quality)
+            }
+            .pickerStyle(.segmented)
+            .padding(.bottom, 16)
+
+            if data.count >= 2 {
 
                 Chart {
 
-                    ForEach(sleepData, id: \.0) { point in
+                    ForEach(data, id: \.0) { point in
 
                         if settings?.lineChartStyle == "bar" {
 
@@ -852,12 +909,25 @@ struct CalendarView: View {
                 .frame(height: 180)
                 .onTapGesture {
 
-                    selectedExpandedChart = ExpandedChart(
-                        title: "Hores de son",
-                        data: allSleepData,
-                        color: theme.accent,
-                        unit: "h"
-                    )
+                    if sleepMetric == .hours {
+
+                        selectedExpandedChart = ExpandedChart(
+                            title: "Hores de son",
+                            data: allSleepData,
+                            color: theme.accent,
+                            unit: "h"
+                        )
+
+                    } else {
+
+                        selectedExpandedChart = ExpandedChart(
+                            title: "Qualitat del son",
+                            data: allSleepQualityData,
+                            color: theme.accent,
+                            unit: ""
+                        )
+
+                    }
                 }
 
             } else {
@@ -872,27 +942,51 @@ struct CalendarView: View {
             }
 
             if !values.isEmpty {
-
+                
+                let lowTitle =
+                    sleepMetric == .hours
+                    ? "Nit del lloro"
+                    : "Pitjor"
+                
+                let highTitle =
+                    sleepMetric == .hours
+                    ? "Dormilega"
+                    : "Millor"
+                
+                let unit =
+                    sleepMetric == .hours
+                    ? "h"
+                    : ""
+                
                 HStack(spacing: 12) {
-
+                    
                     statBox(
-                        title: "Nit del lloro",
-                        value: String(format: "%.1fh", values.min() ?? 0),
+                        title: lowTitle,
+                        value: String(
+                            format: unit.isEmpty ? "%.0f" : "%.1f%@",
+                            values.min() ?? 0,
+                            unit
+                        ),
                         color: .red
                     )
-
+                    
                     statBox(
                         title: "Mitjana",
                         value: String(
-                            format: "%.1fh",
-                            values.reduce(0,+) / Double(values.count)
+                            format: unit.isEmpty ? "%.1f" : "%.1f%@",
+                            values.reduce(0,+) / Double(values.count),
+                            unit
                         ),
                         color: .orange
                     )
-
+                    
                     statBox(
-                        title: "Dormilega",
-                        value: String(format: "%.1fh", values.max() ?? 0),
+                        title: highTitle,
+                        value: String(
+                            format: unit.isEmpty ? "%.0f" : "%.1f%@",
+                            values.max() ?? 0,
+                            unit
+                        ),
                         color: .green
                     )
                 }

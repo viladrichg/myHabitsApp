@@ -37,7 +37,9 @@ struct CSVExporter {
             .init(
                 title: "Qualitat son",
                 key: "sleepQuality",
-                value: { String($0.sleepQuality ?? 0) }
+                value: {
+                    $0.sleepQuality.map(String.init) ?? ""
+                }
             )
         ]
 
@@ -152,7 +154,7 @@ struct CSVExporter {
                         title: variable.displayLabel(using: settings),
                         key: "counter",
                         value: {
-                            String($0.counter ?? 0)
+                            $0.counter.map(String.init) ?? ""
                         }
                     )
                 )

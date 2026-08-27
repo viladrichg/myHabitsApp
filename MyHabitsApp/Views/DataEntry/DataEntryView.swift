@@ -293,7 +293,7 @@ struct DataEntryView: View {
                 
                 Slider(
                     value: $sleepQualityDraft,
-                    in: 0...10,
+                    in: 1...10,
                     step: 1
                 )
                 .tint(theme.accent)

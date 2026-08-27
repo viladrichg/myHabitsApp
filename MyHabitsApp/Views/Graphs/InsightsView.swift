@@ -291,13 +291,14 @@ struct InsightsView: View {
         entries.compactMap { entry in
 
             if selectedField == "counter" {
-
                 return entry.counter
-
-            } else {
-
-                return entry.customValues[selectedField]
             }
+
+            if selectedField == "sleepQuality" {
+                return entry.sleepQuality
+            }
+
+            return entry.customValues[selectedField]
         }
     }
     
@@ -403,6 +404,11 @@ struct InsightsView: View {
                 id: "sleep",
                 label: "Hores de son",
                 type: "sleep"
+            ),
+            (
+                id: "sleepQuality",
+                label: "Qualitat del son",
+                type: "sleepQuality"
             )
         ]
 
@@ -545,6 +551,10 @@ struct InsightsView: View {
                             return entry.counter
                         }
 
+                        if selectedField == "sleepQuality" {
+                            return entry.sleepQuality
+                        }
+
                         return entry.customValues[selectedField]
                     }
 
@@ -589,6 +599,10 @@ struct InsightsView: View {
                             return entry.counter
                         }
 
+                        if selectedField == "sleepQuality" {
+                            return entry.sleepQuality
+                        }
+
                         return entry.customValues[selectedField]
                     }
 
@@ -619,6 +633,13 @@ struct InsightsView: View {
 
         entries.compactMap {
             $0.sleepHours
+        }
+    }
+    
+    private var sleepQualityValues: [Int] {
+
+        entries.compactMap {
+            $0.sleepQuality
         }
     }
     
@@ -814,7 +835,7 @@ struct InsightsView: View {
                         Text("Hores de son")
                             .tag("sleep")
 
-                        Text("Qualitat del son (pendent)")
+                        Text("Qualitat del son")
                             .tag("sleepQuality")
                     }
 
@@ -936,7 +957,8 @@ struct InsightsView: View {
             
             //MARK: case counter i rating
             if selectedVariableType == "counter"
-                || selectedVariableType == "rating" {
+            || selectedVariableType == "rating"
+            || selectedVariableType == "sleepQuality" {
                 
                 insightRow(
                     icon: "📊",
@@ -962,17 +984,19 @@ struct InsightsView: View {
                     value: numericTrendText
                 )
                 
-                insightRow(
-                    icon: "🥇",
-                    title: "Millor mes",
-                    value: numericBestMonthText
-                )
-                
-                insightRow(
-                    icon: "🥶",
-                    title: "Pitjor mes",
-                    value: numericWorstMonthText
-                )
+                if canShowMonthInsights {
+                    insightRow(
+                        icon: "🥇",
+                        title: "Millor mes",
+                        value: numericBestMonthText
+                    )
+                    
+                    insightRow(
+                        icon: "🥶",
+                        title: "Pitjor mes",
+                        value: numericWorstMonthText
+                    )
+                }
                 
                 Text("La tendència i els mesos es calculen a partir de la mitjana dels valors.")
                     .font(.caption)

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import Charts
 
-struct StatisticsView: View {
+struct CalendarView: View {
     @Environment(\.appTheme) var theme
     @Query(sort: \DailyEntry.date, order: .reverse) private var entries: [DailyEntry]
     @Query(sort: \CustomVariable.order)
@@ -794,6 +794,13 @@ struct StatisticsView: View {
                     total = normalDuration
                 }
 
+                print(
+                    "Sleep:",
+                    previousEntry.date,
+                    previousEntry.sleepStart ?? "-",
+                    entry.date,
+                    entry.sleepEnd ?? "-"
+                )
                 return (
                     date,
                     Double(total) / 60.0
@@ -1111,6 +1118,7 @@ struct StatisticsView: View {
         .sorted { $0.0 < $1.0 }
     }
 
+    //MARK: GRAFICS VARIABLES PERSONALITZADES
     
     private func customCounterCard(
         _ variable: CustomVariable

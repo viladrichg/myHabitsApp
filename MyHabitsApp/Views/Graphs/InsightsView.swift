@@ -298,7 +298,25 @@ struct InsightsView: View {
                 return entry.sleepQuality
             }
 
-            return entry.customValues[selectedField]
+            guard let value =
+                entry.customValues[selectedField]
+            else {
+                return nil
+            }
+
+            if let variable =
+                customVariables.first(
+                    where: {
+                        $0.variableId == selectedField
+                    }
+                ),
+               variable.ignoreZerosInStats,
+               value == 0 {
+
+                return nil
+            }
+
+            return value
         }
     }
     
@@ -552,10 +570,33 @@ struct InsightsView: View {
                         }
 
                         if selectedField == "sleepQuality" {
-                            return entry.sleepQuality
+
+                            guard let value = entry.sleepQuality,
+                                  value > 0
+                            else {
+                                return nil
+                            }
+
+                            return value
                         }
 
-                        return entry.customValues[selectedField]
+                        guard let value =
+                            entry.customValues[selectedField]
+                        else {
+                            return nil
+                        }
+
+                        if let variable =
+                            customVariables.first(
+                                where: { $0.variableId == selectedField }
+                            ),
+                           variable.ignoreZerosInStats,
+                           value == 0 {
+
+                            return nil
+                        }
+
+                        return value
                     }
 
                 guard !values.isEmpty else {
@@ -603,7 +644,23 @@ struct InsightsView: View {
                             return entry.sleepQuality
                         }
 
-                        return entry.customValues[selectedField]
+                        guard let value =
+                            entry.customValues[selectedField]
+                        else {
+                            return nil
+                        }
+
+                        if let variable =
+                            customVariables.first(
+                                where: { $0.variableId == selectedField }
+                            ),
+                           variable.ignoreZerosInStats,
+                           value == 0 {
+
+                            return nil
+                        }
+
+                        return value
                     }
 
                 guard !values.isEmpty else {

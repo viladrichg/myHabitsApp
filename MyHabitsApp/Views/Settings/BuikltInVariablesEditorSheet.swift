@@ -64,7 +64,6 @@ struct BuiltInVariableEditorSheet: View {
             Form {
 
                 Section("Nom") {
-
                     TextField(
                         "Nom",
                         text: $label
@@ -72,7 +71,6 @@ struct BuiltInVariableEditorSheet: View {
                 }
 
                 Section("Color") {
-
                     LazyVGrid(
                         columns: Array(
                             repeating: GridItem(.flexible()),
@@ -85,7 +83,6 @@ struct BuiltInVariableEditorSheet: View {
                             Circle()
                                 .fill(Color(hex: hex))
                                 .frame(width: 32, height: 32)
-
                                 .overlay(
                                     Circle()
                                         .stroke(
@@ -95,7 +92,6 @@ struct BuiltInVariableEditorSheet: View {
                                             lineWidth: 3
                                         )
                                 )
-
                                 .onTapGesture {
                                     colorHex = hex
                                 }
@@ -109,6 +105,9 @@ struct BuiltInVariableEditorSheet: View {
                         "Ocultar variable",
                         isOn: $hidden
                     )
+                }
+
+                Section("Accions") {
 
                     Button(
                         "Restaurar valors per defecte",

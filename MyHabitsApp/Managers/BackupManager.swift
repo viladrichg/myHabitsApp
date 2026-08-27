@@ -440,8 +440,15 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 entry.sleepEnd = value
             }
 
-            if let value = dict["sleepQuality"] {
-                entry.sleepQuality = Int(value)
+            if let value = dict["sleepQuality"],
+               let quality = Int(value),
+               quality > 0 {
+
+                entry.sleepQuality = quality
+
+            } else {
+
+                entry.sleepQuality = nil
             }
 
             if let value = dict["habit1"] {

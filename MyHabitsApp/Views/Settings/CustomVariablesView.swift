@@ -373,58 +373,69 @@ private struct EditVariableSheet: View {
 
             Form {
 
-                TextField(
-                    "Label",
-                    text: $variable.label
-                )
+                Section("Nom") {
 
-                TextField(
-                    "Unitat",
-                    text: $variable.unit
-                )
-
-                if variable.type == "counter" ||
-                   variable.type == "rating" {
-
-                    Toggle(
-                        "Ignorar zeros a les estadístiques",
-                        isOn: $variable.ignoreZerosInStats
+                    TextField(
+                        "Label",
+                        text: $variable.label
                     )
                 }
-                
-                Toggle(
-                    "Variable oculta",
-                    isOn: $variable.isHidden
-                )
 
+                Section("Unitat") {
 
-                LazyVGrid(
-                    columns: Array(
-                        repeating: GridItem(.flexible()),
-                        count: 5
+                    TextField(
+                        "Unitat",
+                        text: $variable.unit
                     )
-                ) {
+                }
 
-                    ForEach(colors, id: \.self) { hex in
+                Section("Color") {
 
-                        Circle()
-                            .fill(Color(hex: hex))
-                            .frame(width: 32, height: 32)
+                    LazyVGrid(
+                        columns: Array(
+                            repeating: GridItem(.flexible()),
+                            count: 5
+                        )
+                    ) {
 
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        variable.colorHex == hex
-                                        ? Color.primary
-                                        : Color.clear,
-                                        lineWidth: 3
-                                    )
-                            )
+                        ForEach(colors, id: \.self) { hex in
 
-                            .onTapGesture {
-                                variable.colorHex = hex
-                            }
+                            Circle()
+                                .fill(Color(hex: hex))
+                                .frame(width: 32, height: 32)
+
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            variable.colorHex == hex
+                                            ? Color.primary
+                                            : Color.clear,
+                                            lineWidth: 3
+                                        )
+                                )
+
+                                .onTapGesture {
+                                    variable.colorHex = hex
+                                }
+                        }
                     }
+                }
+
+                Section("Opcions") {
+
+                    if variable.type == "counter"
+                    || variable.type == "rating" {
+
+                        Toggle(
+                            "Ignorar zeros a les estadístiques",
+                            isOn: $variable.ignoreZerosInStats
+                        )
+                    }
+
+                    Toggle(
+                        "Variable oculta",
+                        isOn: $variable.isHidden
+                    )
                 }
             }
             .navigationTitle("Editar variable")

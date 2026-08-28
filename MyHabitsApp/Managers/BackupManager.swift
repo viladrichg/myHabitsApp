@@ -281,7 +281,10 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         var seenDates = Set<String>()
         var duplicatedDates = Set<String>()
         
-        for line in lines.dropFirst(2) where !line.isEmpty {
+        for line in lines
+            .dropFirst(2)
+            .map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
+            where !line.isEmpty {
 
             let values = parse(line)
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -405,25 +408,23 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             }
         }
 
-        for line in lines.dropFirst(2) where !line.isEmpty {
+        for line in lines.dropFirst(2)
+            .map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
+            where !line.isEmpty {
 
             let values = parse(line)
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-            if let reason = validateRow(
+            guard validateRow(
                 values: values,
                 headers: headers
-            ) {
+            ) == nil else {
 
                 skipped += 1
 
-                print("INVALID ROW")
-                print("REASON: \(reason)")
-                print(line)
-
                 continue
             }
-
+            
             let cleanHeaders = headers.map {
                 $0.trimmingCharacters(in: .whitespacesAndNewlines)
             }
@@ -468,72 +469,118 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 updated += 1
             }
 
-            if let value = dict["sleepStart"] {
+            if let value = dict["sleepStart"],
+               !value.isEmpty {
                 entry.sleepStart = value
             }
 
-            if let value = dict["sleepEnd"] {
+            if let value = dict["sleepEnd"],
+               !value.isEmpty {
                 entry.sleepEnd = value
             }
 
-            if let value = dict["sleepQuality"],
-               let quality = Int(value),
-               quality > 0 {
+            if dict.keys.contains("sleepQuality") {
 
-                entry.sleepQuality = quality
+                if let value = dict["sleepQuality"],
+                   !value.isEmpty,
+                   let quality = Int(value),
+                   quality > 0 {
 
-            } else {
+                    entry.sleepQuality = quality
 
-                entry.sleepQuality = nil
+                } else {
+
+                    entry.sleepQuality = nil
+                }
             }
 
-            if let value = dict["habit1"] {
+            if let value = dict["habit1"],
+               !value.isEmpty {
                 entry.habit1 = value == "1"
             }
 
-            if let value = dict["habit2"] {
+            if let value = dict["habit2"],
+               !value.isEmpty {
                 entry.habit2 = value == "1"
             }
 
-            if let value = dict["negative1"] {
+            if let value = dict["negative1"],
+               !value.isEmpty {
                 entry.negative1 = value == "1"
             }
 
-            if let value = dict["negative2"] {
+            if let value = dict["negative2"],
+               !value.isEmpty {
                 entry.negative2 = value == "1"
             }
 
-            if let value = dict["positive1"] {
+            if let value = dict["positive1"],
+               !value.isEmpty {
                 entry.positive1 = value == "1"
             }
 
-            if let value = dict["positive2"] {
+            if let value = dict["positive2"],
+               !value.isEmpty {
                 entry.positive2 = value == "1"
             }
 
-            if let value = dict["positive3"] {
+            if let value = dict["positive3"],
+               !value.isEmpty {
                 entry.positive3 = value == "1"
             }
 
-            if let value = dict["positive4"] {
+            if let value = dict["positive4"],
+               !value.isEmpty {
                 entry.positive4 = value == "1"
             }
 
-            if let value = dict["counter"] {
+            if let value = dict["counter"],
+               !value.isEmpty {
                 entry.counter = Int(value)
             }
 
-            if let value = dict["notes"] {
+            if let value = dict["notes"],
+               !value.isEmpty {
+                
                 entry.notes = value
-            }
-
-            if let sports = dict["sports"] {
+                }
+            
+            if let sports = dict["sports"],
+               !sports.isEmpty {
 
                 entry.sports =
                     sports
-                        .split(separator: "|")
-                        .map(String.init)
+                        .split(whereSeparator: {
+                            $0 == "|" || $0 == ","
+                        })
+                        .map {
+                            $0.trimmingCharacters(in: .whitespaces)
+                        }
+
+                let importedSports = entry.sports
+
+                let existingSports = try context.fetch(
+                    FetchDescriptor<CustomSport>()
+                )
+
+                var existingNames = Set(
+                    existingSports.map { $0.name }
+                )
+
+                for sport in importedSports {
+
+                    guard !existingNames.contains(sport) else {
+                        continue
+                    }
+
+                    context.insert(
+                        CustomSport(name: sport)
+                    )
+
+                    existingNames.insert(sport)
+                }
             }
+            
 
             var customValues = entry.customValues
 
@@ -543,15 +590,23 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                     continue
                 }
 
-                customValues[key] = Int(value) ?? 0
+                guard !value.isEmpty else {
+                    continue
+                }
+
+                if let intValue = Int(value) {
+                    customValues[key] = intValue
+                }
+                
             }
 
             entry.customValues = customValues
             entry.updatedAt = Date()
         }
-
+        
         try context.save()
-
+        
+               
         return ImportResult(
             inserted: inserted,
             updated: updated,

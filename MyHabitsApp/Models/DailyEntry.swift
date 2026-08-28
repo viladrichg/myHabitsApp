@@ -21,9 +21,9 @@ final class DailyEntry {
 
     // Activities
     var positive1: Bool = false
-    var positive2: Bool       = false
-    var positive3: Bool     = false
-    var positive4: Bool     = false
+    var positive2: Bool = false
+    var positive3: Bool = false
+    var positive4: Bool = false
 
     // Counter (0–25)
     var counter: Int?

@@ -524,7 +524,7 @@ struct DataEntryView: View {
                         }
                         .padding(.trailing, 28)
                         
-                    } else if customSports.count > 12 {
+                    } else if customSports.count > 8 {
 
                         TextField(
                             "Cercar esport",

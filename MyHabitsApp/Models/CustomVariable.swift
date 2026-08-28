@@ -34,7 +34,7 @@ final class CustomVariable {
         ignoreZerosInStats: Bool = true,
         isHidden: Bool = false
     ) {
-        self.variableId = "cv_\(UUID().uuidString.lowercased())"
+        self.variableId = "cv_\(UUID().uuidString.prefix(8).lowercased())"
         self.label = label
         self.type = type
         self.colorHex = colorHex

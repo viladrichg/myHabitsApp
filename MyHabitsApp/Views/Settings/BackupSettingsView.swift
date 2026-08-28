@@ -26,7 +26,6 @@ struct BackupSettingsView: View {
     @State private var importMessage: String?
     @State private var deleteMessage: String?
     
-    @State private var importMessageID = UUID()
     @State private var showDeleteAlert = false
     @State private var showFinalDeleteAlert = false
 

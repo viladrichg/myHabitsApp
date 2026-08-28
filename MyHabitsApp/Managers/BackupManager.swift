@@ -29,18 +29,13 @@ final class BackupManager {
     struct CSVPreviewData {
 
         let total: Int
-
         let newEntries: Int
-
         let existingEntries: Int
-
         let firstDate: String?
-
         let lastDate: String?
-
         let conflictDates: [String]
-
         let invalidRows: Int
+        let validationMessages: [String]
     }
     
     // MARK: EXPORT
@@ -144,32 +139,30 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
     private func validateRow(
         values: [String],
         headers: [String]
-    ) -> Bool {
+    ) -> String? {
 
-        guard values.count == headers.count else {
-            return false
+        if values.count != headers.count {
+            return "Columnes incorrectes (\(values.count) en lloc de \(headers.count))"
         }
 
         let dict = Dictionary(
             uniqueKeysWithValues: zip(headers, values)
         )
 
-        guard let date = dict["date"],
-              !date.isEmpty
-        else {
-            return false
+        guard let date = dict["date"] else {
+            return "Falta columna date"
         }
 
         if let value = dict["sleepQuality"],
            !value.isEmpty,
            Int(value) == nil {
-            return false
+            return "Qualitat son no numèrica: \(value)"
         }
 
         if let value = dict["counter"],
            !value.isEmpty,
            Int(value) == nil {
-            return false
+            return "Pitells no numèric: \(value)"
         }
 
         for (key, value) in dict {
@@ -180,14 +173,13 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
 
             if !value.isEmpty,
                Int(value) == nil {
-
-                return false
+                return "\(key) no numèric: \(value)"
             }
         }
 
-        return true
+        return nil
     }
-    
+
     // MARK: PREVIEW
 
     func previewCSV(
@@ -220,8 +212,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 firstDate: nil,
                 lastDate: nil,
                 conflictDates: [],
-                invalidRows: 0
-        
+                invalidRows: 0,
+                validationMessages: []
             )
         }
         
@@ -233,11 +225,14 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 firstDate: nil,
                 lastDate: nil,
                 conflictDates: [],
-                invalidRows: 0
+                invalidRows: 0,
+                validationMessages: []
             )
         }
         
-        let headers = lines[1].components(separatedBy: ",")
+        let headers = lines[1]
+            .components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         
         
         let requiredColumns = [
@@ -268,7 +263,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 firstDate: nil,
                 lastDate: nil,
                 conflictDates: [],
-                invalidRows: 0
+                invalidRows: 0,
+                validationMessages: []
             )
         }
         
@@ -277,20 +273,31 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         var existingEntriesCount = 0
         var conflictDates: [String] = []
         var invalidRows = 0
+        var validationMessages: [String] = []
         
         for line in lines.dropFirst(2) where !line.isEmpty {
 
             let values = parse(line)
-
-            guard validateRow(
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            
+            if let reason = validateRow(
                 values: values,
                 headers: headers
-            ) else {
+            ) {
 
                 invalidRows += 1
+
+                let dateText =
+                    values.indices.contains(dateIndex)
+                    ? values[dateIndex]
+                    : "sense data"
+
+                validationMessages.append(
+                    "\(dateText): \(reason)"
+                )
+
                 continue
             }
-
             let date = values[dateIndex]
 
             dates.append(date)
@@ -315,7 +322,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             firstDate: sorted.first,
             lastDate: sorted.last,
             conflictDates: conflictDates.sorted(),
-            invalidRows: invalidRows
+            invalidRows: invalidRows,
+            validationMessages: validationMessages
         )
     }
         
@@ -363,7 +371,9 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         }
 
         let labels = lines[0].components(separatedBy: ",")
-        let headers = lines[1].components(separatedBy: ",")
+        let headers = lines[1]
+            .components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
 
         _ = labels
 
@@ -385,20 +395,33 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         for line in lines.dropFirst(2) where !line.isEmpty {
 
             let values = parse(line)
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-            guard validateRow(
+            if let reason = validateRow(
                 values: values,
                 headers: headers
-            ) else {
+            ) {
 
                 skipped += 1
+
+                print("INVALID ROW")
+                print("REASON: \(reason)")
+                print(line)
+
                 continue
             }
 
+            let cleanHeaders = headers.map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+
+            let cleanValues = values.map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+
             let dict = Dictionary(
-                uniqueKeysWithValues: zip(headers, values)
+                uniqueKeysWithValues: zip(cleanHeaders, cleanValues)
             )
-    
             guard let date = dict["date"],
                   !date.isEmpty
             else {

@@ -24,9 +24,12 @@ struct BackupSettingsView: View {
     @State private var exportSuccess = false
 
     @State private var importMessage: String?
+    @State private var deleteMessage: String?
+    
+    @State private var importMessageID = UUID()
     @State private var showDeleteAlert = false
     @State private var showFinalDeleteAlert = false
-    @State private var deleteMessage: String?
+
 
     var body: some View {
 
@@ -110,7 +113,6 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 }
             }
             .listRowBackground(theme.card)
-            
             
             Section("Zona de perill") {
                 
@@ -216,6 +218,33 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .onChange(of: importMessage) { _, newValue in
+            guard newValue != nil else { return }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                if importMessage == newValue {
+                    importMessage = nil
+                }
+            }
+        }
+        .onChange(of: deleteMessage) { _, newValue in
+            guard newValue != nil else { return }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                if deleteMessage == newValue {
+                    deleteMessage = nil
+                }
+            }
+        }
+        .onChange(of: exportSuccess) { _, newValue in
+            guard newValue else { return }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                if exportSuccess == newValue {
+                    exportSuccess = false
+                }
+            }
+        }
                 .alert(
                     "Eliminar totes les dades?",
                     isPresented: $showDeleteAlert
@@ -265,19 +294,27 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 }
         
     }
+    
+    private func clearMessages() {
+        importMessage = nil
+        deleteMessage = nil
+        exportError = nil
+        exportSuccess = false
+    }
 
     // MARK: EXPORT
 
     private func runExport() {
 
+        clearMessages()
         isExporting = true
-        exportError = nil
-        exportSuccess = false
 
         Task {
 
             do {
 
+                clearMessages()
+                
                 try await BackupManager.shared.runBackup(
                     entries: entries,
                     customVariables: customVariables,
@@ -360,14 +397,15 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                     context: ctx,
                     mode: importMode
                 )
-
+            
+            clearMessages()
             importMessage = """
-    ✅ Importació completada
+            ✅ Importació completada
 
-    Nous: \(result.inserted)
-    Actualitzats: \(result.updated)
-    Ignorats: \(result.skipped)
-    """
+            Nous: \(result.inserted)
+            Actualitzats: \(result.updated)
+            Ignorats: \(result.skipped)
+            """
 
             showPreview = false
 
@@ -394,8 +432,8 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
             try ctx.save()
 
-            deleteMessage =
-                "✅ S'han eliminat \(count) entrades"
+            clearMessages()
+            deleteMessage = "✅ S'han eliminat \(count) entrades"
 
         } catch {
 

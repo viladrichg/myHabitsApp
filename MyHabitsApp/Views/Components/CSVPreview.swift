@@ -10,36 +10,59 @@ struct CSVPreview: View {
 
         VStack(alignment: .leading, spacing: 12) {
 
-            Text("Previsualització")
-                .font(.title3.weight(.semibold))
-
             switch importMode {
 
             case .addNewOnly:
+                
+                HStack {
+                    Text("🟢 S'importaran:")
+                        .foregroundStyle(.green)
+                        .bold()
+                    Text("\(preview.newEntries) registres")
+                }
 
-                Text("🟢 S'importaran: \(preview.newEntries) registres")
-
-                Text("⚪ S'ignoraran: \(preview.existingEntries) registres existents")
+                HStack {
+                    Text("⚪ S'ignoraran:")
+                        .foregroundStyle(.gray)
+                        .bold()
+                    Text("\(preview.existingEntries) registres existents")
+                }
 
             case .updateExisting:
 
-                Text("🟢 Nous: \(preview.newEntries) registres")
+                HStack {
+                    Text("🟢 Nous:")
+                        .foregroundStyle(.green)
+                        .bold()
+                         Text("\(preview.newEntries) registres")
+                }
 
-                Text("🟡 S'actualitzaran: \(preview.existingEntries) registres")
-
+                HStack {
+                    Text("🟡 S'actualitzaran:")
+                        .foregroundStyle(.yellow)
+                        .bold()
+                    Text("\(preview.existingEntries) registres")
+                }
             case .replace:
 
-                Text("🔴 Se substituiran: \(preview.total) registres")
+                HStack {
+                    Text("🔴 Se substituiran:")
+                        .foregroundStyle(.red)
+                        .bold()
+                    Text("\(preview.total) registres")
+                }
             }
 
             if let first = preview.firstDate,
                let last = preview.lastDate {
-
-                Text("📆 Interval: \(first) → \(last)")
+                
+                HStack {
+                    Text("📆 Interval: ")
+                        .bold()
+                    Text("\(first) → \(last)")
+                }
             }
-
-            Divider()
-
+            
             switch importMode {
 
             case .addNewOnly:
@@ -53,7 +76,7 @@ struct CSVPreview: View {
             case .updateExisting:
 
                 Text(
-                    "Les dates existents es substituiran amb les dades del fitxer. Les dates noves també s'importaran. Les dates no presents al fitxer es conservaran."
+                    "Les dates noves s'importaran i les existents se substituiran. Les dades no presents al fitxer es mantindran sense canvis."
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -61,10 +84,83 @@ struct CSVPreview: View {
             case .replace:
 
                 Text(
-                    "S'eliminaran totes les dades actuals. Només es conservaran les dades presents al fitxer."
+                    "S'eliminaran TOTES les dades actuals i es remplaçaran per les del fitxer importat."
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            }
+            
+            
+            //MARK: validationMessages
+            
+            if preview.invalidRows > 0 {
+
+                Rectangle()
+                    .fill(.gray.opacity(0.25))
+                    .frame(height: 2)
+                    .padding(.vertical, 10)
+
+                Text("⚠️ Problemes detectats en: \(preview.invalidRows) files")
+                    .foregroundStyle(.orange)
+                    .font(.headline)
+            }
+            
+            if !preview.validationMessages.isEmpty {
+
+                ScrollView {
+
+                    VStack(alignment: .leading, spacing: 6) {
+
+                        ForEach(preview.validationMessages, id: \.self) { message in
+
+                            Text("• \(message)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .frame(maxHeight: 250)
+            }
+            
+            //MARK: duplicationDates
+            if !preview.duplicatedDates.isEmpty {
+
+                Rectangle()
+                    .fill(.gray.opacity(0.25))
+                    .frame(height: 2)
+                    .padding(.vertical, 4)
+                
+                Text("⚠️ Dates duplicades: \(preview.duplicatedDates.count)")
+                    .foregroundStyle(.orange)
+                    .font(.headline)
+                
+                ScrollView {
+
+                    VStack(alignment: .leading, spacing: 6) {
+
+                        ForEach(preview.duplicatedDates, id: \.self) { date in
+
+                            Text("• \(date)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .frame(maxHeight: 200)
+            }
+
+            Rectangle()
+                .fill(.gray.opacity(0.25))
+                .frame(height: 2)
+                .padding(.vertical, 20)
+            
+            if preview.invalidRows == 0 {
+
+                Text("✅ No s'han detectat errors")
+                    .foregroundStyle(.green)
+                    .font(.caption)
             }
         }
         .padding()

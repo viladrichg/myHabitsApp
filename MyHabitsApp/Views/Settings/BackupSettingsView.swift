@@ -169,7 +169,7 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
             NavigationStack {
 
-                VStack(spacing: 20) {
+                VStack(spacing: 8) {
 
                     if let previewData {
                         
@@ -181,11 +181,21 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
 
                     Group {
 
-                        Text("Registres detectats")
+                        HStack{
+                            Text("Registres detectats: ")
                             .font(.headline)
 
-                        Text("\(previewData?.total ?? 0) registres")
-                            .font(.largeTitle.bold())
+                            Text("\((previewData?.total ?? 0) + (previewData?.invalidRows ?? 0))")
+                                .font(.title.bold())
+                        }
+                        
+                        Text(
+                            "\(previewData?.newEntries ?? 0) nous · "
+                            + "\(previewData?.existingEntries ?? 0) existents · "
+                            + "\(previewData?.invalidRows ?? 0) problemàtics"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
 
                     Picker(

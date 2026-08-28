@@ -36,6 +36,7 @@ final class BackupManager {
         let conflictDates: [String]
         let invalidRows: Int
         let validationMessages: [String]
+        let duplicatedDates: [String]
     }
     
     // MARK: EXPORT
@@ -213,7 +214,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 lastDate: nil,
                 conflictDates: [],
                 invalidRows: 0,
-                validationMessages: []
+                validationMessages: [],
+                duplicatedDates: []
             )
         }
         
@@ -226,7 +228,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 lastDate: nil,
                 conflictDates: [],
                 invalidRows: 0,
-                validationMessages: []
+                validationMessages: [],
+                duplicatedDates: []
             )
         }
         
@@ -264,7 +267,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 lastDate: nil,
                 conflictDates: [],
                 invalidRows: 0,
-                validationMessages: []
+                validationMessages: [],
+                 duplicatedDates: []
             )
         }
         
@@ -274,6 +278,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         var conflictDates: [String] = []
         var invalidRows = 0
         var validationMessages: [String] = []
+        var seenDates = Set<String>()
+        var duplicatedDates = Set<String>()
         
         for line in lines.dropFirst(2) where !line.isEmpty {
 
@@ -300,6 +306,12 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             }
             let date = values[dateIndex]
 
+            if seenDates.contains(date) {
+                duplicatedDates.insert(date)
+            }
+
+            seenDates.insert(date)
+            
             dates.append(date)
 
             if existingEntries.contains(where: { $0.date == date }) {
@@ -323,7 +335,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             lastDate: sorted.last,
             conflictDates: conflictDates.sorted(),
             invalidRows: invalidRows,
-            validationMessages: validationMessages
+            validationMessages: validationMessages,
+            duplicatedDates: duplicatedDates.sorted()
         )
     }
         

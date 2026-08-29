@@ -6,6 +6,8 @@ struct CSVPreview: View {
     
     let importMode: BackupManager.ImportMode
     
+    @State private var showDetectedFields = false
+    
     var body: some View {
 
         VStack(alignment: .leading, spacing: 12) {
@@ -61,6 +63,59 @@ struct CSVPreview: View {
                         .bold()
                     Text("\(first) → \(last)")
                 }
+            }
+            
+            if !preview.detectedFields.isEmpty {
+
+                Rectangle()
+                    .fill(.gray.opacity(0.25))
+                    .frame(height: 2)
+                    .padding(.vertical, 8)
+
+                DisclosureGroup {
+                    
+                    ScrollView {
+
+                        VStack(alignment: .leading, spacing: 8) {
+
+                            ForEach(preview.detectedFields, id: \.self) { field in
+
+                                Text("• \(field)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
+                    .frame(maxHeight: 120)
+                    .padding(.bottom,4)
+
+                } label: {
+
+                    Text("📋 Camps detectats: \(preview.detectedFields.count)")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                }
+            }
+            
+            if showDetectedFields {
+
+                ScrollView {
+
+                    VStack(alignment: .leading, spacing: 6) {
+
+                        ForEach(preview.detectedFields, id: \.self) { field in
+
+                            Text("• \(field)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .frame(maxHeight: 120)
             }
             
             switch importMode {

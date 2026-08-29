@@ -37,6 +37,7 @@ final class BackupManager {
         let invalidRows: Int
         let validationMessages: [String]
         let duplicatedDates: [String]
+        let detectedFields: [String]
     }
     
     // MARK: EXPORT
@@ -150,10 +151,10 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             uniqueKeysWithValues: zip(headers, values)
         )
 
-        guard let date = dict["date"] else {
+        guard dict["date"] != nil else {
             return "Falta columna date"
         }
-
+        
         if let value = dict["sleepQuality"],
            !value.isEmpty,
            Int(value) == nil {
@@ -166,6 +167,28 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             return "Pitells no numèric: \(value)"
         }
 
+        let booleanFields = [
+            "habit1",
+            "habit2",
+            "negative1",
+            "negative2",
+            "positive1",
+            "positive2",
+            "positive3",
+            "positive4"
+        ]
+
+        for field in booleanFields {
+
+            if let value = dict[field],
+               !value.isEmpty,
+               value != "0",
+               value != "1" {
+
+                return "\(field) ha de ser 0 o 1: \(value)"
+            }
+        }
+        
         for (key, value) in dict {
 
             guard key.hasPrefix("cv_") else {
@@ -215,7 +238,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 conflictDates: [],
                 invalidRows: 0,
                 validationMessages: [],
-                duplicatedDates: []
+                duplicatedDates: [],
+                detectedFields: []
             )
         }
         
@@ -229,7 +253,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 conflictDates: [],
                 invalidRows: 0,
                 validationMessages: [],
-                duplicatedDates: []
+                duplicatedDates: [],
+                detectedFields: []
             )
         }
         
@@ -237,6 +262,12 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             .components(separatedBy: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         
+        let titles = lines[0]
+            .components(separatedBy: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+        let detectedFields =
+            Array(titles.dropFirst())
         
         let requiredColumns = [
             "date"
@@ -268,7 +299,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 conflictDates: [],
                 invalidRows: 0,
                 validationMessages: [],
-                 duplicatedDates: []
+                 duplicatedDates: [],
+                detectedFields: []
             )
         }
         
@@ -280,6 +312,7 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         var validationMessages: [String] = []
         var seenDates = Set<String>()
         var duplicatedDates = Set<String>()
+
         
         for line in lines
             .dropFirst(2)
@@ -339,7 +372,8 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             conflictDates: conflictDates.sorted(),
             invalidRows: invalidRows,
             validationMessages: validationMessages,
-            duplicatedDates: duplicatedDates.sorted()
+            duplicatedDates: duplicatedDates.sorted(),
+            detectedFields: detectedFields
         )
     }
         
@@ -390,7 +424,7 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         let headers = lines[1]
             .components(separatedBy: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-
+        
         _ = labels
 
         var inserted = 0

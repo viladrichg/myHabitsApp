@@ -426,7 +426,33 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         
         _ = labels
+        
+        let customVariables = try context.fetch(
+            FetchDescriptor<CustomVariable>()
+        )
 
+        for (title, key) in zip(labels, headers) {
+
+            guard key.hasPrefix("cv_") else {
+                continue
+            }
+
+            guard let variable = customVariables.first(
+                where: { $0.variableId == key }
+            ) else {
+                continue
+            }
+
+            let cleanTitle =
+                title.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if !cleanTitle.isEmpty,
+               variable.label != cleanTitle {
+
+                variable.label = cleanTitle
+            }
+        }
+    
         var inserted = 0
         var updated = 0
         var skipped = 0

@@ -432,9 +432,10 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
     func importCSV(
         from url: URL,
         context: ModelContext,
-        mode: ImportMode
+        mode: ImportMode,
+        settings: AppSettings
     ) throws -> ImportResult {
-
+    
         let accessGranted =
             url.startAccessingSecurityScopedResource()
 
@@ -502,6 +503,40 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
                 variable.label = cleanTitle
             }
         }
+        
+        for (title, key) in zip(labels, headers) {
+
+            let cleanTitle =
+                title.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !cleanTitle.isEmpty else {
+                continue
+            }
+
+            let builtInKeys: Set<String> = [
+                "habit1",
+                "habit2",
+                "negative1",
+                "negative2",
+                "positive1",
+                "positive2",
+                "positive3",
+                "positive4",
+                "counter",
+                "sports"
+            ]
+
+            if builtInKeys.contains(key) {
+
+                var labels = settings.variableLabels
+
+                if labels[key] != cleanTitle {
+                    labels[key] = cleanTitle
+                    settings.variableLabels = labels
+                }
+            }
+        }
+
     
         var inserted = 0
         var updated = 0

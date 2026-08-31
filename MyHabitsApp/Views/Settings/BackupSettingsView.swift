@@ -467,7 +467,8 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 try BackupManager.shared.importCSV(
                     from: file,
                     context: ctx,
-                    mode: importMode
+                    mode: importMode,
+                    settings: settings
                 )
             
             clearMessages()

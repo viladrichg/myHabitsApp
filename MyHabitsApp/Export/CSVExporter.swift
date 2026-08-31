@@ -11,7 +11,8 @@ struct CSVExporter {
 
     static func columns(
         customVariables: [CustomVariable],
-        settings: AppSettings?
+        settings: AppSettings?,
+        allowedKeys: Set<String>? = nil
     ) -> [CSVColumn] {
 
         var columns: [CSVColumn] = [
@@ -213,13 +214,46 @@ struct CSVExporter {
             )
         }
 
+        if let allowedKeys {
+
+            columns = columns.filter {
+                allowedKeys.contains($0.key)
+            }
+        }
+
         return columns
     }
 
+    struct ExportField: Identifiable {
+
+        var id: String { key }
+
+        let title: String
+        let key: String
+    }
+    
+    static func availableFields(
+        customVariables: [CustomVariable],
+        settings: AppSettings?
+    ) -> [ExportField] {
+
+        columns(
+            customVariables: customVariables,
+            settings: settings
+        )
+        .map {
+            ExportField(
+                title: $0.title,
+                key: $0.key
+            )
+        }
+    }
+    
     static func export(
         entries: [DailyEntry],
         customVariables: [CustomVariable],
-        settings: AppSettings?
+        settings: AppSettings?,
+        allowedKeys: Set<String>? = nil
     ) -> String {
 
         let sortedEntries = entries.sorted {
@@ -229,7 +263,8 @@ struct CSVExporter {
         let columns =
             columns(
                 customVariables: customVariables,
-                settings: settings
+                settings: settings,
+                allowedKeys: allowedKeys
             )
 
         var lines: [String] = [

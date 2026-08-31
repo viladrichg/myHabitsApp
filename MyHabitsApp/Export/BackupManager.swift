@@ -91,6 +91,56 @@ final class BackupManager {
         settings.updatedAt = Date()
     }
     
+    // MARK: EXPORT PARCIAL
+    
+    func exportSelected(
+        entries: [DailyEntry],
+        customVariables: [CustomVariable],
+        settings: AppSettings,
+        allowedKeys: Set<String>,
+        presentingViewController: UIViewController?
+    ) async throws {
+
+        guard !entries.isEmpty else {
+            throw BackupError.noEntries
+        }
+
+        let csv = CSVExporter.export(
+            entries: entries,
+            customVariables: customVariables,
+            settings: settings,
+            allowedKeys: allowedKeys
+        )
+
+        let url = documentsURL(
+            fileName: "export_\(Date().isoDate).csv"
+        )
+
+        try csv.write(
+            to: url,
+            atomically: true,
+            encoding: .utf8
+        )
+
+        guard let vc = UIApplication.shared.topMostViewController() else {
+            throw BackupError.sharingUnavailable
+        }
+
+        await withCheckedContinuation { continuation in
+
+            let activity = UIActivityViewController(
+                activityItems: [url],
+                applicationActivities: nil
+            )
+
+            activity.completionWithItemsHandler = { _,_,_,_ in
+                continuation.resume()
+            }
+
+            vc.present(activity, animated: true)
+        }
+    }
+    
     // MARK: TEMPLATE CSV ✅ NEW
     
     func exportTemplateCSV() async throws {

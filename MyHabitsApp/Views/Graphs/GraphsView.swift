@@ -97,7 +97,7 @@ struct GraphsView: View {
                 }
         }
 
-        let dates = TrendCalculator.dates(
+        let dates = DateRangeHelper.dates(
             for: settings?.chartTimeframe ?? "month"
         )
 

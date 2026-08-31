@@ -28,6 +28,9 @@ struct BackupSettingsView: View {
     
     @State private var showDeleteAlert = false
     @State private var showFinalDeleteAlert = false
+    
+    @State private var showExportSelection = false
+    @State private var selectedExportKeys: Set<String> = ["date"]
 
 
     var body: some View {
@@ -50,11 +53,22 @@ struct BackupSettingsView: View {
                     } else {
 
                         Label(
-                            "Exportar CSV",
+                            "Exportar CSV complet",
                             systemImage: "square.and.arrow.up"
                         )
                         .foregroundStyle(theme.accent)
                     }
+                }
+                
+                Button {
+                    showExportSelection = true
+                } label: {
+                    
+                    Label(
+                        "Exportar personalitzat",
+                        systemImage: "slider.horizontal.3"
+                    )
+                    .foregroundStyle(theme.accent)
                 }
 
                 if let exportError {
@@ -227,6 +241,20 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .sheet(isPresented: $showExportSelection) {
+
+            ExportSelectionView(
+                fields: CSVExporter.availableFields(
+                    customVariables: customVariables,
+                    settings: settings
+                ),
+                selectedKeys: $selectedExportKeys
+            ) {
+
+                runPartialExport()
+            }
+        }
+        
         .onChange(of: importMessage) { _, newValue in
             guard newValue != nil else { return }
 
@@ -346,6 +374,41 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
         }
     }
 
+    //MARK: Export parcial
+    
+    private func runPartialExport() {
+
+        clearMessages()
+        isExporting = true
+
+        Task {
+
+            do {
+
+                try await BackupManager.shared.exportSelected(
+                    entries: entries,
+                    customVariables: customVariables,
+                    settings: settings,
+                    allowedKeys: selectedExportKeys,
+                    presentingViewController: nil
+                )
+
+                exportSuccess = true
+
+            } catch BackupManager.BackupError.noEntries {
+
+                exportError = "No hi ha dades per exportar"
+
+            } catch {
+
+                exportError = error.localizedDescription
+            }
+
+            isExporting = false
+        }
+    }
+
+    
     // MARK: TEMPLATE
 
     private func exportTemplate() {

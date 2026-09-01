@@ -53,6 +53,13 @@ final class AppSettings {
     var perfectDayEnabled: Bool = true
     
     var showHiddenVariablesInCalendar: Bool = false
+    
+    var hideSleepHours = false
+    
+    var hideSleepQuality = false
+    
+    var hideNotes = false
+    
     init() {}
 
     enum NotificationMode: String, Codable {

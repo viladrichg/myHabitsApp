@@ -115,10 +115,18 @@ struct DataEntryView: View {
                     workSection(e)
                     objectivesSection(e)
                     activitiesSection(e)
-                    sportsSection(e)
+                    
+                    if !(settings?.hiddenVariables.contains("sports") ?? false) {
+                        sportsSection(e)
+                    }
+                    
                     counterSection(e)
                     customVariablesSection(e)
-                    notesSection(e)
+                    
+                    if !(settings?.hideNotes ?? false) {
+                        notesSection(e)
+                    }
+                    
                     saveSection()
                     deleteSection()
                 }
@@ -233,72 +241,88 @@ struct DataEntryView: View {
     
     // MARK: SLEEP
     
-    private func sleepSection(_ e: DailyEntry) -> some View {
+    private func sleepSection(_ e: DailyEntry) -> AnyView {
         
-        section("Son") {
-            
-            HStack(alignment: .top, spacing: 24) {
-                
-                VStack(alignment: .leading) {
-                    
-                    Text("Llevar-se")
-                        .font(.caption)
-                        .foregroundStyle(theme.secondary)
-                    
-                    TimePicker(
-                        label: "",
-                        value: $sleepEndDraft
-                    )
-                }
-                
-                VStack(alignment: .leading) {
-                    
-                    Text("Anar a dormir")
-                        .font(.caption)
-                        .foregroundStyle(theme.secondary)
-                    
-                    TimePicker(
-                        label: "",
-                        value: $sleepStartDraft
-                    )
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .leading) {
-                    
-                    Text("Dormit")
-                        .font(.caption)
-                        .foregroundStyle(theme.secondary)
-                    
-                    Text(sleepText(for: e))
-                        .font(.title3.bold())
-                        .foregroundStyle(theme.accent)
-                }
-            }
-            
-            VStack(alignment: .leading, spacing: 10) {
-                
-                HStack {
-                    
-                    Text("Qualitat del son")
-                    
-                    Spacer()
-                    
-                    Text("\(Int(sleepQualityDraft))/10")
-                        .font(.headline)
-                        .foregroundStyle(theme.accent)
-                }
-                .padding(.top, 16)
-                
-                Slider(
-                    value: $sleepQualityDraft,
-                    in: 1...10,
-                    step: 1
-                )
-                .tint(theme.accent)
-            }
+        let hideHours = settings?.hideSleepHours ?? false
+        let hideQuality = settings?.hideSleepQuality ?? false
+        
+        if hideHours && hideQuality {
+            return AnyView(EmptyView())
         }
+        
+        return AnyView(
+            
+            section("Son") {
+                
+                if !hideHours {
+                    
+                    HStack(alignment: .top, spacing: 24) {
+                        
+                        VStack(alignment: .leading) {
+                            
+                            Text("Llevar-se")
+                                .font(.caption)
+                                .foregroundStyle(theme.secondary)
+                            
+                            TimePicker(
+                                label: "",
+                                value: $sleepEndDraft
+                            )
+                        }
+                        
+                        VStack(alignment: .leading) {
+                            
+                            Text("Anar a dormir")
+                                .font(.caption)
+                                .foregroundStyle(theme.secondary)
+                            
+                            TimePicker(
+                                label: "",
+                                value: $sleepStartDraft
+                            )
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .leading) {
+                            
+                            Text("Dormit")
+                                .font(.caption)
+                                .foregroundStyle(theme.secondary)
+                            
+                            Text(sleepText(for: e))
+                                .font(.title3.bold())
+                                .foregroundStyle(theme.accent)
+                        }
+                    }
+                }
+               
+                if !hideQuality {
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        
+                        HStack {
+                            
+                            Text("Qualitat del son")
+                            
+                            Spacer()
+                            
+                            Text("\(Int(sleepQualityDraft))/10")
+                                .font(.headline)
+                                .foregroundStyle(theme.accent)
+                        }
+                        .padding(.top, 16)
+                        
+                        Slider(
+                            value: $sleepQualityDraft,
+                            in: 1...10,
+                            step: 1
+                        )
+                        .tint(theme.accent)
+                    }
+                }
+            }
+        )
     }
     
     
@@ -887,6 +911,7 @@ struct DataEntryView: View {
     // MARK: NOTES ✅ STYLED
     
     private func notesSection(_ e: DailyEntry) -> some View {
+        
         section("Notes") {
             TextEditor(text: $notesDraft)
                 .focused($isEditingNotes)
@@ -899,6 +924,8 @@ struct DataEntryView: View {
                 }
         }
     }
+    
+    //MARK: SAVE
     
     private func saveSection() -> some View {
         

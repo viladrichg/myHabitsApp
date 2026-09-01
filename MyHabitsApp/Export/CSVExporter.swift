@@ -204,11 +204,9 @@ struct CSVExporter {
                     key: variable.variableId,
                     value: { entry in
 
-                        String(
-                            entry.customValues[
-                                variable.variableId
-                            ] ?? 0
-                        )
+                        entry.customValues[
+                            variable.variableId
+                        ].map(String.init) ?? ""
                     }
                 )
             )

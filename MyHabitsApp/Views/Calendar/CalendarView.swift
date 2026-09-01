@@ -102,7 +102,11 @@ struct CalendarView: View {
                     
                     if calendarMode == .month {
 
-                        sleepCard
+                        if !(settings?.hideSleepHours ?? false)
+                        || !(settings?.hideSleepQuality ?? false) {
+                           
+                            sleepCard
+                        }
 
                         if !(builtInVariables.first {
                             $0.fieldKey == "counter"
@@ -856,27 +860,46 @@ struct CalendarView: View {
     
     private var sleepCard: some View {
 
-        let data =
-            sleepMetric == .hours
-            ? sleepData
-            : sleepQualityData
+        let showHours = !(settings?.hideSleepHours ?? false)
+        let showQuality = !(settings?.hideSleepQuality ?? false)
+
+        let data: [(Date, Double)]
+
+        if showHours && !showQuality {
+            data = sleepData
+        } else if !showHours && showQuality {
+            data = sleepQualityData
+        } else {
+            data = sleepMetric == .hours
+                ? sleepData
+                : sleepQualityData
+        }
 
         let values = data.map(\.1)
 
         return VStack(alignment: .leading, spacing: 12) {
 
-            Text("Son")
-                .font(.headline)
+            if showHours && showQuality {
+                
+                Text("Son")
+                    .font(.headline)
 
-            Picker("", selection: $sleepMetric) {
-                Text("Hores de son")
-                    .tag(SleepMetric.hours)
+                Picker("", selection: $sleepMetric) {
+                    Text("Hores de son")
+                        .tag(SleepMetric.hours)
 
-                Text("Qualitat")
-                    .tag(SleepMetric.quality)
+                    Text("Qualitat del son")
+                        .tag(SleepMetric.quality)
+                }
+                .pickerStyle(.segmented)
+                .padding(.bottom, 16)
+
+            } else {
+
+                Text(showHours ? "Hores de son" : "Qualitat del son")
+                    .font(.headline)
+                    .padding(.bottom, 16)
             }
-            .pickerStyle(.segmented)
-            .padding(.bottom, 16)
 
             if data.count >= 2 {
 

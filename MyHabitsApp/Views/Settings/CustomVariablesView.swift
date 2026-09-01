@@ -40,6 +40,41 @@ struct CustomVariablesView: View {
 
         Form {
 
+            //MARK: Elements del sistemaa
+            
+            Section("Elements del sistema") {
+
+                if let settings {
+
+                    Toggle(
+                        "Hores de son",
+                        isOn: Binding(
+                            get: { !settings.hideSleepHours },
+                            set: { settings.hideSleepHours = !$0 }
+                        )
+                    )
+
+                    Toggle(
+                        "Qualitat del son",
+                        isOn: Binding(
+                            get: { !settings.hideSleepQuality },
+                            set: { settings.hideSleepQuality = !$0 }
+                        )
+                    )
+
+                    Toggle(
+                        "Notes",
+                        isOn: Binding(
+                            get: { !settings.hideNotes },
+                            set: { settings.hideNotes = !$0 }
+                        )
+                    )
+                }
+            }
+            .listRowBackground(theme.card)
+            
+            //MARK: variables integrades
+
             Section("Variables integrades") {
 
                 ForEach(builtInVariables) { v in
@@ -89,6 +124,9 @@ struct CustomVariablesView: View {
                 }
             }
             .listRowBackground(theme.card)
+            
+            
+            //MARK: variables personalitzades
 
             Section("Variables personalitzades") {
 
@@ -367,6 +405,8 @@ private struct EditVariableSheet: View {
         "#22c55e"
     ]
 
+    //MARK: body
+    
     var body: some View {
 
         NavigationStack {

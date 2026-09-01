@@ -887,13 +887,20 @@ struct InsightsView: View {
                 
                 Picker("", selection: $selectedField) {
 
-                    Section("Son") {
-
-                        Text("Hores de son")
-                            .tag("sleep")
-
-                        Text("Qualitat del son")
-                            .tag("sleepQuality")
+                    if !(settings?.hideSleepHours ?? false) || !(settings?.hideSleepQuality ?? false) {
+                        
+                        Section("Son") {
+                            
+                            if !(settings?.hideSleepHours ?? false) {
+                                Text("Hores de son")
+                                    .tag("sleep")
+                            }
+                            
+                            if !(settings?.hideSleepQuality ?? false) {
+                                Text("Qualitat del son")
+                                    .tag("sleepQuality")
+                            }
+                        }
                     }
 
                     Section("Booleanes") {

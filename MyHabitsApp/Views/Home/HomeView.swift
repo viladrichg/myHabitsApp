@@ -37,10 +37,12 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 20) {
 
                     todaySummarySection
-                                        
+
                     habitsStreakSection
-                    
-                    sportsSection
+
+                    if !(settings?.hiddenVariables.contains("sports") ?? false) {
+                        sportsSection
+                    }
 
                     overviewSection
                 }
@@ -149,9 +151,27 @@ struct HomeView: View {
                     ],
                     spacing: 12
                 ) {
-                    statCell(label: "Hores dormides", value: sleepText(e))
-                    statCell(label: "Treballat", value: workText(e))
+
+                    if !(settings?.hideSleepHours ?? false) {
+                        statCell(
+                            label: "Hores dormides",
+                            value: sleepText(e)
+                        )
+                    }
+
+                    let showWork =
+                        !(settings?.hiddenVariables.contains("habit1") ?? false)
+                        ||
+                        !(settings?.hiddenVariables.contains("habit2") ?? false)
+                        
+                        if showWork {
+                            statCell(
+                                label: "Treballat",
+                                value: workText(e)
+                            )
+                    }
                 }
+                
             } else {
                 Text("Avui no hi ha dades. Fes clic a 'Avui' per afegir-ne.")
                     .font(.subheadline)

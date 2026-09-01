@@ -21,28 +21,40 @@ struct CSVExporter {
                 title: "Data",
                 key: "date",
                 value: { $0.date }
-            ),
-
-            .init(
-                title: "Hora dormir",
-                key: "sleepStart",
-                value: { $0.sleepStart ?? "" }
-            ),
-
-            .init(
-                title: "Hora llevar-se",
-                key: "sleepEnd",
-                value: { $0.sleepEnd ?? "" }
-            ),
-
-            .init(
-                title: "Qualitat son",
-                key: "sleepQuality",
-                value: {
-                    $0.sleepQuality.map(String.init) ?? ""
-                }
             )
         ]
+
+        if settings?.hideSleepHours != true {
+
+            columns.append(
+                .init(
+                    title: "Hora dormir",
+                    key: "sleepStart",
+                    value: { $0.sleepStart ?? "" }
+                )
+            )
+
+            columns.append(
+                .init(
+                    title: "Hora llevar-se",
+                    key: "sleepEnd",
+                    value: { $0.sleepEnd ?? "" }
+                )
+            )
+        }
+
+        if settings?.hideSleepQuality != true {
+
+            columns.append(
+                .init(
+                    title: "Qualitat son",
+                    key: "sleepQuality",
+                    value: {
+                        $0.sleepQuality.map(String.init) ?? ""
+                    }
+                )
+            )
+        }
 
         for variable in builtInVariables {
 
@@ -148,6 +160,18 @@ struct CSVExporter {
                     )
                 )
 
+            case "sports":
+
+                columns.append(
+                    .init(
+                        title: variable.displayLabel(using: settings),
+                        key: "sports",
+                        value: {
+                            $0.sports.joined(separator: "|")
+                        }
+                    )
+                )
+                
             case "counter":
 
                 columns.append(
@@ -165,25 +189,19 @@ struct CSVExporter {
             }
         }
 
-        columns.append(
-            .init(
-                title: "Esports",
-                key: "sports",
-                value: {
-                    $0.sports.joined(separator: "|")
-                }
-            )
-        )
+   
+        if settings?.hideNotes != true {
 
-        columns.append(
-            .init(
-                title: "Notes",
-                key: "notes",
-                value: {
-                    $0.notes ?? ""
-                }
+            columns.append(
+                .init(
+                    title: "Notes",
+                    key: "notes",
+                    value: {
+                        $0.notes ?? ""
+                    }
+                )
             )
-        )
+        }
 
         for variable in customVariables {
 

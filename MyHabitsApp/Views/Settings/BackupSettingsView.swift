@@ -86,17 +86,7 @@ struct BackupSettingsView: View {
                 }
             }.listRowBackground(theme.card)
             
-            Button {
-                exportTemplate()
-            } label: {
-
-                Label(
-                    "Descarregar plantilla CSV",
-                    systemImage: "doc.badge.plus"
-                )
-                .foregroundStyle(theme.accent)
-            }
-            .listRowBackground(theme.card)
+            
             
             Section("Importació") {
 
@@ -109,12 +99,22 @@ struct BackupSettingsView: View {
                         systemImage: "square.and.arrow.down"
                     )
                     .foregroundStyle(theme.accent)
-                    .listRowBackground(theme.card)
+                }
+
+                Button {
+                    exportTemplate()
+                } label: {
+
+                    Label(
+                        "Descarregar plantilla CSV",
+                        systemImage: "doc.badge.plus"
+                    )
+                    .foregroundStyle(theme.accent)
                 }
 
                 Text("""
-Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
-""")
+                Importa un CSV exportat des de MyHabits o utilitza la plantilla per crear-ne un de nou.
+                """)
                 .font(.caption)
                 .foregroundStyle(theme.secondary)
 
@@ -163,7 +163,7 @@ Importa un CSV generat per l'aplicació o utilitza la plantilla com a guia.
         }
         .scrollContentBackground(.hidden)
         .background(theme.bg.ignoresSafeArea())
-        .navigationTitle("Còpies de seguretat")
+        .navigationTitle("Gestió de dades")
 
         .fileImporter(
             isPresented: $showingImporter,

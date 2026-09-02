@@ -62,8 +62,8 @@ struct SettingsView: View {
                     themeSection(s)
                     displaySection(s)
                     customVariablesSection
+                    dataSection(s)
                     notificationsSection(s)
-                    backupSection(s)
                 }
 
                 aboutSection
@@ -169,10 +169,15 @@ struct SettingsView: View {
 
     // MARK: - Backup
 
-    private func backupSection(_ s: AppSettings) -> some View {
-        Section {
-            NavigationLink("Còpies de seguretat") {
+    private func dataSection(_ s: AppSettings) -> some View {
+        Section("Dades") {
+
+            NavigationLink("Exportació / importació") {
                 BackupSettingsView(settings: s)
+            }
+
+            NavigationLink("Còpies automàtiques") {
+                AutoBackupSettingsView(settings: s)
             }
         }
         .listRowBackground(theme.card)

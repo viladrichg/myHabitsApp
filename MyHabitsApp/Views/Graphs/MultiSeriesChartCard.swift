@@ -24,13 +24,8 @@ struct MultiSeriesChartCard: View {
     @State private var scrollPosition: Date = .now
 
     // Which fields are toggled on
-    @State private var visibleFields: Set<String> = [
-        "positive1",
-        "habit1",
-        "habit2",
-        "negative1",
-        "sports"
-    ]
+    @State private var visibleFields: Set<String> = []
+    
     private var dates: [Date] {
         entries.compactMap { Date.from(isoDate: $0.date) }.sorted()
     }
@@ -184,6 +179,8 @@ struct MultiSeriesChartCard: View {
                                         } else {
                                             visibleFields.remove(v.fieldKey)
                                         }
+                                        
+                                        settings?.graphVisibleFields = Array(visibleFields)
                                     }
                                 )
                             )
@@ -211,6 +208,8 @@ struct MultiSeriesChartCard: View {
                                         } else {
                                             visibleFields.remove(v.variableId)
                                         }
+                                        
+                                        settings?.graphVisibleFields = Array(visibleFields)
                                     }
                                 )
                             )
@@ -301,6 +300,15 @@ struct MultiSeriesChartCard: View {
         }
         .padding()
         .cardStyle()
+        .onAppear {
+            
+            if visibleFields.isEmpty {
+
+                visibleFields = Set(
+                    settings?.graphVisibleFields ?? []
+                )
+            }
+        }
     }
 
     private var visibleDates: [Date] {

@@ -61,7 +61,7 @@ struct SettingsView: View {
                 if let s = settings {
                     themeSection(s)
                     displaySection(s)
-                    customVariablesSection
+                    variablesSection(s)
                     dataSection(s)
                     notificationsSection(s)
                 }
@@ -135,20 +135,26 @@ struct SettingsView: View {
     }
     
     // MARK: - Custom Variables
+    
+    private func variablesSection(_ s: AppSettings) -> some View {
 
-    private var customVariablesSection: some View {
-
-        Section("Variables personalitzades") {
+        Section("Variables") {
 
             NavigationLink {
-
                 CustomVariablesView()
-
             } label: {
-
                 Label(
-                    "Gestionar variables",
+                    "Personalitzar variables",
                     systemImage: "slider.horizontal.3"
+                )
+            }
+
+            NavigationLink {
+                SectionOrderView(settings: s)
+            } label: {
+                Label(
+                    "Ordre dels blocs",
+                    systemImage: "rectangle.3.group"
                 )
             }
         }
@@ -172,12 +178,22 @@ struct SettingsView: View {
     private func dataSection(_ s: AppSettings) -> some View {
         Section("Dades") {
 
-            NavigationLink("Exportació / importació") {
+            NavigationLink {
                 BackupSettingsView(settings: s)
+            } label: {
+                Label(
+                    "Exportació / importació",
+                    systemImage: "arrow.left.arrow.right.square"
+                )
             }
 
-            NavigationLink("Còpies automàtiques") {
+            NavigationLink {
                 AutoBackupSettingsView(settings: s)
+            } label: {
+                Label(
+                    "Còpies automàtiques",
+                    systemImage: "externaldrive.badge.icloud"
+                )
             }
         }
         .listRowBackground(theme.card)

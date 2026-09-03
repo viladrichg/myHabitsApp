@@ -109,22 +109,19 @@ struct DataEntryView: View {
                     )
                 }
                 
+                //reordenar les variables en funcio de settings
+                
                 if let e = entry {
                     
-                    sleepSection(e)
-                    workSection(e)
-                    objectivesSection(e)
-                    activitiesSection(e)
-                    
-                    if !(settings?.hiddenVariables.contains("sports") ?? false) {
-                        sportsSection(e)
-                    }
-                    
-                    counterSection(e)
-                    customVariablesSection(e)
-                    
-                    if !(settings?.hideNotes ?? false) {
-                        notesSection(e)
+                    ForEach(
+                        settings?.sectionOrder ?? [],
+                        id: \.self
+                    ) { key in
+
+                        sectionView(
+                            key,
+                            entry: e
+                        )
                     }
                     
                     saveSection()
@@ -922,6 +919,47 @@ struct DataEntryView: View {
                 .onAppear {
                     notesDraft = e.notes ?? ""
                 }
+        }
+    }
+    
+    @ViewBuilder
+    private func sectionView(
+        _ key: String,
+        entry: DailyEntry
+    ) -> some View {
+
+        switch key {
+
+        case "sleep":
+            sleepSection(entry)
+
+        case "work":
+            workSection(entry)
+
+        case "negative":
+            objectivesSection(entry)
+
+        case "positive":
+            activitiesSection(entry)
+
+        case "sports":
+            if !(settings?.hiddenVariables.contains("sports") ?? false) {
+                sportsSection(entry)
+            }
+
+        case "counter":
+            counterSection(entry)
+
+        case "custom":
+            customVariablesSection(entry)
+
+        case "notes":
+            if !(settings?.hideNotes ?? false) {
+                notesSection(entry)
+            }
+
+        default:
+            EmptyView()
         }
     }
     

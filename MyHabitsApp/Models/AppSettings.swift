@@ -40,6 +40,15 @@ final class AppSettings {
 
     var hiddenVariablesJSON: String = "[]"
     
+    //ordre variables
+    
+    var sectionOrderJSON: String =
+    #"["sleep","work","negative","positive","sports","counter","custom","notes"]"#
+    
+    var graphVisibleFieldsJSON: String = """
+    ["positive1","habit1","habit2","negative1","sports"]
+    """
+    
     // visualització
     
     var lineChartStyle: String = "line"
@@ -162,7 +171,85 @@ final class AppSettings {
                 ) ?? "[]"
         }
     }
+    
+    // MARK: - Graph Visible Fields
 
+    var graphVisibleFields: [String] {
+
+        get {
+
+            guard
+                let data = graphVisibleFieldsJSON.data(using: .utf8),
+                let value = try? JSONDecoder().decode(
+                    [String].self,
+                    from: data
+                )
+            else {
+                return [
+                    "positive1",
+                    "habit1",
+                    "habit2",
+                    "negative1",
+                    "sports"
+                ]
+            }
+
+            return value
+        }
+
+        set {
+
+            graphVisibleFieldsJSON =
+                (
+                    try? String(
+                        data: JSONEncoder().encode(newValue),
+                        encoding: .utf8
+                    )
+                ) ?? "[]"
+        }
+    }
+
+
+    //MARK: Ordre de les seccions
+    
+    var sectionOrder: [String] {
+
+        get {
+
+            guard
+                let data = sectionOrderJSON.data(using: .utf8),
+                let value = try? JSONDecoder().decode(
+                    [String].self,
+                    from: data
+                )
+            else {
+                return [
+                    "sleep",
+                    "work",
+                    "negative",
+                    "positive",
+                    "sports",
+                    "counter",
+                    "custom",
+                    "notes"
+                ]
+            }
+
+            return value
+        }
+
+        set {
+
+            sectionOrderJSON =
+                (
+                    try? String(
+                        data: JSONEncoder().encode(newValue),
+                        encoding: .utf8
+                    )
+                ) ?? #"["sleep","work","negative","positive","sports","counter","custom","notes"]"#
+        }
+    }
+    
     // MARK: - Reminder Days
 
     var reminderDays: [Int] {

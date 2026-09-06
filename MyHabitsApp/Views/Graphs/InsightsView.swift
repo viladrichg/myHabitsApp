@@ -60,6 +60,33 @@ struct InsightsView: View {
         }
     }
 
+    private var timeframeText: String {
+
+        switch settings?.chartTimeframe {
+
+        case "week":
+            return "Última setmana"
+
+        case "15days":
+            return "Últims 15 dies"
+
+        case "month":
+            return "Últim mes"
+
+        case "3months":
+            return "Últims 3 mesos"
+
+        case "6months":
+            return "Últims 6 mesos"
+
+        case "year":
+            return "Últim any"
+
+        default:
+            return "Totes les dades"
+        }
+    }
+    
 
     @Query(sort: \CustomVariable.order)
     private var customVariables: [CustomVariable]
@@ -79,6 +106,14 @@ struct InsightsView: View {
     
     private var bestStreak: Int {
         bestStreakForField(selectedField)
+    }
+    
+    private var cleanStreak: Int {
+        cleanStreakForField(selectedField)
+    }
+    
+    private var bestFilteredStreak: Int {
+        bestFilteredStreakForField(selectedField)
     }
     
     private var isNegativeVariable: Bool {
@@ -195,6 +230,37 @@ struct InsightsView: View {
         return best
     }
     
+    private func bestFilteredStreakForField(
+        _ field: String
+    ) -> Int {
+
+        let activeDates = Set(
+            entries
+                .filter {
+                    $0.isActive(field: field)
+                }
+                .map(\.date)
+        )
+
+        var best = 0
+        var current = 0
+
+        for entry in entries.sorted(by: { $0.date < $1.date }) {
+
+            if activeDates.contains(entry.date) {
+
+                current += 1
+                best = max(best, current)
+
+            } else {
+
+                current = 0
+            }
+        }
+
+        return best
+    }
+    
     private func streakForField(
         _ field: String
     ) -> Int {
@@ -221,6 +287,53 @@ struct InsightsView: View {
         }
 
         while activeDates.contains(current.isoDate) {
+
+            streak += 1
+
+            guard let previous =
+                Calendar.current.date(
+                    byAdding: .day,
+                    value: -1,
+                    to: current
+                )
+            else {
+                break
+            }
+
+            current = previous
+        }
+
+        return streak
+    }
+    
+    //MARK: Clean Streak
+    
+    private func cleanStreakForField(
+        _ field: String
+    ) -> Int {
+
+        let inactiveDates = Set(
+            allEntries
+                .filter {
+                    !$0.isActive(field: field)
+                }
+                .map(\.date)
+        )
+
+        var streak = 0
+        var current = Date()
+
+        if !inactiveDates.contains(current.isoDate),
+           let yesterday = Calendar.current.date(
+                byAdding: .day,
+                value: -1,
+                to: current
+           ) {
+
+            current = yesterday
+        }
+
+        while inactiveDates.contains(current.isoDate) {
 
             streak += 1
 
@@ -865,6 +978,13 @@ struct InsightsView: View {
         return "\(prettyMonth(worst.0)) (\(String(format: "%.1f h", worst.1)))"
     }
     
+    private var negativeLabel: String {
+
+        availableVariables.first {
+            $0.id == selectedField
+        }?.label ?? ""
+    }
+    
     //MARK: BODY
     
     var body: some View {
@@ -954,70 +1074,105 @@ struct InsightsView: View {
             
             Divider()
             
-            //MARK: case boolean
+            // MARK: case boolean
             if selectedVariableType == "boolean" {
-                
+
+                if isNegativeVariable {
+
+                    insightRow(
+                        icon: "🔥",
+                        title: "Temps sense \(negativeLabel.lowercased())",
+                        value: "\(cleanStreak) dies"
+                    )
+
+                    insightRow(
+                        icon: "🚫",
+                        title: "Ratxa actual",
+                        value: "\(currentStreak) dies"
+                    )
+
+                } else {
+
+                    insightRow(
+                        icon: "🔥",
+                        title: "Ratxa actual",
+                        value: "\(currentStreak) dies"
+                    )
+                }
+
                 insightRow(
-                    icon: "🔥",
-                    title: "Ratxa actual",
-                    value: "\(currentStreak) dies"
+                    icon: "🏆",
+                    title: isNegativeVariable
+                    ? "Pitjor ratxa global"
+                    : "Millor ratxa global",
+                    value: "\(bestStreak) dies"
                 )
-                
+
+                HStack {
+
+                    Capsule()
+                        .fill(theme.border)
+                        .frame(height: 2)
+
+                    Text(timeframeText)
+                        .font(.caption)
+                        .foregroundStyle(theme.secondary)
+
+                    Capsule()
+                        .fill(theme.border)
+                        .frame(height: 2)
+                }
+
                 insightRow(
                     icon: "🏆",
                     title: isNegativeVariable
                     ? "Pitjor ratxa"
                     : "Millor ratxa",
-                    value: "\(bestStreak) dies"
+                    value: "\(bestFilteredStreak) dies"
                 )
-                
-                Capsule()
-                    .fill(theme.border)
-                    .frame(width: 180, height: 2)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                
+
                 insightRow(
                     icon: "✅",
                     title: "Adherència",
                     value: "\(adherenceText)"
                 )
-                
+
                 insightRow(
                     icon: "📅",
                     title: "Mitjana setmanal",
                     value: "\(weeklyAverageText) dies / set."
                 )
-                
+
                 insightRow(
                     icon: "📈",
                     title: "Tendència",
                     value: trendText
                 )
-                
+
                 if canShowMonthInsights {
-                    
+
                     insightRow(
                         icon: isNegativeVariable
                         ? "✅"
                         : "🥇",
                         title: isNegativeVariable
-                        ? "Mes més complicat"
+                        ? "Pitjor mes"
                         : "Millor mes",
                         value: bestMonthText
                     )
-                    
+
                     insightRow(
                         icon: isNegativeVariable
                         ? "🔥"
                         : "🥶",
                         title: isNegativeVariable
-                        ? "Mes més controlat"
+                        ? "Millor mes"
                         : "Pitjor mes",
                         value: worstMonthText
                     )
                 }
             }
+        
             
             //MARK: case counter i rating
             if selectedVariableType == "counter"

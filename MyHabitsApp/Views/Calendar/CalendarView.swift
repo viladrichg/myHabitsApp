@@ -883,6 +883,7 @@ struct CalendarView: View {
                 
                 Text("Son")
                     .font(.headline)
+                    .foregroundStyle(theme.text)
 
                 Picker("", selection: $sleepMetric) {
                     Text("Hores de son")

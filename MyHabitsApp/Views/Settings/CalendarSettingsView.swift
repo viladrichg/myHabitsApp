@@ -31,87 +31,95 @@ struct CalendarSettingsView: View {
 
             if let settings {
 
-                Toggle(
-                    "Dia excel·lent",
-                    isOn: Binding(
-                        get: {
-                            settings.perfectDayEnabled
-                        },
-                        set: {
-                            settings.perfectDayEnabled = $0
-                        }
-                    )
-                )
+                Section {
 
-                if settings.perfectDayEnabled {
-
-                    Stepper(
-                        "Activitats mínimes: \(settings.perfectDayThreshold)",
-                        value: Binding(
+                    Toggle(
+                        "Dia excel·lent",
+                        isOn: Binding(
                             get: {
-                                settings.perfectDayThreshold
+                                settings.perfectDayEnabled
                             },
                             set: {
-                                settings.perfectDayThreshold = $0
+                                settings.perfectDayEnabled = $0
                             }
-                        ),
-                        in: 2...7
+                        )
                     )
 
-                    VStack(
-                        alignment: .leading,
-                        spacing: 8
-                    ) {
+                    if settings.perfectDayEnabled {
 
-                        Text("Color dia excel·lent")
+                        Stepper(
+                            "Activitats mínimes: \(settings.perfectDayThreshold)",
+                            value: Binding(
+                                get: {
+                                    settings.perfectDayThreshold
+                                },
+                                set: {
+                                    settings.perfectDayThreshold = $0
+                                }
+                            ),
+                            in: 2...7
+                        )
 
-                        LazyVGrid(
-                            columns: Array(
-                                repeating: GridItem(.flexible()),
-                                count: 5
-                            )
+                        VStack(
+                            alignment: .leading,
+                            spacing: 8
                         ) {
 
-                            ForEach(
-                                colorOptions,
-                                id: \.self
-                            ) { hex in
+                            Text("Color dia excel·lent")
 
-                                Circle()
-                                    .fill(Color(hex: hex))
-                                    .frame(width: 32, height: 32)
+                            LazyVGrid(
+                                columns: Array(
+                                    repeating: GridItem(.flexible()),
+                                    count: 5
+                                )
+                            ) {
 
-                                    .overlay(
-                                        Circle()
-                                            .stroke(
-                                                settings.perfectDayColorHex == hex
-                                                ? Color.primary
-                                                : Color.clear,
-                                                lineWidth: 3
-                                            )
-                                    )
+                                ForEach(
+                                    colorOptions,
+                                    id: \.self
+                                ) { hex in
 
-                                    .onTapGesture {
-                                        settings.perfectDayColorHex = hex
-                                    }
+                                    Circle()
+                                        .fill(Color(hex: hex))
+                                        .frame(width: 32, height: 32)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(
+                                                    settings.perfectDayColorHex == hex
+                                                    ? Color.primary
+                                                    : Color.clear,
+                                                    lineWidth: 3
+                                                )
+                                        )
+                                        .onTapGesture {
+                                            settings.perfectDayColorHex = hex
+                                        }
+                                }
                             }
                         }
                     }
-                }
 
-                Toggle(
-                    "Considerar variables amagades al calendari",
-                    isOn: Binding(
-                        get: {
-                            settings.showHiddenVariablesInCalendar
-                        },
-                        set: {
-                            settings.showHiddenVariablesInCalendar = $0
-                        }
+                    Toggle(
+                        "Considerar variables amagades al calendari",
+                        isOn: Binding(
+                            get: {
+                                settings.showHiddenVariablesInCalendar
+                            },
+                            set: {
+                                settings.showHiddenVariablesInCalendar = $0
+                            }
+                        )
                     )
-                )
+
+                } header: {
+
+                    Text("Opcions del calendari")
+                }
+                .listRowBackground(theme.card)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(theme.bg.ignoresSafeArea())
         .navigationTitle("Calendari")
     }
 }

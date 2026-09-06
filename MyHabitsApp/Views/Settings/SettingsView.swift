@@ -78,21 +78,33 @@ struct SettingsView: View {
     // MARK: - Theme
 
     private func themeSection(_ s: AppSettings) -> some View {
+
         Section("Aspecte") {
-            Picker("Tema", selection: Binding(
-                get: { s.themeStyle },
-                set: { s.themeStyle = $0; s.updatedAt = Date() }
-            )) {
+
+            Picker(
+                "Tema",
+                selection: Binding(
+                    get: { s.themeStyle },
+                    set: {
+                        s.themeStyle = $0
+                        s.updatedAt = Date()
+                    }
+                )
+            ) {
+
                 ForEach(AppTheme.all, id: \.id) { t in
+
                     HStack {
                         Circle()
                             .fill(t.colors.accent)
                             .frame(width: 12, height: 12)
+
                         Text(t.colors.name)
                     }
                     .tag(t.id)
                 }
             }
+            .id(s.themeStyle)   // <- afegeix això
         }
         .listRowBackground(theme.card)
         .foregroundStyle(theme.text)
@@ -128,8 +140,6 @@ struct SettingsView: View {
                 )
             }
         }
-        .listRowBackground(theme.card)
-        .foregroundStyle(theme.text)
         .listRowBackground(theme.card)
         .foregroundStyle(theme.text)
     }
@@ -171,6 +181,7 @@ struct SettingsView: View {
             }
         }
         .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
     }
 
     // MARK: - Backup
@@ -197,6 +208,7 @@ struct SettingsView: View {
             }
         }
         .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
     }
 
     // MARK: - About
@@ -207,5 +219,6 @@ struct SettingsView: View {
             LabeledContent("Storage", value: "Local SQLite Vilajou")
         }
         .listRowBackground(theme.card)
+        .foregroundStyle(theme.text)
     }
 }

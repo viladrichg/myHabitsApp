@@ -44,19 +44,28 @@ struct RootView: View {
                 AppTheme.colors(for: settings.themeStyle)
             )
             .preferredColorScheme(
-                settings.themeStyle == "dark"
-                || settings.themeStyle == "forest"
-                || settings.themeStyle == "ocean"
-                || settings.themeStyle == "rose"
-                || settings.themeStyle == "nord"
-                || settings.themeStyle == "coffee"
-                ? .dark
-                : .light
+                isDarkTheme ? .dark : .light
             )
             .onAppear {
                 bootstrap()
             }
 
+    }
+    
+    private var isDarkTheme: Bool {
+
+        [
+            "dark",
+            "forest",
+            "ocean",
+            "rose",
+            "nord",
+            "coffee",
+            "turquoise",
+            "coral",
+            "graphite",
+            "mustard"
+        ].contains(settings.themeStyle)
     }
 
     // MARK: - Bootstrap

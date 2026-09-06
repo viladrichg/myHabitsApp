@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SectionOrderView: View {
 
+    @Environment(\.appTheme) var theme
+
     @Bindable var settings: AppSettings
 
     private let sectionNames: [String: String] = [
@@ -19,12 +21,23 @@ struct SectionOrderView: View {
 
         List {
 
-            ForEach(settings.sectionOrder, id: \.self) { key in
+            Section {
+
+                ForEach(settings.sectionOrder, id: \.self) { key in
 
                     Text(sectionNames[key] ?? key)
+                        .foregroundStyle(theme.text)
+                }
+                .onMove(perform: move)
+
+            } header: {
+
+                Text("Ordre dels blocs")
             }
-            .onMove(perform: move)
+            .listRowBackground(theme.card)
         }
+        .scrollContentBackground(.hidden)
+        .background(theme.bg.ignoresSafeArea())
         .navigationTitle("Ordre dels blocs")
         .toolbar {
             EditButton()

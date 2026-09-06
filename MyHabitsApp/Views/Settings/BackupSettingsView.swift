@@ -137,6 +137,7 @@ struct BackupSettingsView: View {
                         "Eliminar període",
                         systemImage: "calendar.badge.minus"
                     )
+                    .foregroundStyle(theme.accent)
                 }
 
                 Button(

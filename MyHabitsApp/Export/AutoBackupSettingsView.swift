@@ -2,6 +2,8 @@ import SwiftUI
 
 struct AutoBackupSettingsView: View {
 
+    @Environment(\.appTheme) var theme
+
     @Bindable var settings: AppSettings
 
     var body: some View {
@@ -14,9 +16,10 @@ struct AutoBackupSettingsView: View {
                 Properament podràs crear còpies de seguretat automàtiques a l'app Arxius mitjançant iCloud Drive.
                 """)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.secondary)
 
             }
+            .listRowBackground(theme.card)
 
             Section("Freqüència") {
 
@@ -35,6 +38,7 @@ struct AutoBackupSettingsView: View {
                         .tag("monthly")
                 }
             }
+            .listRowBackground(theme.card)
 
             Section("Estat") {
 
@@ -50,7 +54,10 @@ struct AutoBackupSettingsView: View {
                     }
                 }
             }
+            .listRowBackground(theme.card)
         }
+        .scrollContentBackground(.hidden)
+        .background(theme.bg.ignoresSafeArea())
         .navigationTitle("Còpies automàtiques")
     }
 }

@@ -881,7 +881,7 @@ struct CalendarView: View {
 
             if showHours && showQuality {
                 
-                Text("Son")
+                Text("😴 \(settings?.blockName("sleep") ?? "Son")")
                     .font(.headline)
                     .foregroundStyle(theme.text)
 

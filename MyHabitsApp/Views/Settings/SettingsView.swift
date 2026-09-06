@@ -163,8 +163,8 @@ struct SettingsView: View {
                 SectionOrderView(settings: s)
             } label: {
                 Label(
-                    "Ordre dels blocs",
-                    systemImage: "rectangle.3.group"
+                    "Ordre i nom dels blocs",
+                    systemImage: "list.bullet.indent"
                 )
             }
         }

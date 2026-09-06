@@ -76,7 +76,9 @@ struct HomeView: View {
 
         VStack(alignment: .leading, spacing: 12) {
 
-            sectionHeader("🏃 Esports")
+            sectionHeader(
+                "🏃 \(settings?.blockName("sports") ?? "Esports")"
+            )
 
             VStack(spacing: 10) {
 
@@ -117,7 +119,9 @@ struct HomeView: View {
 
                     HStack {
 
-                        Text("Veure tots els esports")
+                        Text(
+                            "Veure-ho tot"
+                        )
 
                         Spacer()
 

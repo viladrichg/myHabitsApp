@@ -249,7 +249,9 @@ struct DataEntryView: View {
         
         return AnyView(
             
-            section("Son") {
+            section(
+                "😴 \(settings?.blockName("sleep") ?? "Son")"
+            ) {
                 
                 if !hideHours {
                     
@@ -339,7 +341,7 @@ struct DataEntryView: View {
             
             if hasVisibleVariables {
                 
-                section("Treballat") {
+                section("💼 \(settings?.blockName("work") ?? "Treballat")") {
                     
                     HStack {
                         
@@ -388,7 +390,7 @@ struct DataEntryView: View {
             
             if hasVisibleVariables {
                 
-                section("Mals hàbits") {
+                section("🚫 \(settings?.blockName("negative") ?? "Mals hàbits")") {
                     
                     HStack {
                         
@@ -443,7 +445,7 @@ struct DataEntryView: View {
             
             if hasVisibleVariables {
                 
-                section("Activitats") {
+                section("✅ \(settings?.blockName("positive") ?? "Activitats")") {
                     
                     VStack {
                         
@@ -510,7 +512,7 @@ struct DataEntryView: View {
     
     private func sportsSection(_ e: DailyEntry) -> some View {
 
-        section("Esports") {
+        section("🏃 \(settings?.blockName("sports") ?? "Esports")") {
 
             let selectedSports = Set(sportsDraft)
 
@@ -521,7 +523,7 @@ struct DataEntryView: View {
                     if isEditingSports {
 
                         TextField(
-                            "Nou esport",
+                            "Nou...",
                             text: $newSport
                         )
                         .padding()
@@ -548,7 +550,7 @@ struct DataEntryView: View {
                     } else if customSports.count > 8 {
 
                         TextField(
-                            "Cercar esport",
+                            "Cerca...",
                             text: $sportSearch
                         )
                         .padding()
@@ -728,7 +730,7 @@ struct DataEntryView: View {
 
             if !visibleCustomVariables.isEmpty {
                 
-                section("Personalitzats") {
+                section("⚙️ \(settings?.blockName("custom") ?? "Personalitzats")") {
                     
                     let booleans = customVariables.filter {
                         !$0.isHidden &&
@@ -909,7 +911,7 @@ struct DataEntryView: View {
     
     private func notesSection(_ e: DailyEntry) -> some View {
         
-        section("Notes") {
+        section("📝 \(settings?.blockName("notes") ?? "Notes")") {
             TextEditor(text: $notesDraft)
                 .focused($isEditingNotes)
                 .frame(minHeight: 80)

@@ -40,6 +40,8 @@ final class AppSettings {
 
     var hiddenVariablesJSON: String = "[]"
     
+    var blockNamesJSON: String = "{}"
+    
     //ordre variables
     
     var sectionOrderJSON: String =
@@ -109,7 +111,63 @@ final class AppSettings {
                 ) ?? "{}"
         }
     }
+    
+    // MARK: - Block Names
 
+    var blockNames: [String: String] {
+
+        get {
+
+            guard
+                let data = blockNamesJSON.data(using: .utf8),
+                let value = try? JSONDecoder().decode(
+                    [String: String].self,
+                    from: data
+                )
+            else {
+                return [:]
+            }
+
+            return value
+        }
+
+        set {
+
+            blockNamesJSON =
+                (
+                    try? String(
+                        data: JSONEncoder().encode(newValue),
+                        encoding: .utf8
+                    )
+                ) ?? "{}"
+        }
+    }
+    
+    private static let defaultBlockNames: [String: String] = [
+        "sleep": "Son",
+        "work": "Treballat",
+        "negative": "Mals hàbits",
+        "positive": "Activitats",
+        "sports": "Esports",
+        "counter": "Comptador",
+        "custom": "Personalitzats",
+        "notes": "Notes"
+    ]
+    
+    func blockName(_ key: String) -> String {
+
+        if key == "counter" {
+
+            return variableLabels["counter"]
+                ?? Self.defaultBlockNames[key]
+                ?? key
+        }
+
+        return blockNames[key]
+            ?? Self.defaultBlockNames[key]
+            ?? key
+    }
+    
     // MARK: - Variable Colors
 
     var variableColors: [String:String] {

@@ -112,7 +112,7 @@ struct CalendarView: View {
                             $0.fieldKey == "counter"
                         }?.isHidden(using: settings) ?? false) {
 
-                            pitellsCard
+                            counterCard
                         }
 
                         ForEach(
@@ -1020,9 +1020,9 @@ struct CalendarView: View {
         .cardStyle()
     }
 
-    // MARK: - Pitells
+    // MARK: - Comptador
 
-    private var pitellsData: [(Date, Double)] {
+    private var counterData: [(Date, Double)] {
 
         monthEntries.values
             .filter { !$0.isEmpty }
@@ -1046,7 +1046,7 @@ struct CalendarView: View {
         .sorted { $0.0 < $1.0 }
     }
     
-    private var allPitellsData: [(Date, Double)] {
+    private var allCounterData: [(Date, Double)] {
 
         entries
             .filter { !$0.isEmpty }
@@ -1066,15 +1066,15 @@ struct CalendarView: View {
             .sorted { $0.0 < $1.0 }
     }
 
-    //MARK: pitells CARD
-    private var pitellsCard: some View {
+    //MARK: counter CARD
+    private var counterCard: some View {
 
         let counterColor =
             builtInVariables.first {
                 $0.fieldKey == "counter"
             }?.displayColor(using: settings)
             ?? theme.accent
-        let values = pitellsData.map(\.1)
+        let values = counterData.map(\.1)
         
         return VStack(alignment: .leading, spacing: 12) {
 
@@ -1082,21 +1082,24 @@ struct CalendarView: View {
                 builtInVariables.first {
                     $0.fieldKey == "counter"
                 }?.displayLabel(using: settings)
-                ?? "Pitells"
+                ?? "Comptador"
             )
                 .font(.headline)
 
-            if pitellsData.count >= 2 {
+            if counterData.count >= 2 {
 
                 Chart {
 
-                    ForEach(pitellsData, id: \.0) { point in
+                    ForEach(counterData, id: \.0) { point in
 
                         if settings?.lineChartStyle == "bar" {
 
                             BarMark(
                                 x: .value("Data", point.0),
-                                y: .value("Pitells", point.1)
+                                y: .value(
+                                    settings?.blockName("counter") ?? "Comptador",
+                                    point.1
+                                )
                             )
                             .foregroundStyle(counterColor)
 
@@ -1104,13 +1107,19 @@ struct CalendarView: View {
 
                             LineMark(
                                 x: .value("Data", point.0),
-                                y: .value("Pitells", point.1)
+                                y: .value(
+                                    settings?.blockName("counter") ?? "Comptador",
+                                    point.1
+                                )
                             )
                             .foregroundStyle(counterColor)
 
                             PointMark(
                                 x: .value("Data", point.0),
-                                y: .value("Pitells", point.1)
+                                y: .value(
+                                    settings?.blockName("counter") ?? "Comptador",
+                                    point.1
+                                )
                             )
                             .foregroundStyle(counterColor)
                         }
@@ -1123,8 +1132,8 @@ struct CalendarView: View {
                         title: builtInVariables.first {
                             $0.fieldKey == "counter"
                         }?.displayLabel(using: settings)
-                        ?? "Pitells",
-                        data: allPitellsData,
+                        ?? "Comptador",
+                        data: allCounterData,
                         color: counterColor,
                         unit: ""
                     )
@@ -1146,7 +1155,7 @@ struct CalendarView: View {
                 HStack(spacing: 12) {
 
                     statBox(
-                        title: "Buda",
+                        title: "Mínim",
                         value: "\(Int(values.min() ?? 0))",
                         color: .green
                     )
@@ -1161,7 +1170,7 @@ struct CalendarView: View {
                     )
 
                     statBox(
-                        title: "Drama",
+                        title: "Màxim",
                         value: "\(Int(values.max() ?? 0))",
                         color: .red
                     )

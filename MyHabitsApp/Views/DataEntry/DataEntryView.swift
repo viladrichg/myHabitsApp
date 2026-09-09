@@ -341,7 +341,7 @@ struct DataEntryView: View {
             
             if hasVisibleVariables {
                 
-                section("💼 \(settings?.blockName("work") ?? "Treballat")") {
+                section("💼 \(settings?.blockName("work") ?? "Hàbits")") {
                     
                     HStack {
                         
@@ -512,7 +512,7 @@ struct DataEntryView: View {
     
     private func sportsSection(_ e: DailyEntry) -> some View {
 
-        section("🏃 \(settings?.blockName("sports") ?? "Esports")") {
+        section("🏃 \(settings?.blockName("sports") ?? "Llista")") {
 
             let selectedSports = Set(sportsDraft)
 
@@ -648,8 +648,7 @@ struct DataEntryView: View {
             if counter?.isHidden(using: settings) != true {
                 
                 section(
-                    counter?.displayLabel(using: settings)
-                    ?? "Pitells"
+                    "🔢 \(counter?.displayLabel(using: settings) ?? "Comptador")"
                 ) {
                     
                     VStack(spacing: 16) {

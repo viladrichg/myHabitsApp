@@ -77,7 +77,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
 
             sectionHeader(
-                "🏃 \(settings?.blockName("sports") ?? "Esports")"
+                "🏃 \(settings?.blockName("sports") ?? "Llista")"
             )
 
             VStack(spacing: 10) {
@@ -170,7 +170,7 @@ struct HomeView: View {
                         
                         if showWork {
                             statCell(
-                                label: "Treballat",
+                                label: "Hàbits",
                                 value: workText(e)
                             )
                     }
@@ -390,20 +390,26 @@ struct HomeView: View {
         _ e: DailyEntry
     ) -> String {
 
+        let habit1Name =
+            settings?.variableLabels["habit1"] ?? "Hàbit 1"
+
+        let habit2Name =
+            settings?.variableLabels["habit2"] ?? "Hàbit 2"
+
         if e.habit1 && e.habit2 {
-            return "💼🏠 Ambdues"
+            return "✅ Ambdues"
         }
 
         if e.habit1 {
-            return "💼 Feina"
+            return "💼 \(habit1Name)"
         }
 
         if e.habit2 {
-            return "🏠 Casa"
+            return "🏠 \(habit2Name)"
         }
 
-        return "-"    }
-
+        return "-"
+    }
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.headline)

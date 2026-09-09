@@ -1009,7 +1009,9 @@ struct InsightsView: View {
 
                     if !(settings?.hideSleepHours ?? false) || !(settings?.hideSleepQuality ?? false) {
                         
-                        Section("Son") {
+                        Section(
+                            settings?.blockName("sleep") ?? "Son"
+                        ) {
                             
                             if !(settings?.hideSleepHours ?? false) {
                                 Text("Hores de son")

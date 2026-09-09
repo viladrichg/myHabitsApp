@@ -8,6 +8,13 @@ struct SportsListView: View {
     @Query(sort: \DailyEntry.date, order: .reverse)
     private var entries: [DailyEntry]
     
+    @Query(sort: \AppSettings.createdAt)
+    private var allSettings: [AppSettings]
+
+    private var settings: AppSettings? {
+        allSettings.first
+    }
+    
     @State private var period = "all"
     
     private var filteredEntries: [DailyEntry] {
@@ -76,23 +83,26 @@ struct SportsListView: View {
     }
     
     private var periodLabel: String {
-        
+
+        let sportsName =
+            settings?.blockName("sports") ?? "Llista"
+
         switch period {
-            
+
         case "30":
-            return "Esports · 30 dies"
-            
+            return "\(sportsName) · 30 dies"
+
         case "90":
-            return "Esports · 3 mesos"
-            
+            return "\(sportsName) · 3 mesos"
+
         case "180":
-            return "Esports · 6 mesos"
-            
+            return "\(sportsName) · 6 mesos"
+
         case "365":
-            return "Esports · 1 any"
-            
+            return "\(sportsName) · 1 any"
+
         default:
-            return "Esports · Tot"
+            return "\(sportsName) · Tot"
         }
     }
     

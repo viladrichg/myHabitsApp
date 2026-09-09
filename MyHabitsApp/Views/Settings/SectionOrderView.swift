@@ -12,10 +12,10 @@ struct SectionOrderView: View {
 
     private let defaultSectionNames: [String: String] = [
         "sleep": "Son",
-        "work": "Treballat",
+        "work": "Hàbits",
         "negative": "Mals hàbits",
         "positive": "Activitats",
-        "sports": "Esports",
+        "sports": "Llista",
         "counter": "Comptador",
         "custom": "Personalitzats",
         "notes": "Notes"
@@ -35,7 +35,8 @@ struct SectionOrderView: View {
                         
                         Spacer()
                         
-                        if key != "counter" {
+                        if key != "counter"
+                        && key != "sports" {
                             
                             Button {
                                 

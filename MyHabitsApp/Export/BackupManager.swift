@@ -214,7 +214,7 @@ date,sleepStart,sleepEnd,sleepQuality,habit1,habit2,negative1,negative2,positive
         if let value = dict["counter"],
            !value.isEmpty,
            Int(value) == nil {
-            return "Pitells no numèric: \(value)"
+            return "Comptador no numèric: \(value)"
         }
 
         let booleanFields = [

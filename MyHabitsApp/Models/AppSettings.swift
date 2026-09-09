@@ -145,10 +145,10 @@ final class AppSettings {
     
     private static let defaultBlockNames: [String: String] = [
         "sleep": "Son",
-        "work": "Treballat",
+        "work": "Hàbits",
         "negative": "Mals hàbits",
         "positive": "Activitats",
-        "sports": "Esports",
+        "sports": "Llista",
         "counter": "Comptador",
         "custom": "Personalitzats",
         "notes": "Notes"
@@ -159,6 +159,13 @@ final class AppSettings {
         if key == "counter" {
 
             return variableLabels["counter"]
+                ?? Self.defaultBlockNames[key]
+                ?? key
+        }
+
+        if key == "sports" {
+
+            return variableLabels["sports"]
                 ?? Self.defaultBlockNames[key]
                 ?? key
         }

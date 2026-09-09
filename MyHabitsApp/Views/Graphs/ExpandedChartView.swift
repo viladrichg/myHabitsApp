@@ -217,7 +217,11 @@ struct ExpandedChartView: View {
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleDomainLength(for: points))
         .frame(height: chartHeight)
-        .chartYScale(domain: (minValue - padding)...(maxValue + padding))
+        .chartYScale(
+            domain: lineChartStyle == "bar"
+            ? 0...(maxValue + padding)
+            : (minValue - padding)...(maxValue + padding)
+        )
         .chartXAxis {
 
             AxisMarks { value in

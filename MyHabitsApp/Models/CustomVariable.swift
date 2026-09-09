@@ -91,70 +91,70 @@ let builtInVariables: [BuiltInVariable] = [
 
     .init(
         fieldKey: "habit1",
-        label: "Feina",
+        label: "Hàbit 1",
         colorHex: "#0077BB",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "habit2",
-        label: "Casa",
+        label: "Hàbit 2",
         colorHex: "#EE7733",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "negative1",
-        label: "Fum",
+        label: "Mal hàbit 1",
         colorHex: "#CC3311",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "negative2",
-        label: "Gat",
+        label: "Mal hàbit 2",
         colorHex: "#EE3377",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "positive1",
-        label: "Meditació",
+        label: "Variable 1",
         colorHex: "#009988",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "positive2",
-        label: "Ioga",
+        label: "Variable 2",
         colorHex: "#33BBEE",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "positive3",
-        label: "Dibuix",
+        label: "Variable 3",
         colorHex: "#CCBB44",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "positive4",
-        label: "Llegir",
+        label: "Variable 4",
         colorHex: "#0077BB",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "sports",
-        label: "Esport",
+        label: "Llista",
         colorHex: "#6366f1",
         type: "boolean"
     ),
 
     .init(
         fieldKey: "counter",
-        label: "Pitells",
+        label: "Comptador",
         colorHex: "#8b5cf6",
         type: "counter"
     )
